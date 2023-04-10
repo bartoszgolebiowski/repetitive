@@ -4,14 +4,14 @@ import {
     createTRPCRouter,
     protectedProcedure,
 } from "~/server/api/trpc";
-import { handleErrorRouter } from "./utils";
+import { handleErrorRouter } from "../../../utils/httpErrors";
 
-export const workflowRouter = createTRPCRouter({
+export const definitionRouter = createTRPCRouter({
     getByWorkplaceId: protectedProcedure
         .input(z.object({ workplaceId: z.string() }))
         .query(async ({ ctx, input }) => {
             try {
-                const workflows = await ctx.prisma.workflow.findMany({
+                const definitions = await ctx.prisma.definition.findMany({
                     where: {
                         workplaceId: input.workplaceId,
                     },
@@ -21,7 +21,7 @@ export const workflowRouter = createTRPCRouter({
                     }
                 });
 
-                return workflows
+                return definitions
             }
             catch (error) {
                 handleErrorRouter(error)
@@ -36,7 +36,7 @@ export const workflowRouter = createTRPCRouter({
         }))
         .mutation(async ({ input, ctx }) => {
             try {
-                const workflow = await ctx.prisma.workflow.create({
+                const definitions = await ctx.prisma.definition.create({
                     data: {
                         name: input.name,
                         description: input.description,
@@ -45,7 +45,7 @@ export const workflowRouter = createTRPCRouter({
                     },
                 })
 
-                return workflow
+                return definitions
             }
             catch (error) {
                 handleErrorRouter(error)

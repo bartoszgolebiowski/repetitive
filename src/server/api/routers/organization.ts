@@ -5,7 +5,7 @@ import {
     protectedProcedure,
 } from "~/server/api/trpc";
 import { isAdmin, ROLES } from "../roles";
-import { handleErrorRouter } from "./utils";
+import { handleErrorRouter } from "../../../utils/httpErrors";
 
 export const organizationRouter = createTRPCRouter({
     getMyOrganizations: protectedProcedure

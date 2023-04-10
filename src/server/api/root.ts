@@ -1,9 +1,9 @@
 import { createTRPCRouter } from "~/server/api/trpc";
-import { workflowTasksRouter } from './routers/workflowTasks'
+import { definitionTasksRouter } from './routers/definitionTasks'
 import { frequencyRouter } from "./routers/frequency";
 import { organizationRouter } from "./routers/organization";
 import { userRouter } from "./routers/users";
-import { workflowRouter } from "./routers/workflow";
+import { definitionRouter } from "./routers/definition";
 import { workplaceRouter } from "./routers/workplace";
 import { invitationRouter } from "./routers/invitation";
 
@@ -15,8 +15,8 @@ import { invitationRouter } from "./routers/invitation";
 export const appRouter = createTRPCRouter({
   organization: organizationRouter,
   workplace: workplaceRouter,
-  workflow: workflowRouter,
-  workflowTasks: workflowTasksRouter,
+  definition: definitionRouter,
+  definitionTasks: definitionTasksRouter,
   frequency: frequencyRouter,
   user: userRouter,
   invitation: invitationRouter,

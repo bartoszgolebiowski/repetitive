@@ -23,9 +23,9 @@ import Grid2 from "@mui/material/Unstable_Grid2";
 import React from "react";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
-import WorkflowNavigation from "~/components/WorkplaceNavigation";
+import WorkplaceNavigation from "~/components/WorkplaceNavigation";
 
-const WorkplaceId: NextPage = () => {
+const Definition: NextPage = () => {
   const [open, setOpen] = React.useState(false);
   const { workplaceId } = useRouter().query;
 
@@ -36,25 +36,25 @@ const WorkplaceId: NextPage = () => {
     { enabled: !!workplaceId }
   );
 
-  const workflows = api.workflow.getByWorkplaceId.useQuery(
+  const definitions = api.definition.getByWorkplaceId.useQuery(
     {
       workplaceId: workplaceId as string,
     },
     { enabled: !!workplaceId }
   );
 
-  const createWorkflow = api.workflow.create.useMutation({
+  const createDefinition = api.definition.create.useMutation({
     onSettled: async () => {
       handleClose();
-      await workflows.refetch();
+      await definitions.refetch();
     },
   });
 
-  const handleSubmitWorkflow = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmitDefinition = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
 
-    createWorkflow.mutate({
+    createDefinition.mutate({
       name: formData.get("name") as string,
       description: formData.get("description") as string,
       frequencyId: formData.get("frequencyId") as string,
@@ -68,16 +68,16 @@ const WorkplaceId: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Checklist</title>
-        <meta name="description" content="Workflow checklist" />
+        <title>Definitions</title>
+        <meta name="description" content="Definitions" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <WorkflowNavigation>
+      <WorkplaceNavigation>
         <Box component="main">
           <Modal open={open} onClose={handleClose} disableAutoFocus>
             <FormCard size="medium">
-              <FormTitle>Create Workflow</FormTitle>
-              <form onSubmit={handleSubmitWorkflow}>
+              <FormTitle>Create Definition</FormTitle>
+              <form onSubmit={handleSubmitDefinition}>
                 <input type="hidden" name="workplaceId" value={workplaceId} />
                 <Grid2 container spacing={2}>
                   <Grid2 xs={12}>
@@ -144,18 +144,18 @@ const WorkplaceId: NextPage = () => {
             </FormCard>
           </Modal>
           <Typography variant="h4" sx={{ pb: "1rem" }}>
-            Workflows
+            Definitions
           </Typography>
           <Box>
             <Button
               variant="contained"
               onClick={handleOpen}
-              disabled={workflows.status === "loading"}
+              disabled={definitions.status === "loading"}
             >
-              Create Workflow
+              Create Definition
             </Button>
           </Box>
-          {workflows.data && (
+          {definitions.data && (
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
@@ -167,12 +167,12 @@ const WorkplaceId: NextPage = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {workflows.data?.map((workflow) => (
-                    <TableRow key={workflow.id}>
-                      <TableCell>{workflow.name}</TableCell>
-                      <TableCell>{workflow.description}</TableCell>
-                      <TableCell>{workflow.workplace.name}</TableCell>
-                      <TableCell>{workflow.frequency.name}</TableCell>
+                  {definitions.data?.map((definition) => (
+                    <TableRow key={definition.id}>
+                      <TableCell>{definition.name}</TableCell>
+                      <TableCell>{definition.description}</TableCell>
+                      <TableCell>{definition.workplace.name}</TableCell>
+                      <TableCell>{definition.frequency.name}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -180,9 +180,9 @@ const WorkplaceId: NextPage = () => {
             </TableContainer>
           )}
         </Box>
-      </WorkflowNavigation>
+      </WorkplaceNavigation>
     </>
   );
 };
 
-export default WorkplaceId;
+export default Definition;

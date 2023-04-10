@@ -20,57 +20,59 @@ model Workplace {
     updatedAt      DateTime     @updatedAt
     organizationId String
     organization   Organization @relation(fields: [organizationId], references: [id])
-    workflow       Workflow[]
+    definition     Definition[]
     frequency      Frequency[]
+    Action         Action[]
 
     @@index([organizationId])
 }
 
-model Workflow {
-    id            String         @id @default(cuid())
-    name          String
-    description   String
-    createdAt     DateTime       @default(now())
-    updatedAt     DateTime       @updatedAt
-    workplaceId   String
-    workplace     Workplace      @relation(fields: [workplaceId], references: [id])
-    frequencyId   String
-    frequency     Frequency      @relation(fields: [frequencyId], references: [id])
-    workflowTasks WorkflowTask[]
+model Definition {
+    id               String           @id @default(cuid())
+    name             String
+    description      String
+    createdAt        DateTime         @default(now())
+    updatedAt        DateTime         @updatedAt
+    workplaceId      String
+    workplace        Workplace        @relation(fields: [workplaceId], references: [id])
+    frequencyId      String
+    frequency        Frequency        @relation(fields: [frequencyId], references: [id])
+    definitionsTasks DefinitionTask[]
 
     @@index([workplaceId])
     @@index([frequencyId])
 }
 
-model WorkflowTask {
-    id            String    @id @default(cuid())
+model DefinitionTask {
+    id            String     @id @default(cuid())
     status        String
-    createdAt     DateTime  @default(now())
-    updatedAt     DateTime  @updatedAt
+    createdAt     DateTime   @default(now())
+    updatedAt     DateTime   @updatedAt
     createdBy     String
     updatedBy     String
     availableFrom DateTime
     availableTo   DateTime
     frequencyId   String
-    frequency     Frequency @relation(fields: [frequencyId], references: [id])
-    workflowId    String
-    workflow      Workflow  @relation(fields: [workflowId], references: [id])
+    frequency     Frequency  @relation(fields: [frequencyId], references: [id])
+    definitionId  String
+    definition    Definition @relation(fields: [definitionId], references: [id])
+    Action        Action[]
 
-    @@index([workflowId])
+    @@index([definitionId])
     @@index([frequencyId])
 }
 
 model Frequency {
-    id             String          @id @default(cuid())
-    name           String
-    description    String?
-    createdAt      DateTime        @default(now())
-    updatedAt      DateTime        @updatedAt
-    workplaceId    String
-    workplace      Workplace       @relation(fields: [workplaceId], references: [id])
-    workflows      Workflow[]
-    workflowTasks  WorkflowTask[]
-    frequencyCrons FrequencyCron[]
+    id              String           @id @default(cuid())
+    name            String
+    description     String?
+    createdAt       DateTime         @default(now())
+    updatedAt       DateTime         @updatedAt
+    workplaceId     String
+    workplace       Workplace        @relation(fields: [workplaceId], references: [id])
+    definitions     Definition[]
+    definitionTasks DefinitionTask[]
+    frequencyCrons  FrequencyCron[]
 
     @@index([workplaceId])
 }
@@ -79,6 +81,30 @@ model FrequencyCron {
     id          String      @id @default(cuid())
     cron        String
     frequencies Frequency[]
+}
+
+model Action {
+    id          String   @id @default(cuid())
+    description String
+    status      String
+    dueDate     DateTime
+    assignedTo  String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    createdBy String
+    updatedBy String
+
+    organizationId   String
+    organization     Organization   @relation(fields: [organizationId], references: [id])
+    workplaceId      String
+    workplace        Workplace      @relation(fields: [workplaceId], references: [id])
+    definitionTaskId String
+    definitionTask   DefinitionTask @relation(fields: [definitionTaskId], references: [id])
+
+    @@index([definitionTaskId])
+    @@index([workplaceId])
+    @@index([organizationId])
 }
 
 // Necessary for Next auth
@@ -137,6 +163,7 @@ model Organization {
     memberships Membership[]
     workplaces  Workplace[]
     invitations Invitation[]
+    Action      Action[]
 }
 
 model Membership {

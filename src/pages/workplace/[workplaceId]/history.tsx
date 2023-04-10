@@ -18,32 +18,40 @@ import React from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 import { api } from "~/utils/api";
-import { DAYS, displayDate, getFromMondayToSunday, stableNow } from "~/utils/date";
-import type { WorkflowTask } from "@prisma/client";
-import WorkflowNavigation from "~/components/WorkplaceNavigation";
+import {
+  DAYS,
+  displayDate,
+  getFromMondayToSunday,
+  stableNow,
+} from "~/utils/date";
+import type { DefinitionTask } from "@prisma/client";
+import WorkplaceNavigation from "~/components/WorkplaceNavigation";
 
-const Details = ({ workflowTask }: { workflowTask: WorkflowTask }) => {
+const Details = ({ definitionTask }: { definitionTask: DefinitionTask }) => {
   return (
     <Accordion
       sx={{
         backgroundColor:
-          workflowTask.status === "DONE" ? "success.main" : "error.main",
+          definitionTask.status === "DONE" ? "success.main" : "error.main",
       }}
     >
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Typography>{workflowTask.status}</Typography>
+        <Typography>{definitionTask.status}</Typography>
       </AccordionSummary>
       <AccordionDetails>
+        <p>
+          {definitionTask.id}
+        </p>
         <ol>
-          <li>Available From: {displayDate(workflowTask.availableFrom)}</li>
-          <li>Available To: {displayDate(workflowTask.availableTo)}</li>
+          <li>Available From: {displayDate(definitionTask.availableFrom)}</li>
+          <li>Available To: {displayDate(definitionTask.availableTo)}</li>
         </ol>
       </AccordionDetails>
     </Accordion>
   );
 };
 
-const WorkplaceId: NextPage = () => {
+const History: NextPage = () => {
   const { workplaceId } = useRouter().query;
   const [selectedDay, setSelectedDay] = React.useState(() => stableNow);
   const week = React.useMemo(
@@ -54,7 +62,7 @@ const WorkplaceId: NextPage = () => {
   const monday = week[0];
   const sunday = week[6];
 
-  const workflowTasks = api.workflowTasks.getHistoryByWorkplaceId.useQuery(
+  const definitionTasks = api.definitionTasks.getHistoryByWorkplaceId.useQuery(
     {
       workplaceId: workplaceId as string,
       startDay: monday,
@@ -77,10 +85,10 @@ const WorkplaceId: NextPage = () => {
     <>
       <Head>
         <title>History</title>
-        <meta name="description" content="Workflow history" />
+        <meta name="description" content="Tasks history" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <WorkflowNavigation>
+      <WorkplaceNavigation>
         <main>
           <Typography variant="h4" sx={{ pb: "1rem" }}>
             History Week
@@ -94,7 +102,7 @@ const WorkplaceId: NextPage = () => {
                 : void 0
             }
           />
-          {workflowTasks.data && (
+          {definitionTasks.data && (
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
@@ -108,17 +116,17 @@ const WorkplaceId: NextPage = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {Object.entries(workflowTasks.data).map(
+                  {Object.entries(definitionTasks.data).map(
                     ([id, groupedByDays]) => (
                       <TableRow key={id}>
-                        <TableCell>{id}</TableCell>
+                        <TableCell sx={{ minWidth: "30rem" }}>{id}</TableCell>
                         {Object.values(groupedByDays).map(
-                          (workflowTasks, index) => (
+                          (definitionTasks, index) => (
                             <TableCell key={index} sx={{ minWidth: "20rem" }}>
-                              {workflowTasks.map((workflowTask) => (
+                              {definitionTasks.map((definitionTask) => (
                                 <Details
-                                  workflowTask={workflowTask}
-                                  key={workflowTask.id}
+                                  definitionTask={definitionTask}
+                                  key={definitionTask.id}
                                 />
                               ))}
                             </TableCell>
@@ -132,9 +140,9 @@ const WorkplaceId: NextPage = () => {
             </TableContainer>
           )}
         </main>
-      </WorkflowNavigation>
+      </WorkplaceNavigation>
     </>
   );
 };
 
-export default WorkplaceId;
+export default History;

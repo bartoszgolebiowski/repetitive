@@ -5,19 +5,19 @@ import Button from "@mui/material/Button";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
-const WorkflowNavigation = (props: React.PropsWithChildren) => {
+const WorkplaceNavigation = (props: React.PropsWithChildren) => {
   const { workplaceId } = useRouter().query;
-  const isWorkflow = useRouter().pathname.includes("workflow");
+  const isDefinitions = useRouter().pathname.includes("definition");
   const isHistory = useRouter().pathname.includes("history");
   const isFrequency = useRouter().pathname.includes("frequency");
-  const isChecklist = !isWorkflow && !isHistory && !isFrequency;
+  const isChecklist = !isDefinitions && !isHistory && !isFrequency;
 
   return (
     <>
       <Box>
         <ButtonGroup
           size="large"
-          aria-label="workflow-navigation"
+          aria-label="workplace-navigation"
           orientation="horizontal"
           sx={{
             display: "flex",
@@ -26,13 +26,13 @@ const WorkflowNavigation = (props: React.PropsWithChildren) => {
         >
           <Button
             LinkComponent={Link}
-            variant={isWorkflow ? "contained" : "outlined"}
+            variant={isDefinitions ? "contained" : "outlined"}
             href={{
-              pathname: `/workplace/[workplaceId]/workflow`,
+              pathname: `/workplace/[workplaceId]/definition`,
               query: { workplaceId: workplaceId },
             }}
           >
-            Workflow
+            Definition
           </Button>
           <Button
             LinkComponent={Link}
@@ -71,4 +71,4 @@ const WorkflowNavigation = (props: React.PropsWithChildren) => {
   );
 };
 
-export default WorkflowNavigation;
+export default WorkplaceNavigation;

@@ -26,11 +26,11 @@ import React from "react";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
 import { convertCronToUTC, isDays, isHours } from "~/server/frequency/cron";
-import WorkflowNavigation from "~/components/WorkplaceNavigation";
+import WorkplaceNavigation from "~/components/WorkplaceNavigation";
 import { DAYS, HOURS } from "~/utils/date";
 import { validateCheckboxSection } from "~/utils/form";
 
-const WorkplaceId: NextPage = () => {
+const Frequency: NextPage = () => {
   const [open, setOpen] = React.useState(false);
   const { workplaceId } = useRouter().query;
 
@@ -85,11 +85,11 @@ const WorkplaceId: NextPage = () => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <WorkflowNavigation>
+      <WorkplaceNavigation>
         <Box component={"main"}>
           <Modal open={open} onClose={handleClose} disableAutoFocus>
             <FormCard size="large">
-              <FormTitle>Create Workflow</FormTitle>
+              <FormTitle>Create Definition</FormTitle>
               <form onSubmit={handleSubmitFrequency}>
                 <input type="hidden" name="workplaceId" value={workplaceId} />
                 <Grid2 container spacing={2}>
@@ -231,9 +231,9 @@ const WorkplaceId: NextPage = () => {
             </TableContainer>
           )}
         </Box>
-      </WorkflowNavigation>
+      </WorkplaceNavigation>
     </>
   );
 };
 
-export default WorkplaceId;
+export default Frequency;
