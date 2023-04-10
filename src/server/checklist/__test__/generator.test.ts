@@ -50,7 +50,7 @@ describe('checklist generator', () => {
                         frequencyCrons: [{ "cron": "0 0 23 ? * SAT *", id: "clffdrshm00008y4cfeukqe9a" }]
                     }
                 },
-            ]satisfies WorkflowWithFrequency[]
+            ] satisfies WorkflowWithFrequency[]
 
             describe('date locale PL', () => {
                 it('should generate checklist items for monday 00:00:00 to sunday 23:59:59:999 date range', () => {
@@ -163,7 +163,7 @@ describe('checklist generator', () => {
                         ]
                     }
                 },
-            ]satisfies WorkflowWithFrequency[]
+            ] satisfies WorkflowWithFrequency[]
 
             describe('date locale PL', () => {
                 it('should generate checklist items for monday 00:00:00 to sunday 23:59:59:999 date range', () => {
@@ -254,7 +254,7 @@ describe('checklist generator', () => {
                         ]
                     }
                 },
-            ]satisfies WorkflowWithFrequency[]
+            ] satisfies WorkflowWithFrequency[]
 
             describe('date locale PL', () => {
                 it('should generate checklist items for sunday 00:00:00 to moneday 00:00:00 date range', () => {

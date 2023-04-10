@@ -83,7 +83,7 @@ export const workflowTasksRouter = createTRPCRouter({
                     },
                 });
 
-                const workflowTasks = generateChecklistItems(input.startDate, input.endDate, workplace)
+                const workflowTasks = generateChecklistItems(input.startDate, input.endDate, workplace).flat()
 
                 await ctx.prisma.workflowTask.createMany({
                     data: workflowTasks

@@ -35,7 +35,7 @@ export const generateChecklistItems = (
             }
             return [result].map(createTask(workflow)).flat();
         }).flat()
-    }).flat()
+    })
 }
 
 const createTask = (workflow: WorkflowWithFrequency) => (

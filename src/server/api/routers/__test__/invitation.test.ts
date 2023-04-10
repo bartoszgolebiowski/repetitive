@@ -1,13 +1,21 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import { ZodError } from 'zod';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterAll, beforeAll } from 'vitest';
 import { TRPCError } from '@trpc/server';
 import { callerAuthenticated, callerUnauthenticated } from './trpcCaller';
 import { prismaMock } from './prismaMock';
 import { INVITATION_ERRORS, INVITATION_STATUS } from '../invitation';
 
 describe('invitation', () => {
+    beforeAll(() => {
+        vi.spyOn(console, 'error').mockImplementation(() => { return })
+    })
+
+    afterAll(() => {
+        vi.spyOn(console, 'error').mockRestore()
+    })
+
     describe('create', () => {
         it('should throw an excpetion when user is not logged in', () => {
             expect(

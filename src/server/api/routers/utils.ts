@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 
 export const handleErrorRouter = (error: unknown) => {
-     console.log(error)
+     console.error(error)
     if (error instanceof TRPCError) {
         throw new TRPCError(error);
     }
