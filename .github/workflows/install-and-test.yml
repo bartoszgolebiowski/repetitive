@@ -3,9 +3,6 @@ name: Install dependencies and run tests
 on:
   pull_request:
     types: [opened, synchronize]
-  # Run the cleanup job once a week
-  schedule:
-    - cron:  '0 0 * * 0'
 
 jobs:
   test:
@@ -23,29 +20,8 @@ jobs:
           cache: 'npm'
           run: 'npm install -g pnpm'
 
-      - name: Cache dependencies
-        uses: actions/cache@v2
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-node-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
       - name: Install dependencies
         run: pnpm install
 
       - name: Run tests
         run: pnpm test
-
-  cleanup:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clean up cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-node-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-          # Delete cache entries older than 7 days
-          delete-older-than: 7d
