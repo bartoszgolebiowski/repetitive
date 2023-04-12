@@ -14,8 +14,7 @@ export const userRouter = createTRPCRouter({
             try {
                 const userInsideOrganization = await ctx.prisma.user.findMany({
                     select: {
-                        id: true,
-                        name: true,
+                        email: true,
                     },
                     where: {
                         memberships: {

@@ -16,6 +16,7 @@ import ListItemText from "@mui/material/ListItemText";
 import HomeIcon from "@mui/icons-material/Home";
 import BusinessIcon from "@mui/icons-material/Business";
 import WorkplaceIcon from "@mui/icons-material/Workspaces";
+import EngineeringIcon from "@mui/icons-material/Engineering";
 
 import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
@@ -97,6 +98,11 @@ const drawerItems = [
     text: "Workplace",
     icon: <WorkplaceIcon />,
     href: "workplace",
+  },
+  {
+    text: "Action",
+    icon: <EngineeringIcon />,
+    href: "action",
   },
 ] as const;
 

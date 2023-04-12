@@ -167,7 +167,7 @@ const Definition: NextPage = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {definitions.data?.map((definition) => (
+                  {definitions.data.map((definition) => (
                     <TableRow key={definition.id}>
                       <TableCell>{definition.name}</TableCell>
                       <TableCell>{definition.description}</TableCell>
