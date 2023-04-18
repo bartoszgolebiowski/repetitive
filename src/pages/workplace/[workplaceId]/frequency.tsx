@@ -26,7 +26,7 @@ import React from "react";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
 import { convertCronToUTC, isDays, isHours } from "~/server/frequency/cron";
-import WorkplaceNavigation from "~/components/WorkplaceNavigation";
+import WorkplaceNavigation from "~/components/navigation/WorkplaceNavigation";
 import { DAYS, HOURS } from "~/utils/date";
 import { validateCheckboxSection } from "~/utils/form";
 

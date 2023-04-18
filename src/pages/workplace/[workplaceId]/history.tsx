@@ -25,7 +25,7 @@ import {
   stableNow,
 } from "~/utils/date";
 import type { DefinitionTask } from "@prisma/client";
-import WorkplaceNavigation from "~/components/WorkplaceNavigation";
+import WorkplaceNavigation from "~/components/navigation/WorkplaceNavigation";
 
 const Details = ({ definitionTask }: { definitionTask: DefinitionTask }) => {
   return (

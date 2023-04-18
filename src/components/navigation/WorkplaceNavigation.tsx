@@ -12,6 +12,10 @@ const WorkplaceNavigation = (props: React.PropsWithChildren) => {
   const isFrequency = useRouter().pathname.includes("frequency");
   const isChecklist = !isDefinitions && !isHistory && !isFrequency;
 
+  if (!workplaceId || Array.isArray(workplaceId)) {
+    return null;
+  }
+
   return (
     <>
       <Box>
@@ -27,40 +31,28 @@ const WorkplaceNavigation = (props: React.PropsWithChildren) => {
           <Button
             LinkComponent={Link}
             variant={isDefinitions ? "contained" : "outlined"}
-            href={{
-              pathname: `/workplace/[workplaceId]/definition`,
-              query: { workplaceId: workplaceId },
-            }}
+            href={`/workplace/${workplaceId}/definition`}
           >
             Definition
           </Button>
           <Button
             LinkComponent={Link}
             variant={isChecklist ? "contained" : "outlined"}
-            href={{
-              pathname: `/workplace/[workplaceId]/`,
-              query: { workplaceId: workplaceId },
-            }}
+            href={`/workplace/${workplaceId}/`}
           >
             Checklist
           </Button>
           <Button
             LinkComponent={Link}
             variant={isHistory ? "contained" : "outlined"}
-            href={{
-              pathname: `/workplace/[workplaceId]/history`,
-              query: { workplaceId: workplaceId },
-            }}
+            href={`/workplace/${workplaceId}/history`}
           >
             History
           </Button>
           <Button
             LinkComponent={Link}
             variant={isFrequency ? "contained" : "outlined"}
-            href={{
-              pathname: `/workplace/[workplaceId]/frequency`,
-              query: { workplaceId: workplaceId },
-            }}
+            href={`/workplace/${workplaceId}/frequency`}
           >
             Frequency
           </Button>

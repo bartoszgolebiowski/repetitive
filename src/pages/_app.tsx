@@ -4,7 +4,7 @@ import { SessionProvider } from "next-auth/react";
 import { Container, ThemeProvider } from "@mui/material";
 import { CacheProvider } from "@emotion/react";
 
-import Navigation from "~/components/AppNavigation";
+import Navigation from "~/components/navigation/AppNavigation";
 import { api } from "~/utils/api";
 import { createEmotionCache } from "~/styles/createEmotionCache";
 import { theme } from "~/styles/theme";

@@ -23,7 +23,7 @@ import Grid2 from "@mui/material/Unstable_Grid2";
 import React from "react";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
-import WorkplaceNavigation from "~/components/WorkplaceNavigation";
+import WorkplaceNavigation from "~/components/navigation/WorkplaceNavigation";
 
 const Definition: NextPage = () => {
   const [open, setOpen] = React.useState(false);

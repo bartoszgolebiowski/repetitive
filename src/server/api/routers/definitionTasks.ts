@@ -8,17 +8,18 @@ import { generateChecklistItems } from "~/server/checklist/generator";
 import { getBeginningOfDay, getEndOfDay, compensateDate } from "~/utils/date";
 import { handleErrorRouter } from "../../../utils/httpErrors";
 import {
-    CHECKLIST_STATUS,
     groupDefinitionTasksByEveryDayAndSortByAvailableFrom,
     groupDefinitionTasksByDefinitionIdAndSortedByAvailableFromAndEnabledOnlyFirstTaskOfSameType
 } from "../../definitionsTasks/convert";
+import { actionItemSchema } from "~/utils/action";
+import { CHECKLIST_STATUS } from "~/utils/checklist";
 
 export const definitionTasksRouter = createTRPCRouter({
     generateTestData: protectedProcedure
         .input(z.object({ workplaceId: z.string() }))
         .mutation(async ({ ctx, input }) => {
             const startDate = new Date('Sat Apr 01 2023 20:34:16 GMT+0200')
-            const endDate = new Date('Mon Apr 10 2023 21:20:42 GMT+0200')
+            const endDate = new Date('Wed Apr 19 2023 22:29:36 GMT+0200')
 
             try {
                 const workplace = await ctx.prisma.definition.findMany({
@@ -45,20 +46,54 @@ export const definitionTasksRouter = createTRPCRouter({
             }
         }),
     submit: protectedProcedure
-        .input(z.array(z.string()))
+        .input(z.object({
+            workplaceId: z.string(),
+            done: z.array(z.string()),
+            action: z.array(actionItemSchema)
+        }))
         .mutation(async ({ ctx, input }) => {
             try {
-                await ctx.prisma.definitionTask.updateMany({
-                    where: {
-                        id: {
-                            in: input
+                const [statusDone, statusActionRequired, actions] = await ctx.prisma.$transaction([
+                    ctx.prisma.definitionTask.updateMany({
+                        where: {
+                            id: {
+                                in: input.done
+                            }
+                        },
+                        data: {
+                            updatedBy: ctx.session.user.email ?? ctx.session.user.id,
+                            status: CHECKLIST_STATUS.DONE
                         }
-                    },
-                    data: {
-                        updatedBy: ctx.session.user.id,
-                        status: CHECKLIST_STATUS.DONE
-                    }
-                })
+                    }),
+                    ctx.prisma.definitionTask.updateMany({
+                        where: {
+                            id: {
+                                in: input.action.map(item => item.definitionTaskId)
+                            }
+                        },
+                        data: {
+                            updatedBy: ctx.session.user.email ?? ctx.session.user.id,
+                            status: CHECKLIST_STATUS.ACTION_REQUIRED
+                        }
+                    }),
+                    ctx.prisma.action.createMany({
+                        data: input.action.map(item => ({
+                            status: item.status,
+                            description: item.description,
+                            createdBy: ctx.session.user.email ?? ctx.session.user.id,
+                            updatedBy: ctx.session.user.email ?? ctx.session.user.id,
+                            assignedTo: item.assignedTo,
+                            dueDate: item.dueDate,
+                            definitionTaskId: item.definitionTaskId,
+                            workplaceId: input.workplaceId
+                        }))
+                    })]
+                )
+                return {
+                    statusDone,
+                    statusActionRequired,
+                    actions
+                }
             } catch (error) {
                 handleErrorRouter(error)
             }
@@ -105,11 +140,11 @@ export const definitionTasksRouter = createTRPCRouter({
                 const data = await ctx.prisma.definitionTask.findMany({
                     where: {
                         availableFrom: {
-                            gt: compensateDate(startDay, input.timezoneOffsetStart),
-                            lte: compensateDate(endDay, input.timezoneOffsetEnd),
+                            gte: compensateDate(startDay, input.timezoneOffsetStart),
+                            lt: compensateDate(endDay, input.timezoneOffsetEnd),
                         },
                         definition: {
-                            workplaceId: input.workplaceId
+                            workplaceId: input.workplaceId,
                         },
                     },
                     include: {
@@ -117,7 +152,7 @@ export const definitionTasksRouter = createTRPCRouter({
                     }
                 })
 
-                return groupDefinitionTasksByDefinitionIdAndSortedByAvailableFromAndEnabledOnlyFirstTaskOfSameType(data);
+                return groupDefinitionTasksByDefinitionIdAndSortedByAvailableFromAndEnabledOnlyFirstTaskOfSameType(data)
             } catch (error) {
                 handleErrorRouter(error)
             }
@@ -137,8 +172,8 @@ export const definitionTasksRouter = createTRPCRouter({
                 const data = await ctx.prisma.definitionTask.findMany({
                     where: {
                         availableFrom: {
-                            gt: compensateDate(getBeginningOfDay(startWeek), input.timezoneOffsetStart),
-                            lte: compensateDate(getEndOfDay(endWeek), input.timezoneOffsetEnd),
+                            gte: compensateDate(getBeginningOfDay(startWeek), input.timezoneOffsetStart),
+                            lt: compensateDate(getEndOfDay(endWeek), input.timezoneOffsetEnd),
                         },
                         definition: {
                             workplaceId: input.workplaceId

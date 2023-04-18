@@ -25,6 +25,7 @@ specifiers:
   '@typescript-eslint/parser': ^5.53.0
   eslint: ^8.34.0
   eslint-config-next: ^13.2.1
+  immer: ^10.0.1
   later: ^1.2.0
   next: ^13.2.1
   next-auth: ^4.19.0
@@ -53,6 +54,7 @@ dependencies:
   '@trpc/next': 10.16.0_ce5lki43zjayzugu2gngg3k6ga
   '@trpc/react-query': 10.16.0_xqgqjjeu4juncpfqrbxjw3t7rq
   '@trpc/server': 10.16.0
+  immer: 10.0.1
   later: 1.2.0
   next: 13.2.4_biqbaboplfbrettd7655fr4n2y
   next-auth: 4.20.1_ld2jel3hspngo3u5lti2kgl2sq
@@ -2323,6 +2325,10 @@ packages:
     resolution: {integrity: sha512-MAb38BcSbH0eHNBxn7ql2NH/kX33OkB3lZ1BNdh7ENeRChHTYsTvWrMubiIAMNS2llXEEgZ1MUOBtXChP3kaFQ==}
     engines: {node: '>= 4'}
     dev: true
+
+  /immer/10.0.1:
+    resolution: {integrity: sha512-zg++jJLsKKTwXGeSYIw0HgChSYQGtu0UDTnbKx5aGLYgte4CwTmH9eJDYyQ6FheyUtBe+lQW9FrGxya1G+Dtmg==}
+    dev: false
 
   /import-fresh/3.3.0:
     resolution: {integrity: sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==}

@@ -25,7 +25,25 @@ export const actionRouter = createTRPCRouter({
 
             try {
                 const actions = await ctx.prisma.action.findMany({
-                    where
+                    where,
+                    include: {
+                        workplace: {
+                            select: {
+                                id: true,
+                                name: true,
+                            }
+                        },
+                        definitionTask: {
+                            include: {
+                                definition: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                    }
+                                }
+                            }
+                        }
+                    }
                 });
                 return actions;
             } catch (error) {
@@ -36,9 +54,9 @@ export const actionRouter = createTRPCRouter({
         .input(
             z.object({
                 workplaceId: z.string(),
-                definitionId: z.string(),
                 actions:
                     z.array(z.object({
+                        definitionTaskId: z.string(),
                         description: z.string(),
                         status: z.enum([
                             ACTION_STATUS.TO_DO,
@@ -60,7 +78,7 @@ export const actionRouter = createTRPCRouter({
                         status: action.status,
                         dueDate: action.dueDate,
                         assignedTo: action.assignedTo,
-                        definitionTaskId: input.definitionId,
+                        definitionTaskId: action.definitionTaskId,
                         workplaceId: input.workplaceId,
                     })),
                 })

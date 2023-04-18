@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { CHECKLIST_CREATOR, CHECKLIST_STATUS } from "~/utils/checklist";
 import { DAYS } from "~/utils/date";
 
 const definitionTasksData = Prisma.validator<Prisma.DefinitionTaskArgs>()({
@@ -8,13 +9,6 @@ const definitionTasksData = Prisma.validator<Prisma.DefinitionTaskArgs>()({
 })
 
 type DefinitionTasksWithDefinition = Prisma.DefinitionTaskGetPayload<typeof definitionTasksData>
-
-export const CHECKLIST_STATUS = {
-    DONE: "DONE",
-    MISSING: "MISSING",
-} as const
-
-const CHECKLIST_CREATOR = 'SYSTEM' as const
 
 export const groupDefinitionTasksByEveryDayAndSortByAvailableFrom =
     (definitionTasks: DefinitionTasksWithDefinition[]) => {
@@ -156,5 +150,9 @@ export const groupDefinitionTasksByDefinitionIdAndSortedByAvailableFromAndEnable
             return acc;
         }, {} as Record<string, typeof definitionTasksWithAdditionalInformation>);
 
-        return Object.values(enableOnlyFirstTask).flat(3);
+        return Object.values(enableOnlyFirstTask).flat(3)
+            .sort((a, b) =>
+                new Date(a.availableFrom).getTime() -
+                new Date(b.availableFrom).getTime())
+
     }

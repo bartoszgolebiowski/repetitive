@@ -7,9 +7,20 @@ export const ACTION_STATUS = {
     COMPLETED: 'COMPLETED',
 } as const;
 
+export const actionItemSchema = z.object({
+    definitionTaskId: z.string(),
+    dueDate: z.date(),
+    description: z.string(),
+    assignedTo: z.string(),
+    status: z.enum([
+        ACTION_STATUS.TO_DO,
+        ACTION_STATUS.ASSIGNED,
+        ACTION_STATUS.DELETED,
+        ACTION_STATUS.COMPLETED,
+    ]),
+})
+
 export const actionFilterSchema = z.object({
-    organizationId: z.string().nonempty(),
-    workplaceId: z.string().optional(),
     definitionId: z.string().optional(),
     createdBy: z.string().optional(),
     assignedTo: z.string().optional(),
@@ -19,4 +30,6 @@ export const actionFilterSchema = z.object({
         ACTION_STATUS.DELETED,
         ACTION_STATUS.COMPLETED,
     ])).optional(),
+    organizationId: z.string().nonempty(),
+    workplaceId: z.string().optional(),
 })
