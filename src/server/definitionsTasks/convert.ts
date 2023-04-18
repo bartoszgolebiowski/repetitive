@@ -22,7 +22,7 @@ export const groupDefinitionTasksByEveryDayAndSortByAvailableFrom =
         }, {} as Record<string, typeof definitionTasks>);
 
         const groupedByDay = Object.entries(groupedByDefinitionName).reduce(
-            (acc, [definitionId, definitionTasks]) => {
+            (acc, [definitionName, definitionTasks]) => {
                 const days = definitionTasks.reduce((acc, definitionTask) => {
                     const day = definitionTask.availableFrom.getDay().toString();
                     if (!acc[day]) {
@@ -31,15 +31,15 @@ export const groupDefinitionTasksByEveryDayAndSortByAvailableFrom =
                     acc[day]?.push(definitionTask);
                     return acc;
                 }, {} as Record<string, typeof definitionTasks>);
-                acc[definitionId] = days;
+                acc[definitionName] = days;
                 return acc;
             },
             {} as Record<string, Record<string, typeof definitionTasks>>
         );
 
         const groupedByDayAndSorted = Object.entries(groupedByDay).reduce(
-            (acc, [definitionId, days]) => {
-                acc[definitionId] = Object.entries(days).reduce(
+            (acc, [definitionName, days]) => {
+                acc[definitionName] = Object.entries(days).reduce(
                     (acc, [day, definitionTasks]) => {
                         acc[day] = definitionTasks.sort(
                             (a, b) =>
@@ -55,8 +55,10 @@ export const groupDefinitionTasksByEveryDayAndSortByAvailableFrom =
         );
 
         const collectAllTasksForDay = Object.entries(groupedByDayAndSorted).reduce(
-            (acc, [definitionId, days]) => {
-                acc[definitionId] = Object.keys(DAYS).reduce((acc, day) => {
+            (acc, [definitionName, days]) => {
+                acc[definitionName] = Object.keys(DAYS).sort(
+                    (a, b) => parseInt(a) - parseInt(b)
+                ).reduce((acc, day) => {
                     if (!days[day]) {
                         acc[day] = [];
                         return acc;

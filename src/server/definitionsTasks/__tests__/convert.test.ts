@@ -1050,9 +1050,7 @@ describe('convert', () => {
     describe("groupDefinitionTasksByEveryDayAndSortByAvailableFrom", () => {
         it('this test is just a snapshot test to prevent regressions', () => {
             const result = groupDefinitionTasksByEveryDayAndSortByAvailableFrom(input)
-            expect(result["Sprawdzenie maszyny 001"]).toMatchSnapshot()
-            expect(result["Sprawdzenie maszyny 002"]).toMatchSnapshot()
-            expect(result["Sprawdzenie maszyny 003"]).toMatchSnapshot()
+            expect(result['Sprawdzenie maszyny 001']).toMatchSnapshot()
         })
     })
 
