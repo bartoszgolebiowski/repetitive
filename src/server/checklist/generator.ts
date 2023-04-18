@@ -4,7 +4,7 @@ import { getNextDay } from "../../utils/date";
 
 const LIMIT = 24 * 7;
 
-const workflowData = Prisma.validator<Prisma.WorkflowArgs>()({
+const definitionData = Prisma.validator<Prisma.DefinitionArgs>()({
     include: {
         frequency: {
             select: {
@@ -15,15 +15,15 @@ const workflowData = Prisma.validator<Prisma.WorkflowArgs>()({
     },
 })
 
-export type WorkflowWithFrequency = Prisma.WorkflowGetPayload<typeof workflowData>
+export type DefinitionWithFrequency = Prisma.DefinitionGetPayload<typeof definitionData>
 
 export const generateChecklistItems = (
     startDate: Date,
     endDate: Date,
-    workflows: WorkflowWithFrequency[]
+    definitions: DefinitionWithFrequency[]
 ) => {
-    return workflows.map((workflow) => {
-        const crons = workflow.frequency.frequencyCrons;
+    return definitions.map((definition) => {
+        const crons = definition.frequency.frequencyCrons;
         return crons.map(({ cron }) => {
             const cronSched = later.parse.cron(cron, true);
             const result = later.schedule(cronSched).next(LIMIT, startDate, endDate);
@@ -31,14 +31,14 @@ export const generateChecklistItems = (
                 return [];
             }
             if (Array.isArray(result)) {
-                return result.map(createTask(workflow)).flat();
+                return result.map(createTask(definition)).flat();
             }
-            return [result].map(createTask(workflow)).flat();
+            return [result].map(createTask(definition)).flat();
         }).flat()
     })
 }
 
-const createTask = (workflow: WorkflowWithFrequency) => (
+const createTask = (definition: DefinitionWithFrequency) => (
     availableFrom: Date
 ) => ({
     status: "MISSING" as const,
@@ -46,6 +46,6 @@ const createTask = (workflow: WorkflowWithFrequency) => (
     updatedBy: "SYSTEM",
     availableFrom: availableFrom,
     availableTo: getNextDay(availableFrom),
-    workflowId: workflow.id,
-    frequencyId: workflow.frequencyId,
+    definitionId: definition.id,
+    frequencyId: definition.frequencyId,
 })

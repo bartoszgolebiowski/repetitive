@@ -5,7 +5,7 @@ import {
     protectedProcedure,
 } from "~/server/api/trpc";
 import { CronQuartz } from "~/server/frequency/cronValidation";
-import { handleErrorRouter } from "./utils";
+import { handleErrorRouter } from "../../../utils/httpErrors";
 
 export const frequencyRouter = createTRPCRouter({
     getByWorkplaceId: protectedProcedure

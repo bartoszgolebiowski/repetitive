@@ -12,7 +12,7 @@ CREATE TABLE `Workplace` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Workflow` (
+CREATE TABLE `Definition` (
     `id` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
     `description` VARCHAR(191) NOT NULL,
@@ -21,13 +21,13 @@ CREATE TABLE `Workflow` (
     `workplaceId` VARCHAR(191) NOT NULL,
     `frequencyId` VARCHAR(191) NOT NULL,
 
-    INDEX `Workflow_workplaceId_idx`(`workplaceId`),
-    INDEX `Workflow_frequencyId_idx`(`frequencyId`),
+    INDEX `Definition_workplaceId_idx`(`workplaceId`),
+    INDEX `Definition_frequencyId_idx`(`frequencyId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `WorkflowTask` (
+CREATE TABLE `DefinitionTask` (
     `id` VARCHAR(191) NOT NULL,
     `status` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -37,10 +37,10 @@ CREATE TABLE `WorkflowTask` (
     `availableFrom` DATETIME(3) NOT NULL,
     `availableTo` DATETIME(3) NOT NULL,
     `frequencyId` VARCHAR(191) NOT NULL,
-    `workflowId` VARCHAR(191) NOT NULL,
+    `definitionId` VARCHAR(191) NOT NULL,
 
-    INDEX `WorkflowTask_workflowId_idx`(`workflowId`),
-    INDEX `WorkflowTask_frequencyId_idx`(`frequencyId`),
+    INDEX `DefinitionTask_definitionId_idx`(`definitionId`),
+    INDEX `DefinitionTask_frequencyId_idx`(`frequencyId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

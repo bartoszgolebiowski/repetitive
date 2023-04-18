@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { generateChecklistItems, type WorkflowWithFrequency } from "../generator";
+import { generateChecklistItems, type DefinitionWithFrequency } from "../generator";
 
 describe('checklist generator', () => {
     describe('generateChecklistItems', () => {
-        describe('simple workflows', () => {
-            const simpleWorkflows = [
+        describe('simple definitions', () => {
+            const simpleDefinitions = [
                 {
                     id: "clffdrshm00008y4cfeukqe9a",
                     name: "Napić się wody",
@@ -50,7 +50,7 @@ describe('checklist generator', () => {
                         frequencyCrons: [{ "cron": "0 0 23 ? * SAT *", id: "clffdrshm00008y4cfeukqe9a" }]
                     }
                 },
-            ] satisfies WorkflowWithFrequency[]
+            ] satisfies DefinitionWithFrequency[]
 
             describe('date locale PL', () => {
                 it('should generate checklist items for monday 00:00:00 to sunday 23:59:59:999 date range', () => {
@@ -60,7 +60,7 @@ describe('checklist generator', () => {
                     const [first, second, third] = generateChecklistItems(
                         monday,
                         sunday,
-                        simpleWorkflows,
+                        simpleDefinitions,
                     )
 
                     expect(first).toHaveLength(7 * 3)
@@ -75,7 +75,7 @@ describe('checklist generator', () => {
                     const [first, second, third] = generateChecklistItems(
                         saturday,
                         sunday,
-                        simpleWorkflows,
+                        simpleDefinitions,
                     )
 
                     expect(first).toHaveLength(3)
@@ -92,7 +92,7 @@ describe('checklist generator', () => {
                     const [first, second, third] = generateChecklistItems(
                         monday,
                         sunday,
-                        simpleWorkflows,
+                        simpleDefinitions,
                     )
 
                     expect(first).toHaveLength(7 * 3)
@@ -107,7 +107,7 @@ describe('checklist generator', () => {
                     const [first, second, third] = generateChecklistItems(
                         saturday,
                         sunday,
-                        simpleWorkflows,
+                        simpleDefinitions,
                     )
 
                     expect(first).toHaveLength(3)
@@ -117,8 +117,8 @@ describe('checklist generator', () => {
             })
         })
 
-        describe('complex workflows', () => {
-            const complexWorkflows = [
+        describe('complex definitions', () => {
+            const complexDefinitions = [
                 {
                     id: "clffdrshm12348y4cfeukqe9a",
                     name: "Duolingo",
@@ -163,7 +163,7 @@ describe('checklist generator', () => {
                         ]
                     }
                 },
-            ] satisfies WorkflowWithFrequency[]
+            ] satisfies DefinitionWithFrequency[]
 
             describe('date locale PL', () => {
                 it('should generate checklist items for monday 00:00:00 to sunday 23:59:59:999 date range', () => {
@@ -173,7 +173,7 @@ describe('checklist generator', () => {
                     const [first, second] = generateChecklistItems(
                         monday,
                         sunday,
-                        complexWorkflows,
+                        complexDefinitions,
                     )
 
                     expect(first).toHaveLength(5 * 3 + 1)
@@ -187,7 +187,7 @@ describe('checklist generator', () => {
                     const [first, second] = generateChecklistItems(
                         saturday,
                         sunday,
-                        complexWorkflows,
+                        complexDefinitions,
                     )
 
                     expect(first).toHaveLength(1)
@@ -203,7 +203,7 @@ describe('checklist generator', () => {
                     const [first, second] = generateChecklistItems(
                         monday,
                         sunday,
-                        complexWorkflows,
+                        complexDefinitions,
                     )
 
                     expect(first).toHaveLength(5 * 3 + 1)
@@ -217,7 +217,7 @@ describe('checklist generator', () => {
                     const [first, second] = generateChecklistItems(
                         saturday,
                         sunday,
-                        complexWorkflows,
+                        complexDefinitions,
                     )
 
                     expect(first).toHaveLength(1)
@@ -226,8 +226,8 @@ describe('checklist generator', () => {
             })
         })
 
-        describe('business workflows', () => {
-            const businessWorkflow = [
+        describe('business definitions', () => {
+            const businessDefinitions = [
                 {
                     id: "clffdrshm12348y4cfeukqe9a",
                     name: "Ogledziny maszyny 1",
@@ -254,7 +254,7 @@ describe('checklist generator', () => {
                         ]
                     }
                 },
-            ] satisfies WorkflowWithFrequency[]
+            ] satisfies DefinitionWithFrequency[]
 
             describe('date locale PL', () => {
                 it('should generate checklist items for sunday 00:00:00 to moneday 00:00:00 date range', () => {
@@ -264,7 +264,7 @@ describe('checklist generator', () => {
                     const [first] = generateChecklistItems(
                         sundayBeginning,
                         sundayEnd,
-                        businessWorkflow,
+                        businessDefinitions,
                     )
 
                     expect(first).toHaveLength(1)
@@ -277,7 +277,7 @@ describe('checklist generator', () => {
                     const [first] = generateChecklistItems(
                         sundayBeginning,
                         sundayEnd,
-                        businessWorkflow,
+                        businessDefinitions,
                     )
 
                     expect(first).toHaveLength(3)
@@ -290,7 +290,7 @@ describe('checklist generator', () => {
                     const [first] = generateChecklistItems(
                         sundayBeginning,
                         sundayEnd,
-                        businessWorkflow,
+                        businessDefinitions,
                     )
 
                     expect(first).toHaveLength(2)

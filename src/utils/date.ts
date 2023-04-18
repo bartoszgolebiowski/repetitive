@@ -25,24 +25,18 @@ export const displayRemaining = (from: Date, to: Date) => {
     return remaningMinutesINTL.formatRange(hours * 60 + minutes, hours * 60 + minutes);
 }
 
-export const displayDayWeek = (day: number) => {
+const displayDayWeek = (day: number) => {
     return dayWeekINTL.format(new Date(2021, 1, day));
 }
 
-export const compensateTimezone = (date: Date) => {
-    const clone = new Date(date.getTime());
-    clone.setHours(clone.getHours() - clone.getTimezoneOffset() / 60);
-    return clone;
-}
-
-export const getMonday = (date: Date) => {
+const getMonday = (date: Date) => {
     const clone = new Date(date.getTime());
     const day = clone.getDay();
     const diff = clone.getDate() - day + (day === 0 ? -6 : 1);
     return new Date(clone.setDate(diff))
 }
 
-export const getSunday = (date: Date) => {
+const getSunday = (date: Date) => {
     const clone = new Date(date.getTime());
     const day = clone.getDay();
     const diff = clone.getDate() - day + (day === 0 ? 0 : 7);
@@ -57,18 +51,6 @@ export const getNextDay = (date: Date) => {
 export const getPrevDay = (date: Date) => {
     const clone = new Date(date.getTime());
     return new Date(clone.setDate(date.getDate() - 1));
-}
-
-export const substract24Hours = (date: Date) => {
-    const clone = new Date(date.getTime());
-    clone.setHours(clone.getHours() - 24);
-    return clone;
-}
-
-export const add24Hours = (date: Date) => {
-    const clone = new Date(date.getTime());
-    clone.setHours(clone.getHours() + 24);
-    return clone;
 }
 
 export const getBeginningOfDay = (date: Date) => {
@@ -93,7 +75,7 @@ export const compensateDate = (date: Date, timezoneOffsetFromBrowser: number) =>
     return clone;
 }
 
-export const getMondayAndSunday = (date: Date): [Date, Date] => {
+const getMondayAndSunday = (date: Date): [Date, Date] => {
     const monday = getMonday(date);
     const sunday = getSunday(date);
     return [monday, sunday];

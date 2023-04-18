@@ -5,19 +5,23 @@ import Button from "@mui/material/Button";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
-const WorkflowNavigation = (props: React.PropsWithChildren) => {
+const WorkplaceNavigation = (props: React.PropsWithChildren) => {
   const { workplaceId } = useRouter().query;
-  const isWorkflow = useRouter().pathname.includes("workflow");
+  const isDefinitions = useRouter().pathname.includes("definition");
   const isHistory = useRouter().pathname.includes("history");
   const isFrequency = useRouter().pathname.includes("frequency");
-  const isChecklist = !isWorkflow && !isHistory && !isFrequency;
+  const isChecklist = !isDefinitions && !isHistory && !isFrequency;
+
+  if (!workplaceId || Array.isArray(workplaceId)) {
+    return null;
+  }
 
   return (
     <>
       <Box>
         <ButtonGroup
           size="large"
-          aria-label="workflow-navigation"
+          aria-label="workplace-navigation"
           orientation="horizontal"
           sx={{
             display: "flex",
@@ -26,41 +30,29 @@ const WorkflowNavigation = (props: React.PropsWithChildren) => {
         >
           <Button
             LinkComponent={Link}
-            variant={isWorkflow ? "contained" : "outlined"}
-            href={{
-              pathname: `/workplace/[workplaceId]/workflow`,
-              query: { workplaceId: workplaceId },
-            }}
+            variant={isDefinitions ? "contained" : "outlined"}
+            href={`/workplace/${workplaceId}/definition`}
           >
-            Workflow
+            Definition
           </Button>
           <Button
             LinkComponent={Link}
             variant={isChecklist ? "contained" : "outlined"}
-            href={{
-              pathname: `/workplace/[workplaceId]/`,
-              query: { workplaceId: workplaceId },
-            }}
+            href={`/workplace/${workplaceId}/`}
           >
             Checklist
           </Button>
           <Button
             LinkComponent={Link}
             variant={isHistory ? "contained" : "outlined"}
-            href={{
-              pathname: `/workplace/[workplaceId]/history`,
-              query: { workplaceId: workplaceId },
-            }}
+            href={`/workplace/${workplaceId}/history`}
           >
             History
           </Button>
           <Button
             LinkComponent={Link}
             variant={isFrequency ? "contained" : "outlined"}
-            href={{
-              pathname: `/workplace/[workplaceId]/frequency`,
-              query: { workplaceId: workplaceId },
-            }}
+            href={`/workplace/${workplaceId}/frequency`}
           >
             Frequency
           </Button>
@@ -71,4 +63,4 @@ const WorkflowNavigation = (props: React.PropsWithChildren) => {
   );
 };
 
-export default WorkflowNavigation;
+export default WorkplaceNavigation;

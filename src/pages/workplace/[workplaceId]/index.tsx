@@ -21,65 +21,60 @@ import Typography from "@mui/material/Typography";
 import Checkbox from "@mui/material/Checkbox";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import WorkflowNavigation from "~/components/WorkplaceNavigation";
+import WorkplaceNavigation from "~/components/navigation/WorkplaceNavigation";
+import useChecklist from "~/components/workplace/checklist/useChecklist";
+import ChecklistRow from "~/components/workplace/checklist/ChecklistRow";
 
-const WorkplaceId: NextPage = () => {
+const Checklist: NextPage = () => {
   const { workplaceId } = useRouter().query;
-  const [selectedDay] = React.useState(() => getPrevDay(getPrevDay(stableNow)));
+  const [selectedDay] = React.useState(() => stableNow);
   const [filterDisabled, setFilterDisabled] = React.useState(false);
-  const [resetKey, setResetKey] = React.useState(
-    Math.random().toString(36).substring(7)
-  );
+  const {
+    onDoneChange,
+    onActionChange,
+    onInit,
+    selectActionById,
+    selectDoneById,
+    extractAction,
+    extractDone,
+  } = useChecklist();
+
   const prevSelectedDay = React.useMemo(
     () => getPrevDay(selectedDay),
     [selectedDay]
   );
 
-  const workflowTasksChecklist = api.workflowTasks.getByWorkplaceId.useQuery(
-    {
-      workplaceId: workplaceId as string,
-      startDay: prevSelectedDay,
-      endDay: selectedDay,
-      timezoneOffsetStart: prevSelectedDay.getTimezoneOffset(),
-      timezoneOffsetEnd: selectedDay.getTimezoneOffset(),
-    },
-    {
-      enabled: !!workplaceId,
-      select: (data) => {
-        if (!data) return [];
-        type RemoveUndefined<T> = T extends undefined ? never : T;
-        type WorkflowTask = RemoveUndefined<typeof data>[0];
-
-        const now = new Date();
-        const sortByDate =
-          (key: "availableFrom" | "availableTo") =>
-          (a: WorkflowTask, b: WorkflowTask) =>
-            new Date(a[key]).getTime() - new Date(b[key]).getTime();
-
-        const mapper = (task: WorkflowTask) => ({
-          ...task,
-          derived: {
-            ...task.derived,
-            minutesLeft: displayRemaining(now, task.availableTo),
-          },
-        });
-
-        return data.sort(sortByDate("availableFrom")).map(mapper) ?? [];
+  const definitionTasksChecklist =
+    api.definitionTasks.getByWorkplaceId.useQuery(
+      {
+        workplaceId: workplaceId as string,
+        startDay: prevSelectedDay,
+        endDay: selectedDay,
+        timezoneOffsetStart: prevSelectedDay.getTimezoneOffset(),
+        timezoneOffsetEnd: selectedDay.getTimezoneOffset(),
       },
-    }
-  );
+      {
+        enabled: !!workplaceId,
+      }
+    );
 
-  const generateWorkflowTasks = api.workflowTasks.generateTestData.useMutation({
+  const generateDefinitionTasks =
+    api.definitionTasks.generateTestData.useMutation({
+      onSettled: async () => {
+        await definitionTasksChecklist.refetch();
+      },
+    });
+
+  const submitChecklist = api.definitionTasks.submit.useMutation({
     onSettled: async () => {
-      await workflowTasksChecklist.refetch();
+      await definitionTasksChecklist.refetch();
     },
   });
 
-  const submitChecklist = api.workflowTasks.submit.useMutation({
-    onSettled: async () => {
-      await workflowTasksChecklist.refetch();
-    },
-  });
+  React.useEffect(() => {
+    if (!definitionTasksChecklist.data) return;
+    onInit(definitionTasksChecklist.data);
+  }, [definitionTasksChecklist.data]);
 
   const handleSubmitGenerateWorkflowTasks = (
     e: React.FormEvent<HTMLFormElement>
@@ -87,7 +82,7 @@ const WorkplaceId: NextPage = () => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
 
-    generateWorkflowTasks.mutate({
+    generateDefinitionTasks.mutate({
       workplaceId: formData.get("workplaceId") as string,
     });
   };
@@ -95,18 +90,19 @@ const WorkplaceId: NextPage = () => {
   const handleSubmitChecklist = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const formData = new FormData(e.currentTarget);
-    const done = formData.getAll("done");
-
-    if (Array.isArray(done)) {
-      const ids = done.map(String);
-      submitChecklist.mutate(ids);
-    }
+    submitChecklist.mutate({
+      workplaceId: workplaceId as string,
+      done: extractDone(definitionTasksChecklist.data),
+      action: extractAction(),
+    });
   };
 
   const toggleDisabled = () => setFilterDisabled((prev) => !prev);
-  const onClearClick = () =>
-    setResetKey(Math.random().toString(36).substring(7));
+
+  const filterFn = filterDisabled
+    ? (definitionTask: { derived: { disabled: boolean } }) =>
+        !definitionTask.derived.disabled
+    : () => true;
 
   return (
     <>
@@ -115,13 +111,15 @@ const WorkplaceId: NextPage = () => {
         <meta name="description" content="Manage workplace" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <WorkflowNavigation>
+      <WorkplaceNavigation>
         <main>
           <div>
-            {/* <form onSubmit={handleSubmitGenerateWorkflowTasks}>
-              <input type="hidden" name="workplaceId" value={workplaceId} />
+            <form onSubmit={handleSubmitGenerateWorkflowTasks}>
+              {workplaceId ? (
+                <input type="hidden" name="workplaceId" value={workplaceId} />
+              ) : null}
               <button type="submit">Generate mock data</button>
-            </form> */}
+            </form>
             <Typography variant="h4" sx={{ pb: "1rem" }}>
               Checklist
             </Typography>
@@ -131,7 +129,7 @@ const WorkplaceId: NextPage = () => {
               }
               label="Hide disabled"
             />
-            {workflowTasksChecklist.data && (
+            {definitionTasksChecklist.data && (
               <form onSubmit={handleSubmitChecklist}>
                 <TableContainer component={Paper}>
                   <Table>
@@ -139,50 +137,45 @@ const WorkplaceId: NextPage = () => {
                       <TableRow>
                         <TableCell>Name</TableCell>
                         <TableCell>Description</TableCell>
-                        <TableCell>Available from</TableCell>
-                        <TableCell>Available to</TableCell>
-                        <TableCell>Minutes left</TableCell>
-                        <TableCell>Status</TableCell>
+                        <TableCell align="right">Available from</TableCell>
+                        <TableCell align="right">Available to</TableCell>
+                        <TableCell align="right">Minutes left</TableCell>
+                        <TableCell align="right">Status</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {workflowTasksChecklist.data
-                        .filter((workflowTask) => {
-                          if (filterDisabled) {
-                            return !workflowTask.derived.disabled;
-                          }
-                          return true;
-                        })
-                        .map((workflowTask) => (
-                          <TableRow key={workflowTask.id}>
-                            <TableCell>{workflowTask.workflow.name}</TableCell>
+                      {definitionTasksChecklist.data
+                        .filter(filterFn)
+                        .map((definitionTask) => (
+                          <ChecklistRow
+                            key={definitionTask.id}
+                            definitionTask={definitionTask}
+                            onDoneChange={onDoneChange(definitionTask.id)}
+                            onActionChange={onActionChange(definitionTask.id)}
+                            checkedDone={selectDoneById(definitionTask.id)}
+                            checkedAction={
+                              !!selectActionById(definitionTask.id)
+                            }
+                          >
                             <TableCell>
-                              {workflowTask.workflow.description}
+                              {definitionTask.definition.name}
                             </TableCell>
                             <TableCell>
-                              {displayDate(workflowTask.availableFrom)}
+                              {definitionTask.definition.description}
                             </TableCell>
-                            <TableCell>
-                              {displayDate(workflowTask.availableTo)}
+                            <TableCell align="right">
+                              {displayDate(definitionTask.availableFrom)}
                             </TableCell>
-                            <TableCell>
-                              {workflowTask.derived.minutesLeft}
+                            <TableCell align="right">
+                              {displayDate(definitionTask.availableTo)}
                             </TableCell>
-                            <TableCell>
-                              <FormControlLabel
-                                key={resetKey}
-                                disabled={workflowTask.derived.disabled}
-                                control={
-                                  <Checkbox
-                                    name="done"
-                                    value={workflowTask.id}
-                                    defaultChecked={workflowTask.derived.value}
-                                  />
-                                }
-                                label="Done"
-                              />
+                            <TableCell align="right">
+                              {displayRemaining(
+                                new Date(),
+                                definitionTask.availableTo
+                              )}
                             </TableCell>
-                          </TableRow>
+                          </ChecklistRow>
                         ))}
                     </TableBody>
                   </Table>
@@ -198,11 +191,7 @@ const WorkplaceId: NextPage = () => {
                   <Button variant="contained" type="submit">
                     Submit
                   </Button>
-                  <Button
-                    variant="outlined"
-                    type="button"
-                    onClick={onClearClick}
-                  >
+                  <Button variant="outlined" type="button">
                     Clear
                   </Button>
                 </Box>
@@ -210,9 +199,9 @@ const WorkplaceId: NextPage = () => {
             )}
           </div>
         </main>
-      </WorkflowNavigation>
+      </WorkplaceNavigation>
     </>
   );
 };
 
-export default WorkplaceId;
+export default Checklist;

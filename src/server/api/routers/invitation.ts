@@ -6,7 +6,7 @@ import {
     protectedProcedure,
 } from "~/server/api/trpc";
 import { isAdmin, ROLES } from "../roles";
-import { handleErrorRouter } from "./utils";
+import { handleErrorRouter } from "../../../utils/httpErrors";
 
 export const INVITATION_ERRORS = {
     ORGANIZATION_NOT_FOUND: {
