@@ -25,7 +25,7 @@ import {
   stableNow,
 } from "~/utils/date";
 import type { DefinitionTask } from "@prisma/client";
-import WorkplaceNavigation from "~/components/navigation/WorkplaceNavigation";
+import PlantNavigation from "~/components/navigation/PlantNavigation";
 
 const Details = ({ definitionTask }: { definitionTask: DefinitionTask }) => {
   return (
@@ -52,7 +52,7 @@ const Details = ({ definitionTask }: { definitionTask: DefinitionTask }) => {
 };
 
 const History: NextPage = () => {
-  const { workplaceId } = useRouter().query;
+  const { plantId } = useRouter().query;
   const [selectedDay, setSelectedDay] = React.useState(() => stableNow);
   const week = React.useMemo(
     () => getFromMondayToSunday(selectedDay),
@@ -62,15 +62,15 @@ const History: NextPage = () => {
   const monday = week[0];
   const sunday = week[6];
 
-  const definitionTasks = api.definitionTasks.getHistoryByWorkplaceId.useQuery(
+  const definitionTasks = api.definitionTasks.getHistoryByplantId.useQuery(
     {
-      workplaceId: workplaceId as string,
+      plantId: plantId as string,
       startDay: monday,
       endDay: sunday,
       timezoneOffsetStart: monday.getTimezoneOffset(),
       timezoneOffsetEnd: sunday.getTimezoneOffset(),
     },
-    { enabled: !!workplaceId }
+    { enabled: !!plantId }
   );
 
   const displayWeek = (day: string, dayName: string) =>
@@ -88,7 +88,7 @@ const History: NextPage = () => {
         <meta name="description" content="Tasks history" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <WorkplaceNavigation>
+      <PlantNavigation>
         <main>
           <Typography variant="h4" sx={{ pb: "1rem" }}>
             History Week
@@ -140,7 +140,7 @@ const History: NextPage = () => {
             </TableContainer>
           )}
         </main>
-      </WorkplaceNavigation>
+      </PlantNavigation>
     </>
   );
 };

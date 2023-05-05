@@ -26,19 +26,19 @@ import React from "react";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
 import { convertCronToUTC, isDays, isHours } from "~/server/frequency/cron";
-import WorkplaceNavigation from "~/components/navigation/WorkplaceNavigation";
+import PlantNavigation from "~/components/navigation/PlantNavigation";
 import { DAYS, HOURS } from "~/utils/date";
 import { validateCheckboxSection } from "~/utils/form";
 
 const Frequency: NextPage = () => {
   const [open, setOpen] = React.useState(false);
-  const { workplaceId } = useRouter().query;
+  const { plantId } = useRouter().query;
 
-  const frequencies = api.frequency.getByWorkplaceId.useQuery(
+  const frequencies = api.frequency.getByPlantId.useQuery(
     {
-      workplaceId: workplaceId as string,
+      plantId: plantId as string,
     },
-    { enabled: !!workplaceId }
+    { enabled: !!plantId }
   );
 
   const createFrequency = api.frequency.create.useMutation({
@@ -58,7 +58,7 @@ const Frequency: NextPage = () => {
       const crons = convertCronToUTC(hour, day, new Date().getTimezoneOffset());
 
       return createFrequency.mutate({
-        workplaceId: formData.get("workplaceId") as string,
+        plantId: formData.get("plantId") as string,
         description: formData.get("description") as string,
         name: formData.get("name") as string,
         cron: crons,
@@ -85,13 +85,13 @@ const Frequency: NextPage = () => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <WorkplaceNavigation>
+      <PlantNavigation>
         <Box component={"main"}>
           <Modal open={open} onClose={handleClose} disableAutoFocus>
             <FormCard size="large">
               <FormTitle>Create Definition</FormTitle>
               <form onSubmit={handleSubmitFrequency}>
-                <input type="hidden" name="workplaceId" value={workplaceId} />
+                <input type="hidden" name="plantId" value={plantId} />
                 <Grid2 container spacing={2}>
                   <Grid2 xs={12}>
                     <TextField
@@ -231,7 +231,7 @@ const Frequency: NextPage = () => {
             </TableContainer>
           )}
         </Box>
-      </WorkplaceNavigation>
+      </PlantNavigation>
     </>
   );
 };

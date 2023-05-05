@@ -20,10 +20,10 @@ export type DefinitionWithFrequency = Prisma.DefinitionGetPayload<typeof definit
 export const generateChecklistItems = (
     startDate: Date,
     endDate: Date,
-    definitions: DefinitionWithFrequency[]
+    plants: DefinitionWithFrequency[]
 ) => {
-    return definitions.map((definition) => {
-        const crons = definition.frequency.frequencyCrons;
+    return plants.map((plant) => {
+        const crons = plant.frequency.frequencyCrons;
         return crons.map(({ cron }) => {
             const cronSched = later.parse.cron(cron, true);
             const result = later.schedule(cronSched).next(LIMIT, startDate, endDate);
@@ -31,9 +31,9 @@ export const generateChecklistItems = (
                 return [];
             }
             if (Array.isArray(result)) {
-                return result.map(createTask(definition)).flat();
+                return result.map(createTask(plant)).flat();
             }
-            return [result].map(createTask(definition)).flat();
+            return [result].map(createTask(plant)).flat();
         }).flat()
     })
 }

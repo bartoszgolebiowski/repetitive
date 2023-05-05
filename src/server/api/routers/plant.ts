@@ -6,12 +6,12 @@ import {
 } from "~/server/api/trpc";
 import { handleErrorRouter } from "../../../utils/httpErrors";
 
-export const workplaceRouter = createTRPCRouter({
-    getMyWorkplaces: protectedProcedure
+export const plantRouter = createTRPCRouter({
+    getMyPlants: protectedProcedure
         .query(async ({ ctx }) => {
             const userId = ctx.session.user.id;
             try {
-                const myWorkplaces = await ctx.prisma.workplace.findMany({
+                const myPlants = await ctx.prisma.plant.findMany({
                     where: {
                         organization: {
                             memberships: {
@@ -27,7 +27,7 @@ export const workplaceRouter = createTRPCRouter({
                         organization: true
                     }
                 })
-                return myWorkplaces
+                return myPlants
             } catch (error) {
                 handleErrorRouter(error)
             }
@@ -36,7 +36,7 @@ export const workplaceRouter = createTRPCRouter({
         .input(z.object({ id: z.string() }))
         .query(async ({ ctx, input }) => {
             try {
-                const workplace = await ctx.prisma.workplace.findUnique({
+                const plant = await ctx.prisma.plant.findUnique({
                     where: {
                         id: input.id,
                     },
@@ -45,7 +45,7 @@ export const workplaceRouter = createTRPCRouter({
                     }
                 });
 
-                return workplace
+                return plant
             }
             catch (error) {
                 handleErrorRouter(error)
@@ -55,7 +55,7 @@ export const workplaceRouter = createTRPCRouter({
         .input(z.object({ organizationId: z.string() }))
         .query(async ({ ctx, input }) => {
             try {
-                const myWorkplaces = await ctx.prisma.workplace.findMany({
+                const myPlants = await ctx.prisma.plant.findMany({
                     where: {
                         organizationId: input.organizationId,
                     },
@@ -64,7 +64,7 @@ export const workplaceRouter = createTRPCRouter({
                     }
                 });
 
-                return myWorkplaces
+                return myPlants
             }
             catch (error) {
                 handleErrorRouter(error)
@@ -77,14 +77,14 @@ export const workplaceRouter = createTRPCRouter({
         }))
         .mutation(async ({ input, ctx }) => {
             try {
-                const workplace = await ctx.prisma.workplace.create({
+                const plant = await ctx.prisma.plant.create({
                     data: {
                         organizationId: input.organizationId,
                         name: input.name,
                     },
                 })
 
-                return workplace
+                return plant
             }
             catch (error) {
                 handleErrorRouter(error)

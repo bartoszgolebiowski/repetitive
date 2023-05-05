@@ -13,21 +13,21 @@ import Typography from "@mui/material/Typography";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 
-const Workplace: NextPage = () => {
-  const myWorkplaces = api.workplace.getMyWorkplaces.useQuery();
+const Plant: NextPage = () => {
+  const myPlants = api.plant.getMyPlants.useQuery();
 
   return (
     <>
       <Head>
-        <title>My workplaces</title>
-        <meta name="description" content="Display my workplaces" />
+        <title>My plants</title>
+        <meta name="description" content="Display my plants" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Box component="main">
         <Typography variant="h4" sx={{ pb: "1rem" }}>
-          My Workplaces
+          My Plants
         </Typography>
-        {myWorkplaces.data && (
+        {myPlants.data && (
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
@@ -37,16 +37,14 @@ const Workplace: NextPage = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {myWorkplaces.data.map((workplace) => (
-                  <TableRow key={workplace.id}>
+                {myPlants.data.map((plant) => (
+                  <TableRow key={plant.id}>
                     <TableCell>
-                      <Link href={`workplace/${workplace.id}`}>
-                        {workplace.name}
-                      </Link>
+                      <Link href={`plant/${plant.id}`}>{plant.name}</Link>
                     </TableCell>
                     <TableCell>
-                      <Link href={`organization/${workplace.organizationId}`}>
-                        {workplace.organization.name}
+                      <Link href={`organization/${plant.organizationId}`}>
+                        {plant.organization.name}
                       </Link>
                     </TableCell>
                   </TableRow>
@@ -60,4 +58,4 @@ const Workplace: NextPage = () => {
   );
 };
 
-export default Workplace;
+export default Plant;

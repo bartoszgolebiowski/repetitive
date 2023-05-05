@@ -21,7 +21,7 @@ import FormTitle from "~/components/FormTitle";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import MenuItem from "@mui/material/MenuItem";
-import { ACTION_STATUS } from "~/utils/action";
+import { DEFECT_STATUS } from "~/utils/defect";
 import {
   FormControl,
   FormLabel,
@@ -37,12 +37,12 @@ const convertQueryToFilters = () => {
     createdBy: "",
     assignedTo: "",
     status: [
-      ACTION_STATUS.ASSIGNED,
-      ACTION_STATUS.COMPLETED,
-      ACTION_STATUS.DELETED,
-      ACTION_STATUS.TO_DO,
-    ] as Array<keyof typeof ACTION_STATUS>,
-    workplaceId: "",
+      DEFECT_STATUS.ASSIGNED,
+      DEFECT_STATUS.COMPLETED,
+      DEFECT_STATUS.DELETED,
+      DEFECT_STATUS.TO_DO,
+    ] as Array<keyof typeof DEFECT_STATUS>,
+    plantId: "",
     definitionId: "",
   };
 };
@@ -62,7 +62,7 @@ const useForm = () => {
     setFilters((prev) => ({ ...prev, assignedTo: e.target.value }));
   };
 
-  const onChangeStatus = (status: keyof typeof ACTION_STATUS) => () => {
+  const onChangeStatus = (status: keyof typeof DEFECT_STATUS) => () => {
     const currentIndex = filters.status.indexOf(status);
     const newChecked = [...filters.status];
 
@@ -84,7 +84,7 @@ const useForm = () => {
   };
 };
 
-const Action: NextPage = () => {
+const Defect: NextPage = () => {
   const {
     filters,
     onChangeOrganization,
@@ -98,15 +98,15 @@ const Action: NextPage = () => {
     { organizationId: filters.organizationId },
     { enabled: !!filters.organizationId }
   );
-  const actions = api.action.getByFilters.useQuery(filters, {
+  const defects = api.defect.getByFilters.useQuery(filters, {
     enabled: !!filters.organizationId,
   });
 
   return (
     <>
       <Head>
-        <title>Actions</title>
-        <meta name="description" content="Manage actions" />
+        <title>Defects</title>
+        <meta name="description" content="Manage Defects" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Box component="main">
@@ -190,7 +190,7 @@ const Action: NextPage = () => {
                 >
                   <FormLabel component="legend">Status</FormLabel>
                   <FormGroup sx={{ display: "block" }}>
-                    {Object.values(ACTION_STATUS).map((status) => (
+                    {Object.values(DEFECT_STATUS).map((status) => (
                       <FormControlLabel
                         key={status}
                         name="status"
@@ -211,7 +211,7 @@ const Action: NextPage = () => {
         <Typography variant="h4" sx={{ pb: "1rem" }}>
           Actions
         </Typography>
-        {actions.data && (
+        {defects.data && (
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
@@ -220,25 +220,29 @@ const Action: NextPage = () => {
                   <TableCell>Description</TableCell>
                   <TableCell>Assigned To</TableCell>
                   <TableCell>Created By</TableCell>
-                  <TableCell>Workplace</TableCell>
+                  <TableCell>Plant</TableCell>
                   <TableCell>Definition</TableCell>
-                  <TableCell align='right'>Created At</TableCell>
-                  <TableCell align='right'>Due Date</TableCell>
+                  <TableCell align="right">Created At</TableCell>
+                  <TableCell align="right">Due Date</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {actions.data.map((action) => (
-                  <TableRow key={action.id}>
-                    <TableCell>{action.status}</TableCell>
-                    <TableCell>{action.description}</TableCell>
-                    <TableCell>{action.assignedTo}</TableCell>
-                    <TableCell>{action.createdBy}</TableCell>
-                    <TableCell>{action.workplace.name}</TableCell>
+                {defects.data.map((defect) => (
+                  <TableRow key={defect.id}>
+                    <TableCell>{defect.status}</TableCell>
+                    <TableCell>{defect.description}</TableCell>
+                    <TableCell>{defect.assignedTo}</TableCell>
+                    <TableCell>{defect.createdBy}</TableCell>
+                    <TableCell>{defect.plant.name}</TableCell>
                     <TableCell>
-                      {action.definitionTask.definition.name}
+                      {defect.definitionTask.definition.name}
                     </TableCell>
-                    <TableCell align='right'>{displayDate(action.createdAt)}</TableCell>
-                    <TableCell align='right'>{displayDate(action.dueDate)}</TableCell>
+                    <TableCell align="right">
+                      {displayDate(defect.createdAt)}
+                    </TableCell>
+                    <TableCell align="right">
+                      {displayDate(defect.dueDate)}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -250,4 +254,4 @@ const Action: NextPage = () => {
   );
 };
 
-export default Action;
+export default Defect;

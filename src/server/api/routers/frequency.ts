@@ -8,13 +8,13 @@ import { CronQuartz } from "~/server/frequency/cronValidation";
 import { handleErrorRouter } from "../../../utils/httpErrors";
 
 export const frequencyRouter = createTRPCRouter({
-    getByWorkplaceId: protectedProcedure
-        .input(z.object({ workplaceId: z.string() }))
+    getByPlantId: protectedProcedure
+        .input(z.object({ plantId: z.string() }))
         .query(async ({ ctx, input }) => {
             try {
                 const frequencies = await ctx.prisma.frequency.findMany({
                     where: {
-                        workplaceId: input.workplaceId
+                        plantId: input.plantId
                     },
                     include: {
                         frequencyCrons: true
@@ -39,7 +39,7 @@ export const frequencyRouter = createTRPCRouter({
                 })
             ),
             description: z.string().optional(),
-            workplaceId: z.string(),
+            plantId: z.string(),
         }))
         .mutation(async ({ input, ctx }) => {
             try {
@@ -50,9 +50,9 @@ export const frequencyRouter = createTRPCRouter({
                             create: input.cron.map(cron => ({ cron }))
                         },
                         description: input.description,
-                        workplace: {
+                        plant: {
                             connect: {
-                                id: input.workplaceId
+                                id: input.plantId
                             }
                         }
                     }

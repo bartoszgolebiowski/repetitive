@@ -14,10 +14,10 @@ import Grid2 from "@mui/material/Unstable_Grid2";
 import React from "react";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
-import { actionItemSchema, ACTION_STATUS } from "~/utils/action";
+import { defectItemSchema, DEFECT_STATUS } from "~/utils/defect";
 import { api } from "~/utils/api";
 import { stableNow } from "~/utils/date";
-import type { DefinitionTask, Action } from "./utils";
+import type { DefinitionTask, Defect } from "./utils";
 
 const addZero = (n: number) => (n < 10 ? `0${n}` : n);
 const parseDateToInput = (date: Date) => {
@@ -33,14 +33,14 @@ type Props = {
   definitionTask: {
     id: DefinitionTask["id"];
     definition: {
-      workplaceId: DefinitionTask["definition"]["workplaceId"];
+      plantId: DefinitionTask["definition"]["plantId"];
     };
     derived: {
       disabled: DefinitionTask["derived"]["disabled"];
     };
   };
   checked: boolean;
-  onChange: (action: Action | null) => void;
+  onChange: (action: Defect | null) => void;
 };
 
 const ActionCheckbox = (props: Props) => {
@@ -48,8 +48,8 @@ const ActionCheckbox = (props: Props) => {
   const ref = React.useRef<HTMLDivElement>(null);
   const [open, setOpen] = React.useState(false);
 
-  const workplaceUsers = api.user.getByWorkplaceId.useQuery({
-    workplaceId: definitionTask.definition.workplaceId,
+  const plantUsers = api.user.getByplantId.useQuery({
+    plantId: definitionTask.definition.plantId,
   });
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -63,7 +63,7 @@ const ActionCheckbox = (props: Props) => {
 
     const dueDate = String(data.dueDate);
     data.dueDate = new Date(dueDate);
-    const result = actionItemSchema.safeParse(data);
+    const result = defectItemSchema.safeParse(data);
 
     if (result.success) {
       onChange(result.data);
@@ -129,13 +129,13 @@ const ActionCheckbox = (props: Props) => {
                   id="assignedTo"
                   label="Assigned To"
                   name="assignedTo"
-                  disabled={!workplaceUsers.data}
+                  disabled={!plantUsers.data}
                   defaultValue=""
                 >
                   <MenuItem value="">
                     <em>None</em>
                   </MenuItem>
-                  {workplaceUsers.data
+                  {plantUsers.data
                     ?.map(({ email }) => email)
                     .map((option) => (
                       <MenuItem key={String(option)} value={String(option)}>
@@ -148,7 +148,7 @@ const ActionCheckbox = (props: Props) => {
                 <FormControl>
                   <FormLabel id="radio-status">Status</FormLabel>
                   <RadioGroup aria-labelledby="radio-status" name="status">
-                    {Object.values(ACTION_STATUS).map((status) => (
+                    {Object.values(DEFECT_STATUS).map((status) => (
                       <FormControlLabel
                         key={status}
                         value={status}

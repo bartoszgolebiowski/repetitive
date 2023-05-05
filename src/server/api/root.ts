@@ -4,9 +4,9 @@ import { frequencyRouter } from "./routers/frequency";
 import { organizationRouter } from "./routers/organization";
 import { userRouter } from "./routers/users";
 import { definitionRouter } from "./routers/definition";
-import { workplaceRouter } from "./routers/workplace";
+import { plantRouter } from "./routers/plant";
 import { invitationRouter } from "./routers/invitation";
-import { actionRouter } from "./routers/action";
+import { checklistActionRouter as defectRouter } from "./routers/defect";
 
 /**
  * This is the primary router for your server.
@@ -15,13 +15,13 @@ import { actionRouter } from "./routers/action";
  */
 export const appRouter = createTRPCRouter({
   organization: organizationRouter,
-  workplace: workplaceRouter,
+  plant: plantRouter,
   definition: definitionRouter,
   definitionTasks: definitionTasksRouter,
   frequency: frequencyRouter,
   user: userRouter,
   invitation: invitationRouter,
-  action: actionRouter
+  defect: defectRouter
 });
 
 // export type definition of API

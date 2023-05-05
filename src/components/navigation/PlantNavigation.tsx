@@ -5,14 +5,14 @@ import Button from "@mui/material/Button";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
-const WorkplaceNavigation = (props: React.PropsWithChildren) => {
-  const { workplaceId } = useRouter().query;
+const PlantNavigation = (props: React.PropsWithChildren) => {
+  const { plantId } = useRouter().query;
   const isDefinitions = useRouter().pathname.includes("definition");
   const isHistory = useRouter().pathname.includes("history");
   const isFrequency = useRouter().pathname.includes("frequency");
   const isChecklist = !isDefinitions && !isHistory && !isFrequency;
 
-  if (!workplaceId || Array.isArray(workplaceId)) {
+  if (!plantId || Array.isArray(plantId)) {
     return null;
   }
 
@@ -21,7 +21,7 @@ const WorkplaceNavigation = (props: React.PropsWithChildren) => {
       <Box>
         <ButtonGroup
           size="large"
-          aria-label="workplace-navigation"
+          aria-label="plant-navigation"
           orientation="horizontal"
           sx={{
             display: "flex",
@@ -31,28 +31,28 @@ const WorkplaceNavigation = (props: React.PropsWithChildren) => {
           <Button
             LinkComponent={Link}
             variant={isDefinitions ? "contained" : "outlined"}
-            href={`/workplace/${workplaceId}/definition`}
+            href={`/plant/${plantId}/definition`}
           >
             Definition
           </Button>
           <Button
             LinkComponent={Link}
             variant={isChecklist ? "contained" : "outlined"}
-            href={`/workplace/${workplaceId}/`}
+            href={`/plant/${plantId}/`}
           >
             Checklist
           </Button>
           <Button
             LinkComponent={Link}
             variant={isHistory ? "contained" : "outlined"}
-            href={`/workplace/${workplaceId}/history`}
+            href={`/plant/${plantId}/history`}
           >
             History
           </Button>
           <Button
             LinkComponent={Link}
             variant={isFrequency ? "contained" : "outlined"}
-            href={`/workplace/${workplaceId}/frequency`}
+            href={`/plant/${plantId}/frequency`}
           >
             Frequency
           </Button>
@@ -63,4 +63,4 @@ const WorkplaceNavigation = (props: React.PropsWithChildren) => {
   );
 };
 
-export default WorkplaceNavigation;
+export default PlantNavigation;

@@ -7,16 +7,16 @@ import {
 import { handleErrorRouter } from "../../../utils/httpErrors";
 
 export const definitionRouter = createTRPCRouter({
-    getByWorkplaceId: protectedProcedure
-        .input(z.object({ workplaceId: z.string() }))
+    getByPlantId: protectedProcedure
+        .input(z.object({ plantId: z.string() }))
         .query(async ({ ctx, input }) => {
             try {
                 const definitions = await ctx.prisma.definition.findMany({
                     where: {
-                        workplaceId: input.workplaceId,
+                        plantId: input.plantId,
                     },
                     include: {
-                        workplace: true,
+                        plant: true,
                         frequency: true,
                     }
                 });
@@ -30,7 +30,7 @@ export const definitionRouter = createTRPCRouter({
     create: protectedProcedure
         .input(z.object({
             name: z.string(),
-            workplaceId: z.string(),
+            plantId: z.string(),
             frequencyId: z.string(),
             description: z.string()
         }))
@@ -41,7 +41,7 @@ export const definitionRouter = createTRPCRouter({
                         name: input.name,
                         description: input.description,
                         frequencyId: input.frequencyId,
-                        workplaceId: input.workplaceId,
+                        plantId: input.plantId,
                     },
                 })
 

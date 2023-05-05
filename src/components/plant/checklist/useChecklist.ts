@@ -1,12 +1,12 @@
 import React from "react";
 import { produce } from 'immer'
 import { stableNow } from "~/utils/date";
-import type { DefinitionTask, Action } from "./utils";
+import type { DefinitionTask, Defect } from "./utils";
 import { CHECKLIST_STATUS } from "~/utils/checklist";
 
 type Checklist = {
     done: Record<string, boolean>;
-    action: Record<string, Action>;
+    action: Record<string, Defect>;
 };
 
 const initialChecklist: Checklist = {
@@ -28,7 +28,7 @@ export const toggleDone = (id: string) => ({
     }
 })
 
-export const toggleAction = (id: string, action: Action | null) => ({
+export const toggleAction = (id: string, action: Defect | null) => ({
     type: "action" as const,
     payload: {
         id,
@@ -54,7 +54,7 @@ export const reducer = (state = initialChecklist, dispatchedAction: Actions) => 
                 if (isPresent) acc[id] = emptyAction;
 
                 return acc;
-            }, {} as Record<string, Action>);
+            }, {} as Record<string, Defect>);
 
             return { done, action }
         }
@@ -118,7 +118,7 @@ export const emptyAction = {
     dueDate: stableNow,
     status: "TO_DO",
     assignedTo: "",
-} satisfies Action;
+} satisfies Defect;
 
 const extractDone = (checklist: Checklist) => (definitionTasks?: DefinitionTask[]) => {
     if (!definitionTasks) throw new Error("definitionTasks is undefined");
@@ -145,7 +145,7 @@ const extractAction = (checklist: Checklist) => () => Object.entries(checklist.a
         acc.push(action);
         return acc;
     },
-    [] as Action[]
+    [] as Defect[]
 )
 
 
@@ -156,7 +156,7 @@ const useChecklist = (initial = initialChecklist) => {
         dispatch(toggleDone(id));
     };
 
-    const onActionChange = (id: string) => (action: Action | null) => {
+    const onActionChange = (id: string) => (action: Defect | null) => {
         dispatch(toggleAction(id, action));
     };
 

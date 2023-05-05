@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { groupDefinitionTasksByDefinitionIdAndSortedByAvailableFromAndEnabledOnlyFirstTaskOfSameType, groupDefinitionTasksByEveryDayAndSortByAvailableFrom } from "../convert";
 
 describe('convert', () => {
-    const parseStringToDate = (task: { id: string; status: string; createdAt: string; updatedAt: string; createdBy: string; updatedBy: string; availableFrom: string; availableTo: string; frequencyId: string; definitionId: string; definition: { id: string; name: string; description: string; createdAt: string; updatedAt: string; workplaceId: string; frequencyId: string; }; }): { availableFrom: Date; availableTo: Date; createdAt: Date; updatedAt: Date; definition: { createdAt: Date; updatedAt: Date; id: string; name: string; description: string; workplaceId: string; frequencyId: string; }; id: string; status: string; createdBy: string; updatedBy: string; frequencyId: string; definitionId: string; } => ({
+    const parseStringToDate = (task: { id: string; status: string; createdAt: string; updatedAt: string; createdBy: string; updatedBy: string; availableFrom: string; availableTo: string; frequencyId: string; definitionId: string; definition: { id: string; name: string; description: string; createdAt: string; updatedAt: string; plantId: string; frequencyId: string; }; }): { availableFrom: Date; availableTo: Date; createdAt: Date; updatedAt: Date; definition: { createdAt: Date; updatedAt: Date; id: string; name: string; description: string; plantId: string; frequencyId: string; }; id: string; status: string; createdBy: string; updatedBy: string; frequencyId: string; definitionId: string; } => ({
         ...task,
         availableFrom: new Date(task.availableFrom),
         availableTo: new Date(task.availableTo),
@@ -33,7 +33,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 001",
                 "createdAt": "2023-04-10T19:49:53.102Z",
                 "updatedAt": "2023-04-10T19:49:53.102Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8yx37000c8ybogkx35jhc"
             }
         },
@@ -54,7 +54,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 001",
                 "createdAt": "2023-04-10T19:49:53.102Z",
                 "updatedAt": "2023-04-10T19:49:53.102Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8yx37000c8ybogkx35jhc"
             }
         },
@@ -75,7 +75,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 001",
                 "createdAt": "2023-04-10T19:49:53.102Z",
                 "updatedAt": "2023-04-10T19:49:53.102Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8yx37000c8ybogkx35jhc"
             }
         },
@@ -96,7 +96,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 001",
                 "createdAt": "2023-04-10T19:49:53.102Z",
                 "updatedAt": "2023-04-10T19:49:53.102Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8yx37000c8ybogkx35jhc"
             }
         },
@@ -117,7 +117,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 001",
                 "createdAt": "2023-04-10T19:49:53.102Z",
                 "updatedAt": "2023-04-10T19:49:53.102Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8yx37000c8ybogkx35jhc"
             }
         },
@@ -138,7 +138,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 001",
                 "createdAt": "2023-04-10T19:49:53.102Z",
                 "updatedAt": "2023-04-10T19:49:53.102Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8yx37000c8ybogkx35jhc"
             }
         },
@@ -159,7 +159,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 001",
                 "createdAt": "2023-04-10T19:49:53.102Z",
                 "updatedAt": "2023-04-10T19:49:53.102Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8yx37000c8ybogkx35jhc"
             }
         },
@@ -180,7 +180,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 002",
                 "createdAt": "2023-04-10T19:50:01.313Z",
                 "updatedAt": "2023-04-10T19:50:01.313Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -201,7 +201,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 002",
                 "createdAt": "2023-04-10T19:50:01.313Z",
                 "updatedAt": "2023-04-10T19:50:01.313Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -222,7 +222,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 002",
                 "createdAt": "2023-04-10T19:50:01.313Z",
                 "updatedAt": "2023-04-10T19:50:01.313Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -243,7 +243,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 002",
                 "createdAt": "2023-04-10T19:50:01.313Z",
                 "updatedAt": "2023-04-10T19:50:01.313Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -264,7 +264,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 002",
                 "createdAt": "2023-04-10T19:50:01.313Z",
                 "updatedAt": "2023-04-10T19:50:01.313Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -285,7 +285,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 002",
                 "createdAt": "2023-04-10T19:50:01.313Z",
                 "updatedAt": "2023-04-10T19:50:01.313Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -306,7 +306,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 002",
                 "createdAt": "2023-04-10T19:50:01.313Z",
                 "updatedAt": "2023-04-10T19:50:01.313Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -327,7 +327,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 002",
                 "createdAt": "2023-04-10T19:50:01.313Z",
                 "updatedAt": "2023-04-10T19:50:01.313Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -348,7 +348,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 002",
                 "createdAt": "2023-04-10T19:50:01.313Z",
                 "updatedAt": "2023-04-10T19:50:01.313Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -369,7 +369,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 002",
                 "createdAt": "2023-04-10T19:50:01.313Z",
                 "updatedAt": "2023-04-10T19:50:01.313Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -390,7 +390,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 002",
                 "createdAt": "2023-04-10T19:50:01.313Z",
                 "updatedAt": "2023-04-10T19:50:01.313Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -411,7 +411,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 002",
                 "createdAt": "2023-04-10T19:50:01.313Z",
                 "updatedAt": "2023-04-10T19:50:01.313Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -432,7 +432,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 002",
                 "createdAt": "2023-04-10T19:50:01.313Z",
                 "updatedAt": "2023-04-10T19:50:01.313Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -453,7 +453,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 002",
                 "createdAt": "2023-04-10T19:50:01.313Z",
                 "updatedAt": "2023-04-10T19:50:01.313Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -474,7 +474,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 002",
                 "createdAt": "2023-04-10T19:50:01.313Z",
                 "updatedAt": "2023-04-10T19:50:01.313Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -495,7 +495,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 002",
                 "createdAt": "2023-04-10T19:50:01.313Z",
                 "updatedAt": "2023-04-10T19:50:01.313Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -516,7 +516,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 002",
                 "createdAt": "2023-04-10T19:50:01.313Z",
                 "updatedAt": "2023-04-10T19:50:01.313Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -537,7 +537,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 002",
                 "createdAt": "2023-04-10T19:50:01.313Z",
                 "updatedAt": "2023-04-10T19:50:01.313Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -558,7 +558,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 002",
                 "createdAt": "2023-04-10T19:50:01.313Z",
                 "updatedAt": "2023-04-10T19:50:01.313Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -579,7 +579,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 002",
                 "createdAt": "2023-04-10T19:50:01.313Z",
                 "updatedAt": "2023-04-10T19:50:01.313Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -600,7 +600,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 002",
                 "createdAt": "2023-04-10T19:50:01.313Z",
                 "updatedAt": "2023-04-10T19:50:01.313Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -621,7 +621,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 003",
                 "createdAt": "2023-04-10T19:50:08.545Z",
                 "updatedAt": "2023-04-10T19:50:08.545Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -642,7 +642,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 003",
                 "createdAt": "2023-04-10T19:50:08.545Z",
                 "updatedAt": "2023-04-10T19:50:08.545Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -663,7 +663,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 003",
                 "createdAt": "2023-04-10T19:50:08.545Z",
                 "updatedAt": "2023-04-10T19:50:08.545Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -684,7 +684,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 003",
                 "createdAt": "2023-04-10T19:50:08.545Z",
                 "updatedAt": "2023-04-10T19:50:08.545Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -705,7 +705,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 003",
                 "createdAt": "2023-04-10T19:50:08.545Z",
                 "updatedAt": "2023-04-10T19:50:08.545Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -726,7 +726,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 003",
                 "createdAt": "2023-04-10T19:50:08.545Z",
                 "updatedAt": "2023-04-10T19:50:08.545Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -747,7 +747,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 003",
                 "createdAt": "2023-04-10T19:50:08.545Z",
                 "updatedAt": "2023-04-10T19:50:08.545Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -768,7 +768,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 003",
                 "createdAt": "2023-04-10T19:50:08.545Z",
                 "updatedAt": "2023-04-10T19:50:08.545Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -789,7 +789,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 003",
                 "createdAt": "2023-04-10T19:50:08.545Z",
                 "updatedAt": "2023-04-10T19:50:08.545Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -810,7 +810,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 003",
                 "createdAt": "2023-04-10T19:50:08.545Z",
                 "updatedAt": "2023-04-10T19:50:08.545Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -831,7 +831,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 003",
                 "createdAt": "2023-04-10T19:50:08.545Z",
                 "updatedAt": "2023-04-10T19:50:08.545Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -852,7 +852,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 003",
                 "createdAt": "2023-04-10T19:50:08.545Z",
                 "updatedAt": "2023-04-10T19:50:08.545Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -873,7 +873,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 003",
                 "createdAt": "2023-04-10T19:50:08.545Z",
                 "updatedAt": "2023-04-10T19:50:08.545Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -894,7 +894,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 003",
                 "createdAt": "2023-04-10T19:50:08.545Z",
                 "updatedAt": "2023-04-10T19:50:08.545Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -915,7 +915,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 003",
                 "createdAt": "2023-04-10T19:50:08.545Z",
                 "updatedAt": "2023-04-10T19:50:08.545Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -936,7 +936,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 003",
                 "createdAt": "2023-04-10T19:50:08.545Z",
                 "updatedAt": "2023-04-10T19:50:08.545Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -957,7 +957,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 003",
                 "createdAt": "2023-04-10T19:50:08.545Z",
                 "updatedAt": "2023-04-10T19:50:08.545Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -978,7 +978,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 003",
                 "createdAt": "2023-04-10T19:50:08.545Z",
                 "updatedAt": "2023-04-10T19:50:08.545Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -999,7 +999,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 003",
                 "createdAt": "2023-04-10T19:50:08.545Z",
                 "updatedAt": "2023-04-10T19:50:08.545Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -1020,7 +1020,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 003",
                 "createdAt": "2023-04-10T19:50:08.545Z",
                 "updatedAt": "2023-04-10T19:50:08.545Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         },
@@ -1041,7 +1041,7 @@ describe('convert', () => {
                 "description": "Sprawdzenie maszyny 003",
                 "createdAt": "2023-04-10T19:50:08.545Z",
                 "updatedAt": "2023-04-10T19:50:08.545Z",
-                "workplaceId": "clgb8yo2g000b8ybo4ogew4em",
+                "plantId": "clgb8yo2g000b8ybo4ogew4em",
                 "frequencyId": "clgb8z7fg000g8ybota1ion10"
             }
         }

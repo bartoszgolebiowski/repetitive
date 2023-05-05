@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { ACTION_STATUS, actionFilterSchema } from "~/utils/action";
+import { DEFECT_STATUS, defectsFilterSchema } from "~/utils/defect";
 import {
     createTRPCRouter,
     protectedProcedure,
@@ -9,25 +9,25 @@ import { handleErrorRouter } from "../../../utils/httpErrors";
 
 type RemoveUndefined<T> = T extends undefined ? never : T;
 
-export const actionRouter = createTRPCRouter({
+export const checklistActionRouter = createTRPCRouter({
     getByFilters: protectedProcedure
-        .input(actionFilterSchema)
+        .input(defectsFilterSchema)
         .query(async ({ ctx, input }) => {
             const { organizationId, createdBy, assignedTo, status } = input;
             const where = {
                 ...{ createdBy: createdBy ? { equals: createdBy } : {} },
                 ...{ assignedTo: assignedTo ? { equals: assignedTo } : {} },
                 ...{ status: status ? { in: status } : {} },
-                ...{ workplace: { organizationId: organizationId } },
-                ...{ workplaceId: input.workplaceId ? { equals: input.workplaceId } : {} },
+                ...{ plant: { organizationId: organizationId } },
+                ...{ plantId: input.plantId ? { equals: input.plantId } : {} },
                 ...{ definitionTaskId: input.definitionId ? { equals: input.definitionId } : {} },
-            } satisfies RemoveUndefined<Parameters<typeof ctx.prisma.action.findMany>['0']>['where']
+            } satisfies RemoveUndefined<Parameters<typeof ctx.prisma.defect.findMany>['0']>['where']
 
             try {
-                const actions = await ctx.prisma.action.findMany({
+                const actions = await ctx.prisma.defect.findMany({
                     where,
                     include: {
-                        workplace: {
+                        plant: {
                             select: {
                                 id: true,
                                 name: true,
@@ -53,16 +53,16 @@ export const actionRouter = createTRPCRouter({
     createMany: protectedProcedure
         .input(
             z.object({
-                workplaceId: z.string(),
+                plantId: z.string(),
                 actions:
                     z.array(z.object({
                         definitionTaskId: z.string(),
                         description: z.string(),
                         status: z.enum([
-                            ACTION_STATUS.TO_DO,
-                            ACTION_STATUS.ASSIGNED,
-                            ACTION_STATUS.DELETED,
-                            ACTION_STATUS.COMPLETED,
+                            DEFECT_STATUS.TO_DO,
+                            DEFECT_STATUS.ASSIGNED,
+                            DEFECT_STATUS.DELETED,
+                            DEFECT_STATUS.COMPLETED,
                         ]),
                         dueDate: z.date(),
                         assignedTo: z.string(),
@@ -70,7 +70,7 @@ export const actionRouter = createTRPCRouter({
             }))
         .query(async ({ ctx, input }) => {
             try {
-                const actions = await ctx.prisma.action.createMany({
+                const actions = await ctx.prisma.defect.createMany({
                     data: input.actions.map(action => ({
                         createdBy: ctx.session.user.email ?? ctx.session.user.id,
                         updatedBy: ctx.session.user.email ?? ctx.session.user.id,
@@ -79,7 +79,7 @@ export const actionRouter = createTRPCRouter({
                         dueDate: action.dueDate,
                         assignedTo: action.assignedTo,
                         definitionTaskId: action.definitionTaskId,
-                        workplaceId: input.workplaceId,
+                        plantId: input.plantId,
                     })),
                 })
                 return actions

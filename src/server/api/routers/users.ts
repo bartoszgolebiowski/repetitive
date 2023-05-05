@@ -7,11 +7,11 @@ import {
 import { handleErrorRouter } from "../../../utils/httpErrors";
 
 export const userRouter = createTRPCRouter({
-    getByWorkplaceId: protectedProcedure
-        .input(z.object({ workplaceId: z.string() }))
+    getByplantId: protectedProcedure
+        .input(z.object({ plantId: z.string() }))
         .query(async ({ ctx, input }) => {
             try {
-                const userInsideWorkplace = await ctx.prisma.user.findMany({
+                const userInsidePlant = await ctx.prisma.user.findMany({
                     select: {
                         email: true,
                     },
@@ -19,9 +19,9 @@ export const userRouter = createTRPCRouter({
                         memberships: {
                             some: {
                                 organization: {
-                                    workplaces: {
+                                    plant: {
                                         some: {
-                                            id: input.workplaceId
+                                            id: input.plantId
                                         }
                                     }
                                 }
@@ -29,7 +29,7 @@ export const userRouter = createTRPCRouter({
                         }
                     },
                 })
-                return userInsideWorkplace
+                return userInsidePlant
             }
             catch (error) {
                 handleErrorRouter(error)

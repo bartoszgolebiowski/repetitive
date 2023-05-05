@@ -6,13 +6,12 @@ generator client {
 }
 
 datasource db {
-    provider          = "mysql"
-    url               = env("DATABASE_URL")
-    shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
-    relationMode      = "prisma"
+    provider     = "mysql"
+    url          = env("DATABASE_URL")
+    relationMode = "prisma"
 }
 
-model Workplace {
+model Plant {
     id             String       @id @default(cuid())
     name           String
     description    String?
@@ -22,7 +21,7 @@ model Workplace {
     organization   Organization @relation(fields: [organizationId], references: [id])
     definition     Definition[]
     frequency      Frequency[]
-    Action         Action[]
+    Defect         Defect[]
 
     @@index([organizationId])
 }
@@ -33,13 +32,13 @@ model Definition {
     description      String
     createdAt        DateTime         @default(now())
     updatedAt        DateTime         @updatedAt
-    workplaceId      String
-    workplace        Workplace        @relation(fields: [workplaceId], references: [id])
+    plantId          String
+    plant            Plant            @relation(fields: [plantId], references: [id])
     frequencyId      String
     frequency        Frequency        @relation(fields: [frequencyId], references: [id])
     definitionsTasks DefinitionTask[]
 
-    @@index([workplaceId])
+    @@index([plantId])
     @@index([frequencyId])
 }
 
@@ -56,7 +55,7 @@ model DefinitionTask {
     frequency     Frequency  @relation(fields: [frequencyId], references: [id])
     definitionId  String
     definition    Definition @relation(fields: [definitionId], references: [id])
-    Action        Action[]
+    Defect        Defect[]
 
     @@index([definitionId])
     @@index([frequencyId])
@@ -68,13 +67,13 @@ model Frequency {
     description     String?
     createdAt       DateTime         @default(now())
     updatedAt       DateTime         @updatedAt
-    workplaceId     String
-    workplace       Workplace        @relation(fields: [workplaceId], references: [id])
+    plantId         String
+    plant           Plant            @relation(fields: [plantId], references: [id])
     definitions     Definition[]
     definitionTasks DefinitionTask[]
     frequencyCrons  FrequencyCron[]
 
-    @@index([workplaceId])
+    @@index([plantId])
 }
 
 model FrequencyCron {
@@ -83,7 +82,7 @@ model FrequencyCron {
     frequencies Frequency[]
 }
 
-model Action {
+model Defect {
     id               String         @id @default(cuid())
     description      String
     status           String
@@ -93,13 +92,13 @@ model Action {
     updatedAt        DateTime       @updatedAt
     createdBy        String
     updatedBy        String
-    workplaceId      String
-    workplace        Workplace      @relation(fields: [workplaceId], references: [id])
+    plantId          String
+    plant            Plant          @relation(fields: [plantId], references: [id])
     definitionTaskId String
     definitionTask   DefinitionTask @relation(fields: [definitionTaskId], references: [id])
 
     @@index([definitionTaskId])
-    @@index([workplaceId])
+    @@index([plantId])
 }
 
 // Necessary for Next auth
@@ -156,7 +155,7 @@ model Organization {
     id          String       @id @default(cuid())
     name        String
     memberships Membership[]
-    workplaces  Workplace[]
+    plants      Plant[]
     invitations Invitation[]
 }
 

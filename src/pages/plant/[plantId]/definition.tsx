@@ -23,24 +23,24 @@ import Grid2 from "@mui/material/Unstable_Grid2";
 import React from "react";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
-import WorkplaceNavigation from "~/components/navigation/WorkplaceNavigation";
+import PlantNavigation from "~/components/navigation/PlantNavigation";
 
 const Definition: NextPage = () => {
   const [open, setOpen] = React.useState(false);
-  const { workplaceId } = useRouter().query;
+  const { plantId } = useRouter().query;
 
-  const frequencies = api.frequency.getByWorkplaceId.useQuery(
+  const frequencies = api.frequency.getByPlantId.useQuery(
     {
-      workplaceId: workplaceId as string,
+      plantId: plantId as string,
     },
-    { enabled: !!workplaceId }
+    { enabled: !!plantId }
   );
 
-  const definitions = api.definition.getByWorkplaceId.useQuery(
+  const definitions = api.definition.getByPlantId.useQuery(
     {
-      workplaceId: workplaceId as string,
+      plantId: plantId as string,
     },
-    { enabled: !!workplaceId }
+    { enabled: !!plantId }
   );
 
   const createDefinition = api.definition.create.useMutation({
@@ -58,7 +58,7 @@ const Definition: NextPage = () => {
       name: formData.get("name") as string,
       description: formData.get("description") as string,
       frequencyId: formData.get("frequencyId") as string,
-      workplaceId: formData.get("workplaceId") as string,
+      plantId: formData.get("plantId") as string,
     });
   };
 
@@ -72,13 +72,13 @@ const Definition: NextPage = () => {
         <meta name="description" content="Definitions" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <WorkplaceNavigation>
+      <PlantNavigation>
         <Box component="main">
           <Modal open={open} onClose={handleClose} disableAutoFocus>
             <FormCard size="medium">
               <FormTitle>Create Definition</FormTitle>
               <form onSubmit={handleSubmitDefinition}>
-                <input type="hidden" name="workplaceId" value={workplaceId} />
+                <input type="hidden" name="plantId" value={plantId} />
                 <Grid2 container spacing={2}>
                   <Grid2 xs={12}>
                     <TextField
@@ -162,7 +162,7 @@ const Definition: NextPage = () => {
                   <TableRow>
                     <TableCell>Name</TableCell>
                     <TableCell>Description</TableCell>
-                    <TableCell>Workplace</TableCell>
+                    <TableCell>Plant</TableCell>
                     <TableCell>Frequency</TableCell>
                   </TableRow>
                 </TableHead>
@@ -171,7 +171,7 @@ const Definition: NextPage = () => {
                     <TableRow key={definition.id}>
                       <TableCell>{definition.name}</TableCell>
                       <TableCell>{definition.description}</TableCell>
-                      <TableCell>{definition.workplace.name}</TableCell>
+                      <TableCell>{definition.plant.name}</TableCell>
                       <TableCell>{definition.frequency.name}</TableCell>
                     </TableRow>
                   ))}
@@ -180,7 +180,7 @@ const Definition: NextPage = () => {
             </TableContainer>
           )}
         </Box>
-      </WorkplaceNavigation>
+      </PlantNavigation>
     </>
   );
 };

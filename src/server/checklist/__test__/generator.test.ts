@@ -12,7 +12,7 @@ describe('checklist generator', () => {
                     "frequencyId": "clffdrshm00008y4cfeukqe9a",
                     createdAt: new Date("2021-03-13T00:00:00.000Z"),
                     updatedAt: new Date("2021-03-13T00:00:00.000Z"),
-                    workplaceId: "clffdrshm00008y4cfeukqe9a",
+                    plantId: "clffdrshm00008y4cfeukqe9a",
                     frequency: {
                         name: "3_PER_DAY",
                         frequencyCrons: [
@@ -30,7 +30,7 @@ describe('checklist generator', () => {
                     "frequencyId": "clfff6jpi00048y4conqcbcrg",
                     createdAt: new Date("2021-03-13T00:00:00.000Z"),
                     updatedAt: new Date("2021-03-13T00:00:00.000Z"),
-                    workplaceId: "clffdrshm00008y4cfeukqe9a",
+                    plantId: "clffdrshm00008y4cfeukqe9a",
                     frequency: {
                         name: "1_PER_DAY",
                         frequencyCrons: [{ "cron": "0 0 23 ? * MON,TUE,WED,THU,FRI,SAT,SUN *", id: "clffdrshm00008y4cfeukqe9a" }]
@@ -44,7 +44,7 @@ describe('checklist generator', () => {
                     "frequencyId": "clffkusf5000a8y4c597hxozl",
                     createdAt: new Date("2021-03-13T00:00:00.000Z"),
                     updatedAt: new Date("2021-03-13T00:00:00.000Z"),
-                    workplaceId: "clffdrshm00008y4cfeukqe9a",
+                    plantId: "clffdrshm00008y4cfeukqe9a",
                     frequency: {
                         name: "1_PER_SATURDAY",
                         frequencyCrons: [{ "cron": "0 0 23 ? * SAT *", id: "clffdrshm00008y4cfeukqe9a" }]
@@ -126,7 +126,7 @@ describe('checklist generator', () => {
                     "frequencyId": "clfff6jpi00048y4conqcbcrg",
                     createdAt: new Date("2021-03-13T00:00:00.000Z"),
                     updatedAt: new Date("2021-03-13T00:00:00.000Z"),
-                    workplaceId: "clffdrshm00008y4cfeukqe9a",
+                    plantId: "clffdrshm00008y4cfeukqe9a",
                     frequency: {
                         name: "from monday to friday at 00:00 08:00 16:00 timezone +2",
                         frequencyCrons: [
@@ -148,7 +148,7 @@ describe('checklist generator', () => {
                     "frequencyId": "clffkusf5000a8y4c597hxozl",
                     createdAt: new Date("2021-03-13T00:00:00.000Z"),
                     updatedAt: new Date("2021-03-13T00:00:00.000Z"),
-                    workplaceId: "clffdrshm00008y4cfeukqe9a",
+                    plantId: "clffdrshm00008y4cfeukqe9a",
                     frequency: {
                         name: "from monday to friday at 07:00 15:00 23:00 timezone -2",
                         frequencyCrons: [
@@ -235,7 +235,7 @@ describe('checklist generator', () => {
                     "frequencyId": "clfff6jpi00048y4conqcbcrg",
                     createdAt: new Date("2021-03-13T00:00:00.000Z"),
                     updatedAt: new Date("2021-03-13T00:00:00.000Z"),
-                    workplaceId: "clffdrshm00008y4cfeukqe9a",
+                    plantId: "clffdrshm00008y4cfeukqe9a",
                     frequency: {
                         name: "from monday to friday at 00:00 08:00 16:00 timezone +2",
                         frequencyCrons: [

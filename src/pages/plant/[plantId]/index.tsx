@@ -21,12 +21,12 @@ import Typography from "@mui/material/Typography";
 import Checkbox from "@mui/material/Checkbox";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import WorkplaceNavigation from "~/components/navigation/WorkplaceNavigation";
-import useChecklist from "~/components/workplace/checklist/useChecklist";
-import ChecklistRow from "~/components/workplace/checklist/ChecklistRow";
+import PlantNavigation from "~/components/navigation/PlantNavigation";
+import useChecklist from "~/components/plant/checklist/useChecklist";
+import ChecklistRow from "~/components/plant/checklist/ChecklistRow";
 
 const Checklist: NextPage = () => {
-  const { workplaceId } = useRouter().query;
+  const { plantId } = useRouter().query;
   const [selectedDay] = React.useState(() => stableNow);
   const [filterDisabled, setFilterDisabled] = React.useState(false);
   const {
@@ -44,19 +44,18 @@ const Checklist: NextPage = () => {
     [selectedDay]
   );
 
-  const definitionTasksChecklist =
-    api.definitionTasks.getByWorkplaceId.useQuery(
-      {
-        workplaceId: workplaceId as string,
-        startDay: prevSelectedDay,
-        endDay: selectedDay,
-        timezoneOffsetStart: prevSelectedDay.getTimezoneOffset(),
-        timezoneOffsetEnd: selectedDay.getTimezoneOffset(),
-      },
-      {
-        enabled: !!workplaceId,
-      }
-    );
+  const definitionTasksChecklist = api.definitionTasks.getByplantId.useQuery(
+    {
+      plantId: plantId as string,
+      startDay: prevSelectedDay,
+      endDay: selectedDay,
+      timezoneOffsetStart: prevSelectedDay.getTimezoneOffset(),
+      timezoneOffsetEnd: selectedDay.getTimezoneOffset(),
+    },
+    {
+      enabled: !!plantId,
+    }
+  );
 
   const generateDefinitionTasks =
     api.definitionTasks.generateTestData.useMutation({
@@ -83,7 +82,7 @@ const Checklist: NextPage = () => {
     const formData = new FormData(e.currentTarget);
 
     generateDefinitionTasks.mutate({
-      workplaceId: formData.get("workplaceId") as string,
+      plantId: formData.get("plantId") as string,
     });
   };
 
@@ -91,9 +90,9 @@ const Checklist: NextPage = () => {
     e.preventDefault();
 
     submitChecklist.mutate({
-      workplaceId: workplaceId as string,
+      plantId: plantId as string,
       done: extractDone(definitionTasksChecklist.data),
-      action: extractAction(),
+      defect: extractAction(),
     });
   };
 
@@ -107,16 +106,16 @@ const Checklist: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Workplace</title>
-        <meta name="description" content="Manage workplace" />
+        <title>Plant</title>
+        <meta name="description" content="Manage plant" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <WorkplaceNavigation>
+      <PlantNavigation>
         <main>
           <div>
             <form onSubmit={handleSubmitGenerateWorkflowTasks}>
-              {workplaceId ? (
-                <input type="hidden" name="workplaceId" value={workplaceId} />
+              {plantId ? (
+                <input type="hidden" name="plantId" value={plantId} />
               ) : null}
               <button type="submit">Generate mock data</button>
             </form>
@@ -199,7 +198,7 @@ const Checklist: NextPage = () => {
             )}
           </div>
         </main>
-      </WorkplaceNavigation>
+      </PlantNavigation>
     </>
   );
 };

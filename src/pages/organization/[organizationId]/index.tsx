@@ -24,16 +24,16 @@ import Paper from "@mui/material/Paper";
 const OrganizationId: NextPage = () => {
   const [open, setOpen] = React.useState(false);
   const { organizationId } = useRouter().query;
-  const myWorkplaces = api.workplace.getByOrganizationId.useQuery(
+  const myPlant = api.plant.getByOrganizationId.useQuery(
     {
       organizationId: organizationId as string,
     },
     { enabled: !!organizationId }
   );
-  const createWorkplace = api.workplace.create.useMutation({
+  const createPlant = api.plant.create.useMutation({
     onSettled: async () => {
       handleClose();
-      await myWorkplaces.refetch();
+      await myPlant.refetch();
     },
   });
 
@@ -41,7 +41,7 @@ const OrganizationId: NextPage = () => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
 
-    createWorkplace.mutate({
+    createPlant.mutate({
       organizationId: formData.get("organizationId") as string,
       name: formData.get("name") as string,
     });
@@ -53,17 +53,17 @@ const OrganizationId: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Organization workplaces</title>
+        <title>Organization Plants</title>
         <meta
           name="description"
-          content="Manage workplace for selected organization"
+          content="Manage plants for selected organization"
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Box component="main">
         <Modal open={open} onClose={handleClose} disableAutoFocus>
           <FormCard>
-            <FormTitle>Create Workplace</FormTitle>
+            <FormTitle>Create Plant</FormTitle>
             <form onSubmit={handleSubmit}>
               <input
                 type="hidden"
@@ -107,18 +107,18 @@ const OrganizationId: NextPage = () => {
           </FormCard>
         </Modal>
         <Typography variant="h4" sx={{ pb: "1rem" }}>
-          Organization workplaces
+          Organization plants
         </Typography>
         <Box>
           <Button
             variant="contained"
             onClick={handleOpen}
-            disabled={myWorkplaces.status === "loading"}
+            disabled={myPlant.status === "loading"}
           >
-            Create Workplace
+            Create plant
           </Button>
         </Box>
-        {myWorkplaces.data && (
+        {myPlant.data && (
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
@@ -129,15 +129,13 @@ const OrganizationId: NextPage = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {myWorkplaces.data.map((workplace) => (
-                  <TableRow key={workplace.id}>
+                {myPlant.data.map((wplant) => (
+                  <TableRow key={wplant.id}>
                     <TableCell>
-                      <Link href={`/workplace/${workplace.id}`}>
-                        {workplace.name}
-                      </Link>
+                      <Link href={`/plant/${wplant.id}`}>{wplant.name}</Link>
                     </TableCell>
-                    <TableCell>{workplace.description}</TableCell>
-                    <TableCell>{workplace.organization.name}</TableCell>
+                    <TableCell>{wplant.description}</TableCell>
+                    <TableCell>{wplant.organization.name}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

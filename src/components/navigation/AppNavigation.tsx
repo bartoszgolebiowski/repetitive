@@ -95,14 +95,14 @@ const drawerItems = [
     href: "organization",
   },
   {
-    text: "Workplace",
+    text: "Plant",
     icon: <WorkplaceIcon />,
-    href: "workplace",
+    href: "plant",
   },
   {
-    text: "Action",
+    text: "Defect",
     icon: <EngineeringIcon />,
-    href: "action",
+    href: "defect",
   },
 ] as const;
 

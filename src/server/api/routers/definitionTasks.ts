@@ -11,20 +11,24 @@ import {
     groupDefinitionTasksByEveryDayAndSortByAvailableFrom,
     groupDefinitionTasksByDefinitionIdAndSortedByAvailableFromAndEnabledOnlyFirstTaskOfSameType
 } from "../../definitionsTasks/convert";
-import { actionItemSchema } from "~/utils/action";
+import { defectItemSchema } from "~/utils/defect";
 import { CHECKLIST_STATUS } from "~/utils/checklist";
 
 export const definitionTasksRouter = createTRPCRouter({
     generateTestData: protectedProcedure
-        .input(z.object({ workplaceId: z.string() }))
+        .input(z.object({
+            plantId: z.string(),
+            startDate: z.date().optional(),
+            endDate: z.date().optional()
+        }))
         .mutation(async ({ ctx, input }) => {
-            const startDate = new Date('Sat Apr 01 2023 20:34:16 GMT+0200')
-            const endDate = new Date('Wed Apr 19 2023 22:29:36 GMT+0200')
+            const startDate = input.startDate ? input.startDate : new Date('Sat Apr 01 2023 20:34:16 GMT+0200')
+            const endDate = input.endDate ? input.endDate : new Date('Wed Apr 19 2023 22:29:36 GMT+0200')
 
             try {
-                const workplace = await ctx.prisma.definition.findMany({
+                const definitions = await ctx.prisma.definition.findMany({
                     where: {
-                        workplaceId: input.workplaceId,
+                        plantId: input.plantId,
                     },
                     include: {
                         frequency: {
@@ -36,7 +40,7 @@ export const definitionTasksRouter = createTRPCRouter({
                     },
                 });
 
-                const definitionTasks = generateChecklistItems(startDate, endDate, workplace).flat()
+                const definitionTasks = generateChecklistItems(startDate, endDate, definitions).flat()
 
                 await ctx.prisma.definitionTask.createMany({
                     data: definitionTasks
@@ -47,13 +51,13 @@ export const definitionTasksRouter = createTRPCRouter({
         }),
     submit: protectedProcedure
         .input(z.object({
-            workplaceId: z.string(),
+            plantId: z.string(),
             done: z.array(z.string()),
-            action: z.array(actionItemSchema)
+            defect: z.array(defectItemSchema)
         }))
         .mutation(async ({ ctx, input }) => {
             try {
-                const [statusDone, statusActionRequired, actions] = await ctx.prisma.$transaction([
+                const [statusDone, statusActionRequired, defects] = await ctx.prisma.$transaction([
                     ctx.prisma.definitionTask.updateMany({
                         where: {
                             id: {
@@ -68,7 +72,7 @@ export const definitionTasksRouter = createTRPCRouter({
                     ctx.prisma.definitionTask.updateMany({
                         where: {
                             id: {
-                                in: input.action.map(item => item.definitionTaskId)
+                                in: input.defect.map(item => item.definitionTaskId)
                             }
                         },
                         data: {
@@ -76,8 +80,8 @@ export const definitionTasksRouter = createTRPCRouter({
                             status: CHECKLIST_STATUS.ACTION_REQUIRED
                         }
                     }),
-                    ctx.prisma.action.createMany({
-                        data: input.action.map(item => ({
+                    ctx.prisma.defect.createMany({
+                        data: input.defect.map(item => ({
                             status: item.status,
                             description: item.description,
                             createdBy: ctx.session.user.email ?? ctx.session.user.id,
@@ -85,26 +89,26 @@ export const definitionTasksRouter = createTRPCRouter({
                             assignedTo: item.assignedTo,
                             dueDate: item.dueDate,
                             definitionTaskId: item.definitionTaskId,
-                            workplaceId: input.workplaceId
+                            plantId: input.plantId
                         }))
                     })]
                 )
                 return {
                     statusDone,
                     statusActionRequired,
-                    actions
+                    defects
                 }
             } catch (error) {
                 handleErrorRouter(error)
             }
         }),
-    generateForWorkplaceId: protectedProcedure
-        .input(z.object({ workplaceId: z.string(), startDate: z.date(), endDate: z.date() }))
+    generateForPlantId: protectedProcedure
+        .input(z.object({ plantId: z.string(), startDate: z.date(), endDate: z.date() }))
         .mutation(async ({ ctx, input }) => {
             try {
-                const workplace = await ctx.prisma.definition.findMany({
+                const definition = await ctx.prisma.definition.findMany({
                     where: {
-                        workplaceId: input.workplaceId,
+                        plantId: input.plantId,
                     },
                     include: {
                         frequency: {
@@ -116,18 +120,18 @@ export const definitionTasksRouter = createTRPCRouter({
                     },
                 });
 
-                const definitionTasks = generateChecklistItems(input.startDate, input.endDate, workplace).flat()
+                const plantTasks = generateChecklistItems(input.startDate, input.endDate, definition).flat()
 
                 await ctx.prisma.definitionTask.createMany({
-                    data: definitionTasks
+                    data: plantTasks
                 })
             } catch (error) {
                 handleErrorRouter(error)
             }
         }),
-    getByWorkplaceId: protectedProcedure
+    getByplantId: protectedProcedure
         .input(z.object({
-            workplaceId: z.string(),
+            plantId: z.string(),
             startDay: z.date(),
             endDay: z.date(),
             timezoneOffsetStart: z.number(),
@@ -144,7 +148,7 @@ export const definitionTasksRouter = createTRPCRouter({
                             lt: compensateDate(endDay, input.timezoneOffsetEnd),
                         },
                         definition: {
-                            workplaceId: input.workplaceId,
+                            plantId: input.plantId
                         },
                     },
                     include: {
@@ -157,9 +161,9 @@ export const definitionTasksRouter = createTRPCRouter({
                 handleErrorRouter(error)
             }
         }),
-    getHistoryByWorkplaceId: protectedProcedure
+    getHistoryByplantId: protectedProcedure
         .input(z.object({
-            workplaceId: z.string(),
+            plantId: z.string(),
             startDay: z.date(),
             endDay: z.date(),
             timezoneOffsetStart: z.number(),
@@ -176,7 +180,7 @@ export const definitionTasksRouter = createTRPCRouter({
                             lt: compensateDate(getEndOfDay(endWeek), input.timezoneOffsetEnd),
                         },
                         definition: {
-                            workplaceId: input.workplaceId
+                            plantId: input.plantId
                         },
                     },
                     include: {
