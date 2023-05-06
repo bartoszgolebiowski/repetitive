@@ -8,7 +8,7 @@ import { isAdmin, ROLES } from "../roles";
 import { handleErrorRouter } from "../../../utils/httpErrors";
 
 export const organizationRouter = createTRPCRouter({
-    getMyOrganizations: protectedProcedure
+    getMy: protectedProcedure
         .query(async ({ ctx, }) => {
             const userId = ctx.session.user.id;
             try {

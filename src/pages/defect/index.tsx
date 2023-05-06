@@ -93,7 +93,7 @@ const Defect: NextPage = () => {
     onChangeStatus,
   } = useForm();
 
-  const myOrganizations = api.organization.getMyOrganizations.useQuery();
+  const myOrganizations = api.organization.getMy.useQuery();
   const organizationUsers = api.user.getByOrganizationId.useQuery(
     { organizationId: filters.organizationId },
     { enabled: !!filters.organizationId }

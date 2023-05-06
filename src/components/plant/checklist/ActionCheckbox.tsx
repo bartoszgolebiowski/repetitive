@@ -48,7 +48,7 @@ const ActionCheckbox = (props: Props) => {
   const ref = React.useRef<HTMLDivElement>(null);
   const [open, setOpen] = React.useState(false);
 
-  const plantUsers = api.user.getByplantId.useQuery({
+  const plantUsers = api.user.getByPlantId.useQuery({
     plantId: definitionTask.definition.plantId,
   });
 

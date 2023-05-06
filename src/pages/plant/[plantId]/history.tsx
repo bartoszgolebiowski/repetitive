@@ -62,7 +62,7 @@ const History: NextPage = () => {
   const monday = week[0];
   const sunday = week[6];
 
-  const definitionTasks = api.definitionTasks.getHistoryByplantId.useQuery(
+  const definitionTasks = api.definitionTasks.getHistoryByPlantId.useQuery(
     {
       plantId: plantId as string,
       startDay: monday,

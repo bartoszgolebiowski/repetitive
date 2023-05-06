@@ -129,7 +129,7 @@ export const definitionTasksRouter = createTRPCRouter({
                 handleErrorRouter(error)
             }
         }),
-    getByplantId: protectedProcedure
+    getByPlantId: protectedProcedure
         .input(z.object({
             plantId: z.string(),
             startDay: z.date(),
@@ -161,7 +161,7 @@ export const definitionTasksRouter = createTRPCRouter({
                 handleErrorRouter(error)
             }
         }),
-    getHistoryByplantId: protectedProcedure
+    getHistoryByPlantId: protectedProcedure
         .input(z.object({
             plantId: z.string(),
             startDay: z.date(),

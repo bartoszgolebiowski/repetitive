@@ -7,7 +7,7 @@ import {
 import { handleErrorRouter } from "../../../utils/httpErrors";
 
 export const plantRouter = createTRPCRouter({
-    getMyPlants: protectedProcedure
+    getMy: protectedProcedure
         .query(async ({ ctx }) => {
             const userId = ctx.session.user.id;
             try {

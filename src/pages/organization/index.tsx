@@ -23,7 +23,7 @@ import Paper from "@mui/material/Paper";
 
 const Organization: NextPage = () => {
   const [open, setOpen] = React.useState(false);
-  const myOrganizations = api.organization.getMyOrganizations.useQuery();
+  const myOrganizations = api.organization.getMy.useQuery();
   const createOrganization = api.organization.create.useMutation({
     onSettled: async () => {
       handleClose();

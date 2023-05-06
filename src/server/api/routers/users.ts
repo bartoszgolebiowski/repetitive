@@ -7,7 +7,7 @@ import {
 import { handleErrorRouter } from "../../../utils/httpErrors";
 
 export const userRouter = createTRPCRouter({
-    getByplantId: protectedProcedure
+    getByPlantId: protectedProcedure
         .input(z.object({ plantId: z.string() }))
         .query(async ({ ctx, input }) => {
             try {
@@ -19,7 +19,7 @@ export const userRouter = createTRPCRouter({
                         memberships: {
                             some: {
                                 organization: {
-                                    plant: {
+                                    plants: {
                                         some: {
                                             id: input.plantId
                                         }

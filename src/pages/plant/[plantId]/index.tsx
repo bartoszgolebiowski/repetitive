@@ -44,7 +44,7 @@ const Checklist: NextPage = () => {
     [selectedDay]
   );
 
-  const definitionTasksChecklist = api.definitionTasks.getByplantId.useQuery(
+  const definitionTasksChecklist = api.definitionTasks.getByPlantId.useQuery(
     {
       plantId: plantId as string,
       startDay: prevSelectedDay,

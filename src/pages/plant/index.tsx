@@ -14,7 +14,7 @@ import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 
 const Plant: NextPage = () => {
-  const myPlants = api.plant.getMyPlants.useQuery();
+  const myPlants = api.plant.getMy.useQuery();
 
   return (
     <>
