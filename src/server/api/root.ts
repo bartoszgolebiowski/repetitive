@@ -7,6 +7,7 @@ import { definitionRouter } from "./routers/definition";
 import { plantRouter } from "./routers/plant";
 import { invitationRouter } from "./routers/invitation";
 import { checklistActionRouter as defectRouter } from "./routers/defect";
+import { linePlanRouter } from "./routers/action/linePlan";
 
 /**
  * This is the primary router for your server.
@@ -21,7 +22,8 @@ export const appRouter = createTRPCRouter({
   frequency: frequencyRouter,
   user: userRouter,
   invitation: invitationRouter,
-  defect: defectRouter
+  defect: defectRouter,
+  linePlan: linePlanRouter,
 });
 
 // export type definition of API

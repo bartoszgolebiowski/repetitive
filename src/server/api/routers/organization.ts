@@ -1,4 +1,3 @@
-import { z } from "zod";
 
 import {
     createTRPCRouter,
@@ -6,6 +5,7 @@ import {
 } from "~/server/api/trpc";
 import { isAdmin, ROLES } from "../roles";
 import { handleErrorRouter } from "../../../utils/httpErrors";
+import { createSchema } from "~/utils/schema/organization";
 
 export const organizationRouter = createTRPCRouter({
     getMy: protectedProcedure
@@ -36,7 +36,7 @@ export const organizationRouter = createTRPCRouter({
             }
         }),
     create: protectedProcedure
-        .input(z.object({ name: z.string() }))
+        .input(createSchema)
         .mutation(async ({ input, ctx }) => {
             try {
                 const organization = await ctx.prisma.organization.create({

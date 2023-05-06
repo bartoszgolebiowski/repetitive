@@ -1,15 +1,14 @@
-import { z } from "zod";
-
 import {
     createTRPCRouter,
     protectedProcedure,
 } from "~/server/api/trpc";
-import { CronQuartz } from "~/server/frequency/cronValidation";
 import { handleErrorRouter } from "../../../utils/httpErrors";
+import { plantSchema } from "~/utils/schema/general";
+import { createSchema } from "~/utils/schema/frequency";
 
 export const frequencyRouter = createTRPCRouter({
     getByPlantId: protectedProcedure
-        .input(z.object({ plantId: z.string() }))
+        .input(plantSchema)
         .query(async ({ ctx, input }) => {
             try {
                 const frequencies = await ctx.prisma.frequency.findMany({
@@ -28,19 +27,7 @@ export const frequencyRouter = createTRPCRouter({
             }
         }),
     create: protectedProcedure
-        .input(z.object({
-            name: z.string(),
-            cron: z.array(z.string()).refine(
-                crons => crons.every(singleCron => new CronQuartz().test(singleCron)),
-                crons => ({
-                    message: `Invalid cron expressions: ${crons.filter(
-                        singleCron => !new CronQuartz().test(singleCron)
-                    ).join(', ')}`
-                })
-            ),
-            description: z.string().optional(),
-            plantId: z.string(),
-        }))
+        .input(createSchema)
         .mutation(async ({ input, ctx }) => {
             try {
                 const frequency = await ctx.prisma.frequency.create({

@@ -1,10 +1,10 @@
-import { z } from "zod";
-
 import {
     createTRPCRouter,
     protectedProcedure,
 } from "~/server/api/trpc";
 import { handleErrorRouter } from "../../../utils/httpErrors";
+import { createSchema } from "~/utils/schema/plant";
+import { byIdSchema, organizationSchema } from "~/utils/schema/general";
 
 export const plantRouter = createTRPCRouter({
     getMy: protectedProcedure
@@ -33,7 +33,7 @@ export const plantRouter = createTRPCRouter({
             }
         }),
     getById: protectedProcedure
-        .input(z.object({ id: z.string() }))
+        .input(byIdSchema)
         .query(async ({ ctx, input }) => {
             try {
                 const plant = await ctx.prisma.plant.findUnique({
@@ -52,7 +52,7 @@ export const plantRouter = createTRPCRouter({
             }
         }),
     getByOrganizationId: protectedProcedure
-        .input(z.object({ organizationId: z.string() }))
+        .input(organizationSchema)
         .query(async ({ ctx, input }) => {
             try {
                 const myPlants = await ctx.prisma.plant.findMany({
@@ -71,17 +71,11 @@ export const plantRouter = createTRPCRouter({
             }
         }),
     create: protectedProcedure
-        .input(z.object({
-            organizationId: z.string(),
-            name: z.string()
-        }))
+        .input(createSchema)
         .mutation(async ({ input, ctx }) => {
             try {
                 const plant = await ctx.prisma.plant.create({
-                    data: {
-                        organizationId: input.organizationId,
-                        name: input.name,
-                    },
+                    data: input
                 })
 
                 return plant

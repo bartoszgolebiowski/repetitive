@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { CHECKLIST_CREATOR, CHECKLIST_STATUS } from "~/utils/checklist";
+import { CHECKLIST_CREATOR, CHECKLIST_STATUS } from "~/utils/schema/definitionTask";
 import { DAYS } from "~/utils/date";
 
 const definitionTasksData = Prisma.validator<Prisma.DefinitionTaskArgs>()({

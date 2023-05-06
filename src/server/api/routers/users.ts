@@ -1,14 +1,13 @@
-import { z } from "zod";
-
 import {
     createTRPCRouter,
     protectedProcedure,
 } from "~/server/api/trpc";
 import { handleErrorRouter } from "../../../utils/httpErrors";
+import { organizationSchema, plantSchema } from "~/utils/schema/general";
 
 export const userRouter = createTRPCRouter({
     getByPlantId: protectedProcedure
-        .input(z.object({ plantId: z.string() }))
+        .input(plantSchema)
         .query(async ({ ctx, input }) => {
             try {
                 const userInsidePlant = await ctx.prisma.user.findMany({
@@ -36,7 +35,7 @@ export const userRouter = createTRPCRouter({
             }
         }),
     getByOrganizationId: protectedProcedure
-        .input(z.object({ organizationId: z.string() }))
+        .input(organizationSchema)
         .query(async ({ ctx, input }) => {
             try {
                 const userInsideOrganization = await ctx.prisma.user.findMany({

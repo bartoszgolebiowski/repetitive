@@ -1,14 +1,14 @@
-import { z } from "zod";
-
 import {
     createTRPCRouter,
     protectedProcedure,
 } from "~/server/api/trpc";
 import { handleErrorRouter } from "../../../utils/httpErrors";
+import { plantSchema } from "~/utils/schema/general";
+import { createSchema } from "~/utils/schema/definition";
 
 export const definitionRouter = createTRPCRouter({
     getByPlantId: protectedProcedure
-        .input(z.object({ plantId: z.string() }))
+        .input(plantSchema)
         .query(async ({ ctx, input }) => {
             try {
                 const definitions = await ctx.prisma.definition.findMany({
@@ -28,12 +28,7 @@ export const definitionRouter = createTRPCRouter({
             }
         }),
     create: protectedProcedure
-        .input(z.object({
-            name: z.string(),
-            plantId: z.string(),
-            frequencyId: z.string(),
-            description: z.string()
-        }))
+        .input(createSchema)
         .mutation(async ({ input, ctx }) => {
             try {
                 const definitions = await ctx.prisma.definition.create({

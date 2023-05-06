@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 import {
     createTRPCRouter,
     protectedProcedure,
@@ -11,16 +9,14 @@ import {
     groupDefinitionTasksByEveryDayAndSortByAvailableFrom,
     groupDefinitionTasksByDefinitionIdAndSortedByAvailableFromAndEnabledOnlyFirstTaskOfSameType
 } from "../../definitionsTasks/convert";
-import { defectItemSchema } from "~/utils/defect";
-import { CHECKLIST_STATUS } from "~/utils/checklist";
+import { CHECKLIST_STATUS } from "~/utils/schema/definitionTask";
+import { extractEmailOrUserId } from "~/utils/user";
+import { generateMockSchema, submitSchema, generateSchema, getSchema, getHistorySchema } from "~/utils/schema/definitionTask";
+
 
 export const definitionTasksRouter = createTRPCRouter({
     generateTestData: protectedProcedure
-        .input(z.object({
-            plantId: z.string(),
-            startDate: z.date().optional(),
-            endDate: z.date().optional()
-        }))
+        .input(generateMockSchema)
         .mutation(async ({ ctx, input }) => {
             const startDate = input.startDate ? input.startDate : new Date('Sat Apr 01 2023 20:34:16 GMT+0200')
             const endDate = input.endDate ? input.endDate : new Date('Wed Apr 19 2023 22:29:36 GMT+0200')
@@ -50,11 +46,7 @@ export const definitionTasksRouter = createTRPCRouter({
             }
         }),
     submit: protectedProcedure
-        .input(z.object({
-            plantId: z.string(),
-            done: z.array(z.string()),
-            defect: z.array(defectItemSchema)
-        }))
+        .input(submitSchema)
         .mutation(async ({ ctx, input }) => {
             try {
                 const [statusDone, statusActionRequired, defects] = await ctx.prisma.$transaction([
@@ -65,7 +57,7 @@ export const definitionTasksRouter = createTRPCRouter({
                             }
                         },
                         data: {
-                            updatedBy: ctx.session.user.email ?? ctx.session.user.id,
+                            updatedBy: extractEmailOrUserId(ctx.session),
                             status: CHECKLIST_STATUS.DONE
                         }
                     }),
@@ -76,7 +68,7 @@ export const definitionTasksRouter = createTRPCRouter({
                             }
                         },
                         data: {
-                            updatedBy: ctx.session.user.email ?? ctx.session.user.id,
+                            updatedBy: extractEmailOrUserId(ctx.session),
                             status: CHECKLIST_STATUS.ACTION_REQUIRED
                         }
                     }),
@@ -84,8 +76,8 @@ export const definitionTasksRouter = createTRPCRouter({
                         data: input.defect.map(item => ({
                             status: item.status,
                             description: item.description,
-                            createdBy: ctx.session.user.email ?? ctx.session.user.id,
-                            updatedBy: ctx.session.user.email ?? ctx.session.user.id,
+                            createdBy: extractEmailOrUserId(ctx.session),
+                            updatedBy: extractEmailOrUserId(ctx.session),
                             assignedTo: item.assignedTo,
                             dueDate: item.dueDate,
                             definitionTaskId: item.definitionTaskId,
@@ -103,7 +95,7 @@ export const definitionTasksRouter = createTRPCRouter({
             }
         }),
     generateForPlantId: protectedProcedure
-        .input(z.object({ plantId: z.string(), startDate: z.date(), endDate: z.date() }))
+        .input(generateSchema)
         .mutation(async ({ ctx, input }) => {
             try {
                 const definition = await ctx.prisma.definition.findMany({
@@ -130,13 +122,7 @@ export const definitionTasksRouter = createTRPCRouter({
             }
         }),
     getByPlantId: protectedProcedure
-        .input(z.object({
-            plantId: z.string(),
-            startDay: z.date(),
-            endDay: z.date(),
-            timezoneOffsetStart: z.number(),
-            timezoneOffsetEnd: z.number()
-        }))
+        .input(getSchema)
         .query(async ({ ctx, input }) => {
             const [startDay, endDay] = [input.startDay, input.endDay]
 
@@ -162,13 +148,7 @@ export const definitionTasksRouter = createTRPCRouter({
             }
         }),
     getHistoryByPlantId: protectedProcedure
-        .input(z.object({
-            plantId: z.string(),
-            startDay: z.date(),
-            endDay: z.date(),
-            timezoneOffsetStart: z.number(),
-            timezoneOffsetEnd: z.number()
-        }))
+        .input(getHistorySchema)
         .query(async ({ ctx, input }) => {
             const [startWeek, endWeek] = [input.startDay, input.endDay]
 

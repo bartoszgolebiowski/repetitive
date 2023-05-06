@@ -1,12 +1,13 @@
 import { TRPCError } from "@trpc/server";
-import { z } from "zod";
 
 import {
     createTRPCRouter,
     protectedProcedure,
 } from "~/server/api/trpc";
-import { isAdmin, ROLES } from "../roles";
+import { isAdmin } from "../roles";
 import { handleErrorRouter } from "../../../utils/httpErrors";
+import { organizationSchema } from "~/utils/schema/general";
+import { acceptSchema, createSchema, INVITATION_STATUS, deleteSchema } from "~/utils/schema/invitation";
 
 export const INVITATION_ERRORS = {
     ORGANIZATION_NOT_FOUND: {
@@ -35,15 +36,10 @@ export const INVITATION_ERRORS = {
     }
 }
 
-export const INVITATION_STATUS = {
-    PENDING: 'PENDING',
-    ACCEPTED: 'ACCEPTED',
-    REJECTED: 'REJECTED',
-} as const;
 
 export const invitationRouter = createTRPCRouter({
     getByOrganizationId: protectedProcedure
-        .input(z.object({ organizationId: z.string(), }))
+        .input(organizationSchema)
         .query(async ({ ctx, input }) => {
             const organizationId = input.organizationId;
             try {
@@ -60,7 +56,7 @@ export const invitationRouter = createTRPCRouter({
             }
         }),
     accept: protectedProcedure
-        .input(z.object({ id: z.string(), organizationId: z.string(), }))
+        .input(acceptSchema)
         .mutation(async ({ input, ctx }) => {
             try {
                 const [
@@ -138,14 +134,7 @@ export const invitationRouter = createTRPCRouter({
             }
         }),
     create: protectedProcedure
-        .input(z.object({
-            organizationId: z.string(),
-            name: z.string(),
-            role: z.enum([
-                ROLES.ADMIN,
-                ROLES.MEMBER,
-            ])
-        }))
+        .input(createSchema)
         .mutation(async ({ input, ctx }) => {
             try {
                 const organization = await ctx.prisma.organization.findFirst({
@@ -190,10 +179,7 @@ export const invitationRouter = createTRPCRouter({
             }
         }),
     delete: protectedProcedure
-        .input(z.object({
-            id: z.string(),
-            organizationId: z.string()
-        }))
+        .input(deleteSchema)
         .mutation(async ({ input, ctx }) => {
             try {
                 const organization = await ctx.prisma.organization.findFirst({
