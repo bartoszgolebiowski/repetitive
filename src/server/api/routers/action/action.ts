@@ -5,7 +5,8 @@ import {
     protectedProcedure,
 } from "~/server/api/trpc";
 import { handleErrorRouter } from "~/utils/httpErrors";
-import { actionEditItemSchema, actionFilterSchema, actionItemSchema } from "~/utils/schema/action/action";
+import { actionEditItemSchema, actionFilterSchema, actionItemSchema, ACTION_STATUS } from "~/utils/schema/action/action";
+import { byIdSchema } from "~/utils/schema/general";
 import { extractEmailOrUserId } from "~/utils/user";
 
 type RemoveUndefined<T> = T extends undefined ? never : T;
@@ -55,14 +56,34 @@ export const actionRouter = createTRPCRouter({
                 });
 
                 ctx.bus.emit('action:created', { actionPlanId: action.actionPlanId });
-                
+
                 return action;
             }
             catch (error) {
                 handleErrorRouter(error)
             }
         }),
+    delete: protectedProcedure
+        .input(byIdSchema)
+        .mutation(async ({ ctx, input }) => {
+            try {
+                const action = await ctx.prisma.action.update({
+                    where: {
+                        id: input.id,
+                    },
+                    data: {
+                        status: ACTION_STATUS.DELETED,
+                    },
+                });
 
+                ctx.bus.emit('action:deleted', { actionPlanId: action.actionPlanId });
+
+                return action;
+            }
+            catch (error) {
+                handleErrorRouter(error)
+            }
+        }),
     update: protectedProcedure
         .input(actionEditItemSchema)
         .mutation(async ({ ctx, input }) => {

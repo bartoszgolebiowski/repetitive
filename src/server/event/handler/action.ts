@@ -1,5 +1,6 @@
 import type { PrismaClient } from "@prisma/client";
-import { ACTION_PLAN_STATUS } from '../../utils/schema/action/actionPlan'
+import { ACTION_PLAN_STATUS } from '../../../utils/schema/action/actionPlan'
+import { ACTION_STATUS } from "~/utils/schema/action/action";
 
 export type ActionEventHandlers = {
     "action:created": (input: { actionPlanId: string }) => Promise<null>;
@@ -44,6 +45,18 @@ class ActionPlanRepository implements IActionPlanRepository {
         return null;
     }
 }
+const filterDeleted = (action: { status: string; }): boolean => action.status !== ACTION_STATUS.DELETED;
+const isCompleted = (action: { status: string; }): boolean => action.status === ACTION_STATUS.COMPLETED;
+
+
+export const createHandlersActionPrisma = (
+    prisma: PrismaClient,
+): ActionEventHandlers => {
+    const actionRepository = new ActionRepository(prisma);
+    const actionPlanRepository = new ActionPlanRepository(prisma);
+
+    return createHandlersActionRepositories(actionRepository, actionPlanRepository)
+}
 
 export const createHandlersActionRepositories = (
     actionRepository: IActionRepository,
@@ -61,7 +74,11 @@ export const createHandlersActionRepositories = (
             const actions = await actionRepository.getAllByActionPlanId({
                 actionPlanId: input.actionPlanId,
             })
-            const isAllCompleted = actions.every(action => action.status === ACTION_PLAN_STATUS.COMPLETED)
+
+            const isAllCompleted = actions
+                .filter(filterDeleted)
+                .every(isCompleted)
+
             if (isAllCompleted) {
                 await actionPlanRepository.updateStatus({
                     actionPlanId: input.actionPlanId,
@@ -74,14 +91,18 @@ export const createHandlersActionRepositories = (
             const actions = await actionRepository.getAllByActionPlanId({
                 actionPlanId: input.actionPlanId,
             })
-            const isAllCompleted = actions.every(action => action.status === ACTION_PLAN_STATUS.COMPLETED)
+
+            const isAllCompleted = actions
+                .filter(filterDeleted)
+                .every(isCompleted)
+
             if (isAllCompleted) {
                 await actionPlanRepository.updateStatus({
                     actionPlanId: input.actionPlanId,
                     status: ACTION_PLAN_STATUS.COMPLETED,
                 })
                 return null;
-            } 
+            }
 
             await actionPlanRepository.updateStatus({
                 actionPlanId: input.actionPlanId,
@@ -90,13 +111,4 @@ export const createHandlersActionRepositories = (
             return null;
         },
     } as const
-}
-
-export const createHandlersActionPrisma = (
-    prisma: PrismaClient,
-): ActionEventHandlers => {
-    const actionRepository = new ActionRepository(prisma);
-    const actionPlanRepository = new ActionPlanRepository(prisma);
-
-    return createHandlersActionRepositories(actionRepository, actionPlanRepository)
 }

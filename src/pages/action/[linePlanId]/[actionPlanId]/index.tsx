@@ -341,7 +341,6 @@ const Actions: NextPage = () => {
         <Typography variant="h4" sx={{ pb: "1rem" }}>
           Action Plan
         </Typography>
-        <form id="sorting"></form>
         {actions.data && (
           <TableContainer component={Paper}>
             <Table>

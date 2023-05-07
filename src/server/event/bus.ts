@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 import { EventEmitter } from 'events';
 import type { Events, Handlers } from './initialize';
 
@@ -11,13 +12,11 @@ export class Bus implements IBus {
     constructor(handlers: Handlers) {
         this.eventEmitter = new EventEmitter();
         Object.entries(handlers).forEach(([eventName, handler]) => {
-            // eslint-disable-next-line @typescript-eslint/no-misused-promises
             this.eventEmitter.on(eventName, handler);
         });
     }
 
     public on<T extends Events>(eventName: T, handler: Handlers[T]) {
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         this.eventEmitter.on(eventName, handler);
     }
 

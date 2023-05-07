@@ -8,12 +8,8 @@ describe('bus', () => {
     describe('logic', () => {
         it('should call event handler', () => {
             const mockHandler = vitest.fn()
-            const bus = new Bus(fromPartial({
-                'action:created': mockHandler
-            }))
-
+            const bus = new Bus(fromPartial({'action:created': mockHandler}))
             bus.emit('action:created', { actionPlanId: 'actionPlanId' })
-
             expect(mockHandler).toBeCalledWith({ actionPlanId: 'actionPlanId' })
         })
 
@@ -24,9 +20,9 @@ describe('bus', () => {
                 mockHandler(input)
                 return Promise.resolve(null)
             })
-            bus.emit('action:updated', { actionPlanId: 'actionPlanId321' })
-
-            expect(mockHandler).toBeCalledWith({ actionPlanId: 'actionPlanId321' })
+            const input = { actionPlanId: 'actionPlanId' }
+            bus.emit('action:updated', input)
+            expect(mockHandler).toBeCalledWith(input)
         })
     })
 

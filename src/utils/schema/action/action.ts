@@ -6,6 +6,7 @@ export const ACTION_STATUS = {
     COMPLETED: 'COMPLETED',
     DELEYED: 'DELEYED',
     REJECTED: 'REJECTED',
+    DELETED: 'DELETED',
 } as const;
 
 export const ACTION_PRIORITY = {
