@@ -219,7 +219,7 @@ model Organization {
     memberships Membership[]
     plants      Plant[]
     invitations Invitation[]
-    linePlans    LinePlan[]
+    linePlans   LinePlan[]
 }
 
 model Membership {

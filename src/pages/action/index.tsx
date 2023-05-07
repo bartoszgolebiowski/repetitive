@@ -30,7 +30,7 @@ import {
   Checkbox,
 } from "@mui/material";
 import { displayDate, getNextDay } from "~/utils/date";
-import LinePlanForm from "~/components/action/LinePlanForm";
+import LinePlanForm from "~/components/action/create/LinePlanForm";
 
 const convertQueryToFilters = (): Parameters<
   typeof api.linePlan.getByFilters.useQuery

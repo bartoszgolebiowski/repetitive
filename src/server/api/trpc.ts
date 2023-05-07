@@ -22,7 +22,8 @@ import { prisma } from "~/server/db";
 
 type CreateContextOptions = {
   session: Session | null;
-  prisma: PrismaClient
+  prisma: PrismaClient,
+  bus: IBus
 };
 
 /**
@@ -35,10 +36,11 @@ type CreateContextOptions = {
  *
  * @see https://create.t3.gg/en/usage/trpc#-servertrpccontextts
  */
-export const createInnerTRPCContext = (opts: CreateContextOptions,) => {
+export const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
     session: opts.session,
     prisma: opts.prisma,
+    bus: opts.bus
   };
 };
 
@@ -53,10 +55,12 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
 
   // Get the session from the server using the getServerSession wrapper function
   const session = await getServerAuthSession({ req, res });
+  const bus = initializeBus(createHandlers(prisma));
 
   return createInnerTRPCContext({
     session,
     prisma,
+    bus
   });
 };
 
@@ -71,6 +75,8 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 import { type PrismaClient } from "@prisma/client";
+import { type IBus, initializeBus } from "../event/bus";
+import { createHandlers } from "../event/initialize";
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,

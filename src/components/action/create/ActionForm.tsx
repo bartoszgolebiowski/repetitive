@@ -57,7 +57,6 @@ const ActionForm = (props: Props) => {
     if (result.success) {
       createAction.mutate(result.data);
     }
-    console.log(result)
     //todo: handle error
     handleClose();
   };

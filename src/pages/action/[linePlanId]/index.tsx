@@ -31,7 +31,7 @@ import {
 import { displayDate } from "~/utils/date";
 import { useRouter } from "next/router";
 import { ACTION_PLAN_STATUS } from "~/utils/schema/action/actionPlan";
-import ActionPlanForm from "~/components/action/ActionPlanForm";
+import ActionPlanForm from "~/components/action/create/ActionPlanForm";
 
 const convertQueryToFilters = (): Omit<
   Parameters<typeof api.actionPlan.getByFilters.useQuery>[0],

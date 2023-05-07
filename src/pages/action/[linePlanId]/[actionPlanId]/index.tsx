@@ -32,7 +32,7 @@ import {
 import { displayDate } from "~/utils/date";
 import { useRouter } from "next/router";
 import { ACTION_PRIORITY, ACTION_STATUS } from "~/utils/schema/action/action";
-import ActionForm from "~/components/action/ActionForm";
+import ActionForm from "~/components/action/create/ActionForm";
 
 const convertQueryToFilters = (): Omit<
   Parameters<typeof api.action.getByFilters.useQuery>[0]["filters"],
@@ -110,6 +110,7 @@ const useForm = (actionPlanId: string) => {
     onChangeStatus,
   };
 };
+
 type RemoveUndefined<T> = T extends undefined ? never : T;
 type OrderBy = RemoveUndefined<
   Parameters<typeof api.action.getByFilters.useQuery>[0]["orderBy"]
@@ -150,25 +151,15 @@ const TableHaderSort = ({
   onChangeOrderBy: (field: OrderBy["field"]) => () => void;
 }) => {
   return (
-    <TableSortLabel
-      active={orderBy.field === field}
-      direction={orderBy.direction}
-      onClick={onChangeOrderBy(field)}
-    >
-      {children}
-      {orderBy.field === field ? (
-        <Box
-          component="span"
-          sx={{
-            visibility: "hidden",
-          }}
-        >
-          {orderBy.direction === "desc"
-            ? "sorted descending"
-            : "sorted ascending"}
-        </Box>
-      ) : null}
-    </TableSortLabel>
+    <TableCell>
+      <TableSortLabel
+        active={orderBy.field === field}
+        direction={orderBy.direction}
+        onClick={onChangeOrderBy(field)}
+      >
+        {children}
+      </TableSortLabel>
+    </TableCell>
   );
 };
 
@@ -354,152 +345,91 @@ const Actions: NextPage = () => {
         {actions.data && (
           <TableContainer component={Paper}>
             <Table>
-              {/* <TableHead>
-                <TableRow>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Comment</TableCell>
-                  <TableCell align="right">
-                    <div>Assigned To /</div>
-                    <div>Leader</div>
-                  </TableCell>
-                  <TableCell align="right">
-                    <div>Created By /</div>
-                    <div>Created At</div>
-                  </TableCell>
-                  <TableCell align="right">
-                    <div>Updated By /</div>
-                    <div>Updated At</div>
-                  </TableCell>
-                  <TableCell align="right">
-                    <div>Start Date /</div>
-                    <div>Due Date</div>
-                  </TableCell>
-                </TableRow>
-              </TableHead> */}
-              {/* {actions.data.map((action) => (
-                  <TableRow
-                    key={action.id}
-                    sx={{
-                      backgroundColor:
-                        action.status === ACTION_STATUS.COMPLETED
-                          ? "green"
-                          : ACTION_STATUS.IN_PROGRESS
-                          ? "yellow"
-                          : "red",
-                    }}
-                  >
-                    <TableCell>{action.status}</TableCell>
-                    <TableCell>{action.name}</TableCell>
-                    <TableCell>{action.description}</TableCell>
-                    <TableCell>{action.comment}</TableCell>
-                    <TableCell align="right">
-                      <div>{action.assignedTo}</div>
-                      <div>{action.leader}</div>
-                    </TableCell>
-                    <TableCell align="right">
-                      <div>{action.createdBy}</div>
-                      <div>{displayDate(action.createdAt)}</div>
-                    </TableCell>
-                    <TableCell align="right">
-                      <div>{action.updatedBy}</div>
-                      <div>{displayDate(action.updatedAt)}</div>
-                    </TableCell>
-                    <TableCell align="right">
-                      <div>{displayDate(action.startDate)}</div>
-                      <div>{displayDate(action.dueDate)}</div>
-                    </TableCell>
-                  </TableRow>
-                ))} */}
               <TableHead>
                 <TableRow>
-                  <TableCell>
-                    <TableHaderSort
-                      field="priority"
-                      onChangeOrderBy={onChangeOrderBy}
-                      orderBy={orderBy}
-                    >
-                      Priority
-                    </TableHaderSort>
-                  </TableCell>
-                  <TableCell>
-                    <TableHaderSort
-                      field="status"
-                      onChangeOrderBy={onChangeOrderBy}
-                      orderBy={orderBy}
-                    >
-                      Status
-                    </TableHaderSort>
-                  </TableCell>
-                  <TableCell>
-                    <TableHaderSort
-                      field="name"
-                      onChangeOrderBy={onChangeOrderBy}
-                      orderBy={orderBy}
-                    >
-                      Name
-                    </TableHaderSort>
-                  </TableCell>
-                  <TableCell>Description</TableCell>
+                  <TableHaderSort
+                    field="priority"
+                    onChangeOrderBy={onChangeOrderBy}
+                    orderBy={orderBy}
+                  >
+                    Priority
+                  </TableHaderSort>
+
+                  <TableHaderSort
+                    field="status"
+                    onChangeOrderBy={onChangeOrderBy}
+                    orderBy={orderBy}
+                  >
+                    Status
+                  </TableHaderSort>
+
+                  <TableHaderSort
+                    field="name"
+                    onChangeOrderBy={onChangeOrderBy}
+                    orderBy={orderBy}
+                  >
+                    Name
+                  </TableHaderSort>
+
+                  <TableHaderSort
+                    field="description"
+                    onChangeOrderBy={onChangeOrderBy}
+                    orderBy={orderBy}
+                  >
+                    Description
+                  </TableHaderSort>
+
                   <TableCell>Comment</TableCell>
 
-                  <TableCell>
-                    <TableHaderSort
-                      field="assignedTo"
-                      onChangeOrderBy={onChangeOrderBy}
-                      orderBy={orderBy}
-                    >
-                      Assigned To
-                    </TableHaderSort>
-                  </TableCell>
+                  <TableHaderSort
+                    field="assignedTo"
+                    onChangeOrderBy={onChangeOrderBy}
+                    orderBy={orderBy}
+                  >
+                    Assigned To
+                  </TableHaderSort>
 
-                  <TableCell>
-                    <TableHaderSort
-                      field="leader"
-                      onChangeOrderBy={onChangeOrderBy}
-                      orderBy={orderBy}
-                    >
-                      Leader
-                    </TableHaderSort>
-                  </TableCell>
-                  <TableCell>
-                    <TableHaderSort
-                      field="startDate"
-                      onChangeOrderBy={onChangeOrderBy}
-                      orderBy={orderBy}
-                    >
-                      Start Date
-                    </TableHaderSort>
-                  </TableCell>
-                  <TableCell>
-                    <TableHaderSort
-                      field="dueDate"
-                      onChangeOrderBy={onChangeOrderBy}
-                      orderBy={orderBy}
-                    >
-                      Due Date
-                    </TableHaderSort>
-                  </TableCell>
+                  <TableHaderSort
+                    field="leader"
+                    onChangeOrderBy={onChangeOrderBy}
+                    orderBy={orderBy}
+                  >
+                    Leader
+                  </TableHaderSort>
+
+                  <TableHaderSort
+                    field="startDate"
+                    onChangeOrderBy={onChangeOrderBy}
+                    orderBy={orderBy}
+                  >
+                    Start Date
+                  </TableHaderSort>
+
+                  <TableHaderSort
+                    field="dueDate"
+                    onChangeOrderBy={onChangeOrderBy}
+                    orderBy={orderBy}
+                  >
+                    Due Date
+                  </TableHaderSort>
+
                   <TableCell>Created By</TableCell>
-                  <TableCell>
-                    <TableHaderSort
-                      field="createdAt"
-                      onChangeOrderBy={onChangeOrderBy}
-                      orderBy={orderBy}
-                    >
-                      Created At
-                    </TableHaderSort>
-                  </TableCell>
-                  <TableCell>
-                    <TableHaderSort
-                      field="updatedAt"
-                      onChangeOrderBy={onChangeOrderBy}
-                      orderBy={orderBy}
-                    >
-                      Updated At
-                    </TableHaderSort>
-                  </TableCell>
+
+                  <TableHaderSort
+                    field="createdAt"
+                    onChangeOrderBy={onChangeOrderBy}
+                    orderBy={orderBy}
+                  >
+                    Created At
+                  </TableHaderSort>
+
+                  <TableHaderSort
+                    field="updatedAt"
+                    onChangeOrderBy={onChangeOrderBy}
+                    orderBy={orderBy}
+                  >
+                    Updated At
+                  </TableHaderSort>
                 </TableRow>
               </TableHead>
               <TableBody>

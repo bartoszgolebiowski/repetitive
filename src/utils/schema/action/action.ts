@@ -83,6 +83,8 @@ export const actionFilterSchema = z.object({
             'priority',
             'createdAt',
             'updatedAt',
+            'description'
+            
         ]),
         direction: z.enum([
             'asc',

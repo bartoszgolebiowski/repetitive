@@ -25,7 +25,7 @@ export const actionRouter = createTRPCRouter({
                 ...{ assignedTo: assignedTo ? { equals: assignedTo } : {} },
                 ...{ status: status ? { in: status } : {} },
             } satisfies RemoveUndefined<Parameters<typeof ctx.prisma.action.findMany>['0']>['where']
-            
+
             const orderBy = {
                 [field]: direction,
             } satisfies RemoveUndefined<Parameters<typeof ctx.prisma.action.findMany>['0']>['orderBy']
@@ -54,6 +54,8 @@ export const actionRouter = createTRPCRouter({
                     },
                 });
 
+                ctx.bus.emit('action:created', { actionPlanId: action.actionPlanId });
+                
                 return action;
             }
             catch (error) {
@@ -75,6 +77,8 @@ export const actionRouter = createTRPCRouter({
                         updatedBy: extractEmailOrUserId(ctx.session),
                     },
                 });
+
+                ctx.bus.emit('action:updated', { actionPlanId: action.actionPlanId });
 
                 return action;
             }

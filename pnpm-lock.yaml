@@ -11,6 +11,7 @@ specifiers:
   '@next-auth/prisma-adapter': ^1.0.5
   '@prisma/client': ^4.9.0
   '@tanstack/react-query': ^4.20.2
+  '@total-typescript/shoehorn': ^0.1.0
   '@trpc/client': ^10.9.0
   '@trpc/next': ^10.9.0
   '@trpc/react-query': ^10.9.0
@@ -50,6 +51,7 @@ dependencies:
   '@next-auth/prisma-adapter': 1.0.5_knaw3qxw4zwoiwojd3fn43zthi
   '@prisma/client': 4.11.0_prisma@4.11.0
   '@tanstack/react-query': 4.27.0_biqbaboplfbrettd7655fr4n2y
+  '@total-typescript/shoehorn': 0.1.0
   '@trpc/client': 10.16.0_@trpc+server@10.16.0
   '@trpc/next': 10.16.0_ce5lki43zjayzugu2gngg3k6ga
   '@trpc/react-query': 10.16.0_xqgqjjeu4juncpfqrbxjw3t7rq
@@ -907,6 +909,10 @@ packages:
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       use-sync-external-store: 1.2.0_react@18.2.0
+    dev: false
+
+  /@total-typescript/shoehorn/0.1.0:
+    resolution: {integrity: sha512-XKig6hXxWnUh0fsW3LR2vxpxwLlPFokfOSR0riHKA9uXvdHDfwOOPdAOi4U/YNKLmgYUu/plUfnF3yiAAz1+Zg==}
     dev: false
 
   /@trpc/client/10.16.0_@trpc+server@10.16.0:
