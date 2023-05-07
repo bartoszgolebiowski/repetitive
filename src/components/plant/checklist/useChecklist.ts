@@ -2,7 +2,7 @@ import React from "react";
 import { produce } from 'immer'
 import { stableNow } from "~/utils/date";
 import type { DefinitionTask, Defect } from "./utils";
-import { CHECKLIST_STATUS } from "~/utils/checklist";
+import { CHECKLIST_STATUS } from "~/utils/schema/definitionTask";
 
 type Checklist = {
     done: Record<string, boolean>;

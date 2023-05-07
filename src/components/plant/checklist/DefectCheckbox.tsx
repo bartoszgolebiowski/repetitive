@@ -14,20 +14,9 @@ import Grid2 from "@mui/material/Unstable_Grid2";
 import React from "react";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
-import { defectItemSchema, DEFECT_STATUS } from "~/utils/defect";
+import { defectCreateSchema, DEFECT_STATUS } from "~/utils/schema/defect";
 import { api } from "~/utils/api";
-import { stableNow } from "~/utils/date";
 import type { DefinitionTask, Defect } from "./utils";
-
-const addZero = (n: number) => (n < 10 ? `0${n}` : n);
-const parseDateToInput = (date: Date) => {
-  const year = date.getFullYear();
-  const month = addZero(date.getMonth() + 1);
-  const day = addZero(date.getDate());
-  const hours = addZero(date.getHours());
-  const minutes = addZero(date.getMinutes());
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
-};
 
 type Props = {
   definitionTask: {
@@ -43,7 +32,7 @@ type Props = {
   onChange: (action: Defect | null) => void;
 };
 
-const ActionCheckbox = (props: Props) => {
+const DefectCheckbox = (props: Props) => {
   const { definitionTask, checked, onChange } = props;
   const ref = React.useRef<HTMLDivElement>(null);
   const [open, setOpen] = React.useState(false);
@@ -63,7 +52,7 @@ const ActionCheckbox = (props: Props) => {
 
     const dueDate = String(data.dueDate);
     data.dueDate = new Date(dueDate);
-    const result = defectItemSchema.safeParse(data);
+    const result = defectCreateSchema.safeParse(data);
 
     if (result.success) {
       onChange(result.data);
@@ -114,12 +103,14 @@ const ActionCheckbox = (props: Props) => {
               <Grid2 xs={12}>
                 <TextField
                   required
-                  defaultValue={parseDateToInput(stableNow)}
                   type="datetime-local"
                   fullWidth
                   id="dueDate"
                   label="Due Date"
                   name="dueDate"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
                 />
               </Grid2>
               <Grid2 xs={12}>
@@ -187,4 +178,4 @@ const ActionCheckbox = (props: Props) => {
   );
 };
 
-export default ActionCheckbox;
+export default DefectCheckbox;

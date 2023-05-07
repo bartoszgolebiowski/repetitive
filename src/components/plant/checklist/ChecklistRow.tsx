@@ -1,6 +1,6 @@
 import { TableRow, TableCell, FormControlLabel, Checkbox } from "@mui/material";
 import React, { type ComponentProps, type PropsWithChildren } from "react";
-import ActionCheckbox from "./ActionCheckbox";
+import DefectCheckbox from "./DefectCheckbox";
 import { type DefinitionTask } from "./utils";
 
 type Props = {
@@ -8,7 +8,7 @@ type Props = {
   checkedDone: boolean;
   checkedAction: boolean;
   onDoneChange: () => void;
-  onActionChange: ComponentProps<typeof ActionCheckbox>["onChange"];
+  onActionChange: ComponentProps<typeof DefectCheckbox>["onChange"];
 };
 
 const ChecklistRow = (props: PropsWithChildren<Props>) => {
@@ -32,7 +32,7 @@ const ChecklistRow = (props: PropsWithChildren<Props>) => {
           checked={checkedDone}
           onChange={onDoneChange}
         />
-        <ActionCheckbox
+        <DefectCheckbox
           definitionTask={definitionTask}
           checked={checkedAction}
           onChange={onActionChange}

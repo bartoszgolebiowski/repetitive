@@ -8,6 +8,8 @@ import { plantRouter } from "./routers/plant";
 import { invitationRouter } from "./routers/invitation";
 import { checklistActionRouter as defectRouter } from "./routers/defect";
 import { linePlanRouter } from "./routers/action/linePlan";
+import { actionPlanRouter } from "./routers/action/actionPlan";
+import { actionRouter } from "./routers/action/action";
 
 /**
  * This is the primary router for your server.
@@ -24,6 +26,8 @@ export const appRouter = createTRPCRouter({
   invitation: invitationRouter,
   defect: defectRouter,
   linePlan: linePlanRouter,
+  actionPlan: actionPlanRouter,
+  action: actionRouter,
 });
 
 // export type definition of API

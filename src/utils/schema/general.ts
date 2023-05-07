@@ -38,6 +38,18 @@ export const plantSchema = z.object({
 });
 
 /**
+ * Schema object for linePlan validation  
+ * ```ts
+ * z.object({
+ *   linePlanId: z.string()
+ * })
+ * ```
+ */
+export const linePlanSchema = z.object({
+    linePlanId: z.string(),
+});
+
+/**
  * Schema object for definitionTask validation  
  * ```ts
  * z.object({

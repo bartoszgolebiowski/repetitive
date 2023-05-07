@@ -5,7 +5,8 @@ import { describe, it, expect, vi, afterAll, beforeAll } from 'vitest';
 import { TRPCError } from '@trpc/server';
 import { callerAuthenticated, callerUnauthenticated } from './trpcCaller';
 import { prismaMock } from './prismaMock';
-import { INVITATION_ERRORS, INVITATION_STATUS } from '../invitation';
+import { INVITATION_ERRORS } from '../invitation';
+import { INVITATION_STATUS } from '~/utils/schema/invitation';
 
 describe('invitation', () => {
     beforeAll(() => {

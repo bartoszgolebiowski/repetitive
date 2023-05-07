@@ -108,6 +108,8 @@ model LinePlan {
     updatedAt DateTime @updatedAt
     updatedBy String
 
+    organization   Organization @relation(fields: [organizationId], references: [id])
+    organizationId String
     productionLine String
     actionPlans    ActionPlan[]
     assignedTo     String
@@ -115,6 +117,8 @@ model LinePlan {
     status         String
     // attachments Attachment[]
     comment        String
+
+    @@index([organizationId])
 }
 
 model ActionPlan {
@@ -124,14 +128,14 @@ model ActionPlan {
     updatedAt DateTime @updatedAt
     updatedBy String
 
-    name           String
-    assignedTo     String
-    doneDate       DateTime
-    productionLine String
-    problem        String
-    actions        Action[]
-    LinePlan       LinePlan @relation(fields: [linePlanId], references: [id])
-    linePlanId     String
+    status      String
+    name        String
+    description String
+    assignedTo  String
+    dueDate     DateTime
+    actions     Action[]
+    LinePlan    LinePlan @relation(fields: [linePlanId], references: [id])
+    linePlanId  String
 
     @@index([linePlanId])
 }
@@ -143,9 +147,11 @@ model Action {
     updatedAt DateTime @updatedAt
     updatedBy String
 
+    name         String
+    description  String
     startDate    DateTime
-    assignedTo   String
     dueDate      DateTime
+    assignedTo   String
     priority     String
     status       String
     leader       String
@@ -213,6 +219,7 @@ model Organization {
     memberships Membership[]
     plants      Plant[]
     invitations Invitation[]
+    linePlans    LinePlan[]
 }
 
 model Membership {

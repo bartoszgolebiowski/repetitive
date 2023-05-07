@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { emptyAction, initialization, reducer, toggleAction, toggleDone } from '../useChecklist'
-import { CHECKLIST_STATUS } from "~/utils/checklist";
+import { CHECKLIST_STATUS } from "~/utils/schema/definitionTask";
 
 describe('useChecklist', () => {
     describe('reducer', () => {

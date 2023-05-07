@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { byIdSchema, organizationSchema } from "../general";
+import { byIdSchema, linePlanSchema } from "../general";
 
 export const ACTION_PLAN_STATUS = {
     IN_PROGRESS: 'IN_PROGRESS',
@@ -7,22 +7,26 @@ export const ACTION_PLAN_STATUS = {
     DELEYED: 'DELEYED',
 } as const;
 
-export const linePlanItemCreateSchema =z.object({
-    productionLine: z.string(),
-    assignedTo: z.string(),
+export const actionPlanCreateSchema = linePlanSchema.merge(z.object({
+    name: z.string(),
+    description: z.string(),
     dueDate: z.date(),
-    comment: z.string().optional().default(''),
-})
+    assignedTo: z.string(),
+}))
 
-export const linePlanItemEditSchema = z.object({
-    id: z.string(),
+export const actionPlanEditSchema = byIdSchema.merge(z.object({
+    name: z.string().optional(),
     assignedTo: z.string().optional(),
     dueDate: z.date().optional(),
-    comment: z.string().optional(),
-})
+    description: z.string().optional(),
+    status: z.enum([
+        ACTION_PLAN_STATUS.IN_PROGRESS,
+        ACTION_PLAN_STATUS.COMPLETED,
+        ACTION_PLAN_STATUS.DELEYED,
+    ]).optional(),
+}))
 
-export const linePlanFilterSchema = z.object({
-    productionLine: z.string().optional(),
+export const actionPlanFilterSchema = linePlanSchema.merge(z.object({
     assignedTo: z.string().optional(),
     dueDate: z.date().optional().nullable(),
     status: z.array(z.enum([
@@ -30,4 +34,4 @@ export const linePlanFilterSchema = z.object({
         ACTION_PLAN_STATUS.COMPLETED,
         ACTION_PLAN_STATUS.DELEYED,
     ])),
-})
+}))

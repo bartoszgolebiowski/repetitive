@@ -1,35 +1,92 @@
 import { z } from "zod";
+import { byIdSchema } from "../general";
 
-export const DEFECT_STATUS = {
-    TO_DO: 'TO_DO',
-    ASSIGNED: 'ASSIGNED',
-    DELETED: 'DELETED',
+export const ACTION_STATUS = {
+    IN_PROGRESS: 'IN_PROGRESS',
     COMPLETED: 'COMPLETED',
+    DELEYED: 'DELEYED',
+    REJECTED: 'REJECTED',
 } as const;
 
-export const defectItemSchema = z.object({
-    definitionTaskId: z.string(),
-    dueDate: z.date(),
+export const ACTION_PRIORITY = {
+    LOW: 'LOW',
+    HIGH: 'HIGH',
+} as const;
+
+export const actionItemSchema = z.object({
+    actionPlanId: z.string(),
+    name: z.string(),
     description: z.string(),
-    assignedTo: z.string(),
+    startDate: z.date(),
+    dueDate: z.date(),
     status: z.enum([
-        DEFECT_STATUS.TO_DO,
-        DEFECT_STATUS.ASSIGNED,
-        DEFECT_STATUS.DELETED,
-        DEFECT_STATUS.COMPLETED,
+        ACTION_STATUS.IN_PROGRESS,
+        ACTION_STATUS.COMPLETED,
+        ACTION_STATUS.DELEYED,
+        ACTION_STATUS.REJECTED,
     ]),
+    assignedTo: z.string(),
+    leader: z.string(),
+    priority: z.enum([
+        ACTION_PRIORITY.LOW,
+        ACTION_PRIORITY.HIGH,
+    ]),
+    comment: z.string().optional().default(''),
 })
 
-export const defectsFilterSchema = z.object({
-    definitionId: z.string().optional(),
-    createdBy: z.string().optional(),
+export const actionEditItemSchema = byIdSchema.merge(z.object({
+    name: z.string(),
+    description: z.string().optional(),
+    startDate: z.date().optional(),
+    dueDate: z.date().optional(),
+    status: z.enum([
+        ACTION_STATUS.IN_PROGRESS,
+        ACTION_STATUS.COMPLETED,
+        ACTION_STATUS.DELEYED,
+        ACTION_STATUS.REJECTED,
+    ]).optional(),
     assignedTo: z.string().optional(),
-    status: z.array(z.enum([
-        DEFECT_STATUS.TO_DO,
-        DEFECT_STATUS.ASSIGNED,
-        DEFECT_STATUS.DELETED,
-        DEFECT_STATUS.COMPLETED,
-    ])).optional(),
-    organizationId: z.string().nonempty(),
-    plantId: z.string().optional(),
+    leader: z.string().optional(),
+    priority: z.enum([
+        ACTION_PRIORITY.LOW,
+        ACTION_PRIORITY.HIGH,
+    ]).optional(),
+    comment: z.string().optional(),
+}))
+
+export const actionFilterSchema = z.object({
+    filters: z.object({
+        actionPlanId: z.string(),
+        startDate: z.date().optional().nullable(),
+        dueDate: z.date().optional().nullable(),
+        assignedTo: z.string().optional(),
+        leader: z.string().optional(),
+        priority: z.array(z.enum([
+            ACTION_PRIORITY.LOW,
+            ACTION_PRIORITY.HIGH,
+        ])),
+        status: z.array(z.enum([
+            ACTION_STATUS.IN_PROGRESS,
+            ACTION_STATUS.COMPLETED,
+            ACTION_STATUS.DELEYED,
+            ACTION_STATUS.REJECTED,
+        ])),
+    }),
+    orderBy: z.object({
+        field: z.enum([
+            'name',
+            'startDate',
+            'dueDate',
+            'status',
+            'assignedTo',
+            'leader',
+            'priority',
+            'createdAt',
+            'updatedAt',
+        ]),
+        direction: z.enum([
+            'asc',
+            'desc',
+        ]),
+    }).optional(),
 })

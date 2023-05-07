@@ -1,28 +1,39 @@
+import { z } from "zod";
+
 import {
     createTRPCRouter,
     protectedProcedure,
 } from "~/server/api/trpc";
 import { handleErrorRouter } from "~/utils/httpErrors";
-import { ACTION_PLAN_STATUS, actionPlanCreateSchema, actionPlanEditSchema, actionPlanFilterSchema } from "~/utils/schema/action/actionPlan";
+import { actionEditItemSchema, actionFilterSchema, actionItemSchema } from "~/utils/schema/action/action";
 import { extractEmailOrUserId } from "~/utils/user";
 
 type RemoveUndefined<T> = T extends undefined ? never : T;
 
-export const actionPlanRouter = createTRPCRouter({
+export const actionRouter = createTRPCRouter({
     getByFilters: protectedProcedure
-        .input(actionPlanFilterSchema)
+        .input(actionFilterSchema)
         .query(async ({ ctx, input }) => {
-            const { linePlanId, dueDate, assignedTo, status } = input;
+            const { actionPlanId, leader, priority, startDate, dueDate, assignedTo, status } = input.filters;
+            const { field, direction } = input?.orderBy || { field: 'dueDate', direction: 'asc' };
             const where = {
-                linePlanId: linePlanId,
+                actionPlanId: actionPlanId,
+                ...{ leader: leader ? { equals: leader } : {} },
+                ...{ priority: priority ? { in: priority } : {} },
+                ...{ startDate: startDate ? { lte: startDate } : {} },
                 ...{ dueDate: dueDate ? { lte: dueDate } : {} },
                 ...{ assignedTo: assignedTo ? { equals: assignedTo } : {} },
                 ...{ status: status ? { in: status } : {} },
-            } satisfies RemoveUndefined<Parameters<typeof ctx.prisma.actionPlan.findMany>['0']>['where']
+            } satisfies RemoveUndefined<Parameters<typeof ctx.prisma.action.findMany>['0']>['where']
+            
+            const orderBy = {
+                [field]: direction,
+            } satisfies RemoveUndefined<Parameters<typeof ctx.prisma.action.findMany>['0']>['orderBy']
 
             try {
-                const linePlans = await ctx.prisma.actionPlan.findMany({
+                const linePlans = await ctx.prisma.action.findMany({
                     where,
+                    orderBy,
                 });
 
                 return linePlans;
@@ -32,40 +43,40 @@ export const actionPlanRouter = createTRPCRouter({
             }
         }),
     create: protectedProcedure
-        .input(actionPlanCreateSchema)
+        .input(actionItemSchema)
         .mutation(async ({ ctx, input }) => {
             try {
-                const linePlan = await ctx.prisma.actionPlan.create({
+                const action = await ctx.prisma.action.create({
                     data: {
                         ...input,
                         createdBy: extractEmailOrUserId(ctx.session),
                         updatedBy: extractEmailOrUserId(ctx.session),
-                        status: ACTION_PLAN_STATUS.COMPLETED,
                     },
                 });
 
-                return linePlan;
-
+                return action;
             }
             catch (error) {
                 handleErrorRouter(error)
             }
         }),
+
     update: protectedProcedure
-        .input(actionPlanEditSchema)
+        .input(actionEditItemSchema)
         .mutation(async ({ ctx, input }) => {
             try {
-                const linePlan = await ctx.prisma.linePlan.update({
+                const action = await ctx.prisma.action.update({
                     where: {
                         id: input.id,
                     },
                     data: {
                         ...input,
+                        createdBy: extractEmailOrUserId(ctx.session),
                         updatedBy: extractEmailOrUserId(ctx.session),
                     },
                 });
 
-                return linePlan;
+                return action;
             }
             catch (error) {
                 handleErrorRouter(error)
