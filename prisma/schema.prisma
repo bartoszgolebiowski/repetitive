@@ -134,7 +134,7 @@ model ActionPlan {
     assignedTo  String
     dueDate     DateTime
     actions     Action[]
-    LinePlan    LinePlan @relation(fields: [linePlanId], references: [id])
+    linePlan    LinePlan @relation(fields: [linePlanId], references: [id])
     linePlanId  String
 
     @@index([linePlanId])

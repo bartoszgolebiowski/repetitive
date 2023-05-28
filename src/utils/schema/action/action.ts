@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { byIdSchema } from "../general";
+import { Prisma, Action } from "@prisma/client";
 
 export const ACTION_STATUS = {
     IN_PROGRESS: 'IN_PROGRESS',
@@ -36,7 +37,7 @@ export const actionItemSchema = z.object({
 })
 
 export const actionEditItemSchema = byIdSchema.merge(z.object({
-    name: z.string(),
+    name: z.string().optional(),
     description: z.string().optional(),
     startDate: z.date().optional(),
     dueDate: z.date().optional(),
@@ -71,6 +72,7 @@ export const actionFilterSchema = z.object({
             ACTION_STATUS.COMPLETED,
             ACTION_STATUS.DELEYED,
             ACTION_STATUS.REJECTED,
+            ACTION_STATUS.DELETED
         ])),
     }),
     orderBy: z.object({
@@ -85,7 +87,6 @@ export const actionFilterSchema = z.object({
             'createdAt',
             'updatedAt',
             'description'
-            
         ]),
         direction: z.enum([
             'asc',

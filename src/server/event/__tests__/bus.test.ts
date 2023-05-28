@@ -1,21 +1,14 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { type DeepMockProxy, mockDeep } from 'vitest-mock-extended';
-import { fromPartial } from "@total-typescript/shoehorn";
+import { mockDeep } from 'vitest-mock-extended';
 import { assertType, describe, it, expectTypeOf, vitest, expect } from 'vitest'
 import { type IBus, Bus } from '../bus'
 
 describe('bus', () => {
     describe('logic', () => {
-        it('should call event handler', () => {
-            const mockHandler = vitest.fn()
-            const bus = new Bus(fromPartial({'action:created': mockHandler}))
-            bus.emit('action:created', { actionPlanId: 'actionPlanId' })
-            expect(mockHandler).toBeCalledWith({ actionPlanId: 'actionPlanId' })
-        })
 
         it('should register handler and invoke it', () => {
             const mockHandler = vitest.fn()
-            const bus = new Bus(fromPartial({}))
+            const bus = new Bus()
             bus.on('action:updated', (input) => {
                 mockHandler(input)
                 return Promise.resolve(null)
@@ -27,11 +20,24 @@ describe('bus', () => {
     })
 
     describe('types', () => {
-        const bus: DeepMockProxy<IBus> = mockDeep<IBus>();
+        const bus: IBus = mockDeep<IBus>();
+
+        it('all register events', () => {
+            const actionEvents = [
+                'action:created',
+                'action:deleted',
+                'action:updated',
+                'actionPlan:allActionsCompletedOrDeletedOrDelayed',
+            ] as const
+
+            const allEvents = [
+                ...actionEvents,
+            ] as const
+
+            expectTypeOf(bus.on).parameter(0).toEqualTypeOf<typeof allEvents[number]>()
+        })
 
         it('action tests', () => {
-            expectTypeOf(bus.on).parameter(0).toEqualTypeOf<'action:created' | 'action:deleted' | 'action:updated'>()
-
             bus.on('action:created', (input) => {
                 assertType<{ actionPlanId: string }>(input)
                 return Promise.resolve(null)
@@ -40,10 +46,21 @@ describe('bus', () => {
                 assertType<{ actionPlanId: string }>(input)
                 return Promise.resolve(null)
             })
+            
             bus.on('action:updated', (input) => {
                 assertType<{ actionPlanId: string }>(input)
                 return Promise.resolve(null)
             })
+
+            bus.on('actionPlan:allActionsCompletedOrDeletedOrDelayed', (input) => {
+                assertType<{ linePlanId: string }>(input)
+                return Promise.resolve(null)
+            })
+
+            bus.emit('action:created', { actionPlanId: 'actionPlanId' })
+            bus.emit('action:deleted', { actionPlanId: 'actionPlanId' })
+            bus.emit('action:updated', { actionPlanId: 'actionPlanId' })
+            bus.emit('actionPlan:allActionsCompletedOrDeletedOrDelayed', { linePlanId: 'linePlanId' })
         })
     })
 })

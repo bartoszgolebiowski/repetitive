@@ -51,6 +51,7 @@ const convertQueryToFilters = (): Omit<
       ACTION_STATUS.DELEYED,
       ACTION_STATUS.IN_PROGRESS,
       ACTION_STATUS.REJECTED,
+      ACTION_STATUS.DELETED,
     ] as Array<keyof typeof ACTION_STATUS>,
   };
 };
@@ -192,6 +193,19 @@ const Actions: NextPage = () => {
       enabled: !!linePlanId,
     }
   );
+
+  const updateAction = api.action.update.useMutation({
+    onSuccess: async () => {
+      await actions.refetch();
+    },
+  });
+
+  const markAsCompleted = (id: string) => () => {
+    updateAction.mutate({
+      id,
+      status: ACTION_STATUS.COMPLETED,
+    });
+  };
 
   return (
     <>
@@ -444,7 +458,11 @@ const Actions: NextPage = () => {
                           : "red",
                     }}
                   >
-                    <TableCell>{action.priority}</TableCell>
+                    <TableCell>
+                      <Button onClick={markAsCompleted(action.id)}>
+                        {action.priority}
+                      </Button>
+                    </TableCell>
                     <TableCell>{action.status}</TableCell>
                     <TableCell>{action.name}</TableCell>
                     <TableCell>{action.description}</TableCell>
