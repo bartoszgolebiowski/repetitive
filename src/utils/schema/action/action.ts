@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { byIdSchema } from "../general";
-import { Prisma, Action } from "@prisma/client";
 
 export const ACTION_STATUS = {
     IN_PROGRESS: 'IN_PROGRESS',

@@ -4,7 +4,6 @@ import Head from "next/head";
 import { api } from "~/utils/api";
 
 import Grid2 from "@mui/material/Unstable_Grid2";
-import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import Table from "@mui/material/Table";
@@ -12,11 +11,8 @@ import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Modal from "@mui/material/Modal";
-import Typography from "@mui/material/Typography";
 import React from "react";
 import FormCard from "~/components/FormCard";
-import GroupAddIcon from "@mui/icons-material/GroupAdd";
 import FormTitle from "~/components/FormTitle";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
@@ -28,11 +24,14 @@ import {
   FormControlLabel,
   Checkbox,
   TableSortLabel,
+  Breadcrumbs,
 } from "@mui/material";
 import { displayDate } from "~/utils/date";
 import { useRouter } from "next/router";
 import { ACTION_PRIORITY, ACTION_STATUS } from "~/utils/schema/action/action";
 import ActionForm from "~/components/action/create/ActionForm";
+import { useOrganization } from "@clerk/nextjs";
+import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
 
 const convertQueryToFilters = (): Omit<
   Parameters<typeof api.action.getByFilters.useQuery>[0]["filters"],
@@ -178,19 +177,29 @@ const Actions: NextPage = () => {
   } = useForm(actionPlanId as string);
   const { orderBy, onChangeOrderBy } = useOrderBy();
 
-  const linePlanUsers = api.user.getByLinePlanId.useQuery(
-    {
-      linePlanId: linePlanId as string,
-    },
-    {
-      enabled: !!linePlanId,
-    }
-  );
+  const { membershipList } = useOrganization({
+    membershipList: { limit: ORGANIZATION_MEMBERSHIP_LIMIT },
+  });
 
   const actions = api.action.getByFilters.useQuery(
     { filters, orderBy },
     {
       enabled: !!linePlanId,
+    }
+  );
+  const linePlan = api.linePlan.getById.useQuery(
+    { id: linePlanId as string },
+    {
+      enabled: !!linePlanId,
+    }
+  );
+
+  const actionPlan = api.actionPlan.getById.useQuery(
+    {
+      id: actionPlanId as string,
+    },
+    {
+      enabled: !!actionPlanId,
     }
   );
 
@@ -232,13 +241,14 @@ const Actions: NextPage = () => {
                   <MenuItem value="">
                     <em>None</em>
                   </MenuItem>
-                  {linePlanUsers.data
-                    ?.map(({ email }) => email)
-                    .map((option) => (
-                      <MenuItem key={String(option)} value={String(option)}>
-                        {String(option)}
-                      </MenuItem>
-                    ))}
+                  {membershipList?.map((member) => (
+                    <MenuItem
+                      key={member.id}
+                      value={member.publicUserData.identifier}
+                    >
+                      {member.publicUserData.identifier}
+                    </MenuItem>
+                  ))}
                 </TextField>
               </Grid2>
               <Grid2 xs={12}>
@@ -254,13 +264,14 @@ const Actions: NextPage = () => {
                   <MenuItem value="">
                     <em>None</em>
                   </MenuItem>
-                  {linePlanUsers.data
-                    ?.map(({ email }) => email)
-                    .map((option) => (
-                      <MenuItem key={String(option)} value={String(option)}>
-                        {String(option)}
-                      </MenuItem>
-                    ))}
+                  {membershipList?.map((member) => (
+                    <MenuItem
+                      key={member.id}
+                      value={member.publicUserData.identifier}
+                    >
+                      {member.publicUserData.identifier}
+                    </MenuItem>
+                  ))}
                 </TextField>
               </Grid2>
               <Grid2 xs={12}>
@@ -348,13 +359,32 @@ const Actions: NextPage = () => {
             </Grid2>
           </form>
         </FormCard>
-        <ActionForm
-          actionPlanId={actionPlanId as string}
-          linePlanId={linePlanId as string}
-        />
-        <Typography variant="h4" sx={{ pb: "1rem" }}>
-          Action Plan
-        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            marginBlock: "2rem",
+          }}
+        >
+          <ActionForm
+            actionPlanId={actionPlanId as string}
+            linePlanId={linePlanId as string}
+            refetch={actions.refetch}
+          />
+          <Breadcrumbs sx={{ paddingInline: "1rem" }}>
+            <Breadcrumbs separator="-" aria-label="breadcrumb">
+              <Link color="inherit" href="/lineplan">
+                Line Plan - {linePlan.data?.productionLine}
+              </Link>
+            </Breadcrumbs>
+            <Breadcrumbs separator="-" aria-label="breadcrumb">
+              <Link color="inherit" href={`/lineplan/${String(linePlanId)}`}>
+                Action Plan - {actionPlan.data?.name}
+              </Link>
+            </Breadcrumbs>
+          </Breadcrumbs>
+        </Box>
         {actions.data && (
           <TableContainer component={Paper}>
             <Table>
@@ -436,6 +466,8 @@ const Actions: NextPage = () => {
                     Created At
                   </TableHaderSort>
 
+                  <TableCell>Updated By</TableCell>
+
                   <TableHaderSort
                     field="updatedAt"
                     onChangeOrderBy={onChangeOrderBy}
@@ -458,12 +490,16 @@ const Actions: NextPage = () => {
                           : "red",
                     }}
                   >
+                    <TableCell>{action.priority}</TableCell>
                     <TableCell>
-                      <Button onClick={markAsCompleted(action.id)}>
-                        {action.priority}
-                      </Button>
+                      <FormControlLabel
+                        label={action.status}
+                        onChange={markAsCompleted(action.id)}
+                        checked={action.status === ACTION_STATUS.COMPLETED}
+                        disabled={action.status === ACTION_STATUS.COMPLETED}
+                        control={<Checkbox />}
+                      />
                     </TableCell>
-                    <TableCell>{action.status}</TableCell>
                     <TableCell>{action.name}</TableCell>
                     <TableCell>{action.description}</TableCell>
                     <TableCell>{action.comment}</TableCell>

@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 import {
     createTRPCRouter,
     protectedProcedure,
@@ -7,7 +5,7 @@ import {
 import { handleErrorRouter } from "~/utils/httpErrors";
 import { actionEditItemSchema, actionFilterSchema, actionItemSchema, ACTION_STATUS } from "~/utils/schema/action/action";
 import { byIdSchema } from "~/utils/schema/general";
-import { extractEmailOrUserId } from "~/utils/user";
+import { extractUserId } from "~/utils/user";
 
 type RemoveUndefined<T> = T extends undefined ? never : T;
 
@@ -50,8 +48,8 @@ export const actionRouter = createTRPCRouter({
                 const action = await ctx.prisma.action.create({
                     data: {
                         ...input,
-                        createdBy: extractEmailOrUserId(ctx.session),
-                        updatedBy: extractEmailOrUserId(ctx.session),
+                        createdBy: extractUserId(ctx.auth),
+                        updatedBy: extractUserId(ctx.auth),
                     },
                 });
 
@@ -94,8 +92,8 @@ export const actionRouter = createTRPCRouter({
                     },
                     data: {
                         ...input,
-                        createdBy: extractEmailOrUserId(ctx.session),
-                        updatedBy: extractEmailOrUserId(ctx.session),
+                        createdBy: extractUserId(ctx.auth),
+                        updatedBy: extractUserId(ctx.auth),
                     },
                 });
 

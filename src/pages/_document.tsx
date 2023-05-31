@@ -30,6 +30,7 @@ MyDocument.getInitialProps = async (ctx) => {
 
   ctx.renderPage = () =>
     originalRenderPage({
+      //@ts-expect-error issue with emotion types
       enhanceApp: (App) => (props) => <App emotionCache={cache} {...props} />,
     });
 

@@ -1,6 +1,6 @@
+import { useOrganization } from "@clerk/nextjs";
 import {
   FormControlLabel,
-  Checkbox,
   Modal,
   TextField,
   MenuItem,
@@ -15,29 +15,33 @@ import React from "react";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
 import { api } from "~/utils/api";
-import { ACTION_PRIORITY, actionItemSchema } from "~/utils/schema/action/action";
+import {
+  ACTION_PRIORITY,
+  actionItemSchema,
+} from "~/utils/schema/action/action";
 import { ACTION_STATUS } from "~/utils/schema/action/action";
+import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
 
 type Props = {
   linePlanId?: string;
   actionPlanId?: string;
+  refetch: () => Promise<unknown>;
 };
 
 const ActionForm = (props: Props) => {
-  const { linePlanId, actionPlanId } = props;
+  const { actionPlanId, refetch } = props;
   const ref = React.useRef<HTMLDivElement>(null);
   const [open, setOpen] = React.useState(false);
 
-  const linePlanUsers = api.user.getByLinePlanId.useQuery(
-    {
-      linePlanId: linePlanId as string,
-    },
-    {
-      enabled: !!linePlanId,
-    }
-  );
+  const { membershipList } = useOrganization({
+    membershipList: { limit: ORGANIZATION_MEMBERSHIP_LIMIT },
+  });
 
-  const createAction = api.action.create.useMutation();
+  const createAction = api.action.create.useMutation({
+    onSuccess: async () => {
+      await refetch();
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -70,7 +74,7 @@ const ActionForm = (props: Props) => {
         Create
       </Button>
       <Modal open={open} onClose={handleClose}>
-        <FormCard size="medium" ref={ref}>
+        <FormCard size="large" ref={ref} sx={{ orverflowY: "scroll" }}>
           <FormTitle>Create Action Plan</FormTitle>
           <form onSubmit={handleSubmit}>
             <input type="hidden" name="actionPlanId" value={actionPlanId} />
@@ -144,13 +148,14 @@ const ActionForm = (props: Props) => {
                   <MenuItem value="">
                     <em>None</em>
                   </MenuItem>
-                  {linePlanUsers.data
-                    ?.map(({ email }) => email)
-                    .map((option) => (
-                      <MenuItem key={String(option)} value={String(option)}>
-                        {String(option)}
-                      </MenuItem>
-                    ))}
+                  {membershipList?.map((member) => (
+                    <MenuItem
+                      key={member.id}
+                      value={member.publicUserData.identifier}
+                    >
+                      {member.publicUserData.identifier}
+                    </MenuItem>
+                  ))}
                 </TextField>
               </Grid2>
               <Grid2 xs={12}>
@@ -166,13 +171,14 @@ const ActionForm = (props: Props) => {
                   <MenuItem value="">
                     <em>None</em>
                   </MenuItem>
-                  {linePlanUsers.data
-                    ?.map(({ email }) => email)
-                    .map((option) => (
-                      <MenuItem key={String(option)} value={String(option)}>
-                        {String(option)}
-                      </MenuItem>
-                    ))}
+                  {membershipList?.map((member) => (
+                    <MenuItem
+                      key={member.id}
+                      value={member.publicUserData.identifier}
+                    >
+                      {member.publicUserData.identifier}
+                    </MenuItem>
+                  ))}
                 </TextField>
               </Grid2>
               <Grid2 xs={12}>

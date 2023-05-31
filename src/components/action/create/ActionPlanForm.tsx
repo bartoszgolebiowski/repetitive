@@ -1,41 +1,32 @@
-import {
-  FormControlLabel,
-  Checkbox,
-  Modal,
-  TextField,
-  MenuItem,
-  FormControl,
-  FormLabel,
-  RadioGroup,
-  Radio,
-  Button,
-} from "@mui/material";
+import { useOrganization } from "@clerk/nextjs";
+import { Modal, TextField, MenuItem, Button } from "@mui/material";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import React from "react";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
 import { api } from "~/utils/api";
 import { actionPlanCreateSchema } from "~/utils/schema/action/actionPlan";
+import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
 
 type Props = {
   linePlanId?: string;
+  refetch: () => Promise<unknown>;
 };
 
 const ActionPlanForm = (props: Props) => {
-  const { linePlanId } = props;
+  const { linePlanId, refetch } = props;
   const ref = React.useRef<HTMLDivElement>(null);
   const [open, setOpen] = React.useState(false);
 
-  const linePlanUsers = api.user.getByLinePlanId.useQuery(
-    {
-      linePlanId: linePlanId as string,
-    },
-    {
-      enabled: !!linePlanId,
-    }
-  );
+  const { membershipList } = useOrganization({
+    membershipList: { limit: ORGANIZATION_MEMBERSHIP_LIMIT },
+  });
 
-  const createLinePlan = api.actionPlan.create.useMutation();
+  const createLinePlan = api.actionPlan.create.useMutation({
+    onSuccess: async () => {
+      await refetch();
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -97,18 +88,18 @@ const ActionPlanForm = (props: Props) => {
                   id="assignedTo"
                   label="Assigned To"
                   name="assignedTo"
-                  defaultValue=""
                 >
                   <MenuItem value="">
                     <em>None</em>
                   </MenuItem>
-                  {linePlanUsers.data
-                    ?.map(({ email }) => email)
-                    .map((option) => (
-                      <MenuItem key={String(option)} value={String(option)}>
-                        {String(option)}
-                      </MenuItem>
-                    ))}
+                  {membershipList?.map((member) => (
+                    <MenuItem
+                      key={member.id}
+                      value={member.publicUserData.identifier}
+                    >
+                      {member.publicUserData.identifier}
+                    </MenuItem>
+                  ))}
                 </TextField>
               </Grid2>
               <Grid2 xs={12}>

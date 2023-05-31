@@ -21,48 +21,50 @@ import FormTitle from "~/components/FormTitle";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import MenuItem from "@mui/material/MenuItem";
-import { DEFECT_STATUS } from "~/utils/schema/defect";
+import { LINE_PLAN_STATUS } from "~/utils/schema/action/linePlan";
 import {
   FormControl,
   FormLabel,
   FormGroup,
   FormControlLabel,
   Checkbox,
+  Breadcrumbs,
 } from "@mui/material";
 import { displayDate } from "~/utils/date";
+import LinePlanForm from "~/components/action/create/LinePlanForm";
+import { useOrganization } from "@clerk/nextjs";
+import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
 
-const convertQueryToFilters = () => {
+const convertQueryToFilters = (): Omit<
+  Parameters<typeof api.linePlan.getByFilters.useQuery>[0],
+  "organizationId"
+> => {
   return {
-    organizationId: "",
-    createdBy: "",
+    productionLine: "",
     assignedTo: "",
-    status: [
-      DEFECT_STATUS.ASSIGNED,
-      DEFECT_STATUS.COMPLETED,
-      DEFECT_STATUS.DELETED,
-      DEFECT_STATUS.TO_DO,
-    ] as Array<keyof typeof DEFECT_STATUS>,
-    plantId: "",
-    definitionId: "",
+    dueDate: null,
+    status: [LINE_PLAN_STATUS.OK, LINE_PLAN_STATUS.NOK] as Array<
+      keyof typeof LINE_PLAN_STATUS
+    >,
   };
 };
 
 const useForm = () => {
   const [filters, setFilters] = React.useState(() => convertQueryToFilters());
 
-  const onChangeOrganization = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters((prev) => ({ ...prev, organizationId: e.target.value }));
-  };
-
-  const onChangeCreatedBy = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters((prev) => ({ ...prev, createdBy: e.target.value }));
+  const onChangeProductionLine = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilters((prev) => ({ ...prev, productionLine: e.target.value }));
   };
 
   const onChangeAssignedTo = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters((prev) => ({ ...prev, assignedTo: e.target.value }));
   };
 
-  const onChangeStatus = (status: keyof typeof DEFECT_STATUS) => () => {
+  const onChangeDueDate = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilters((prev) => ({ ...prev, dueDate: e.target.valueAsDate }));
+  };
+
+  const onChangeStatus = (status: keyof typeof LINE_PLAN_STATUS) => () => {
     const currentIndex = filters.status.indexOf(status);
     const newChecked = [...filters.status];
 
@@ -77,36 +79,41 @@ const useForm = () => {
 
   return {
     filters,
-    onChangeOrganization,
-    onChangeCreatedBy,
+    onChangeProductionLine,
     onChangeAssignedTo,
+    onChangeDueDate,
     onChangeStatus,
   };
 };
 
-const Defect: NextPage = () => {
+const LinePlan: NextPage = () => {
   const {
     filters,
-    onChangeOrganization,
-    onChangeCreatedBy,
+    onChangeProductionLine,
     onChangeAssignedTo,
+    onChangeDueDate,
     onChangeStatus,
   } = useForm();
 
-  const myOrganizations = api.organization.getMy.useQuery();
-  const organizationUsers = api.user.getByOrganizationId.useQuery(
-    { organizationId: filters.organizationId },
-    { enabled: !!filters.organizationId }
-  );
-  const defects = api.defect.getByFilters.useQuery(filters, {
-    enabled: !!filters.organizationId,
+  const { organization, membershipList } = useOrganization({
+    membershipList: { limit: ORGANIZATION_MEMBERSHIP_LIMIT },
   });
+
+  const linePlans = api.linePlan.getByFilters.useQuery(
+    {
+      organizationId: organization?.id ?? "",
+      ...filters,
+    },
+    {
+      enabled: !!organization?.id,
+    }
+  );
 
   return (
     <>
       <Head>
-        <title>Defects</title>
-        <meta name="description" content="Manage Defects" />
+        <title>Line Plans</title>
+        <meta name="description" content="Manage Line Plans" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Box component="main">
@@ -116,44 +123,14 @@ const Defect: NextPage = () => {
             <Grid2 container spacing={2}>
               <Grid2 xs={12}>
                 <TextField
+                  fullWidth
                   autoFocus
-                  select
-                  fullWidth
-                  id="organizationId"
-                  label="Organization"
-                  name="organizationId"
-                  value={filters.organizationId}
-                  onChange={onChangeOrganization}
-                >
-                  {Object.values(myOrganizations.data ?? []).map((option) => (
-                    <MenuItem key={option.id} value={option.id}>
-                      {option.name}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid2>
-              <Grid2 xs={12}>
-                <TextField
-                  select
-                  fullWidth
-                  id="createdBy"
-                  label="Created By"
-                  name="createdBy"
-                  value={filters.createdBy}
-                  onChange={onChangeCreatedBy}
-                  disabled={filters.organizationId === ""}
-                >
-                  <MenuItem value="">
-                    <em>None</em>
-                  </MenuItem>
-                  {organizationUsers.data
-                    ?.map(({ email }) => email)
-                    .map((option) => (
-                      <MenuItem key={String(option)} value={String(option)}>
-                        {String(option)}
-                      </MenuItem>
-                    ))}
-                </TextField>
+                  id="productionLine"
+                  label="Production Line"
+                  name="productionLine"
+                  value={filters.productionLine}
+                  onChange={onChangeProductionLine}
+                />
               </Grid2>
               <Grid2 xs={12}>
                 <TextField
@@ -164,19 +141,33 @@ const Defect: NextPage = () => {
                   name="assignedTo"
                   value={filters.assignedTo}
                   onChange={onChangeAssignedTo}
-                  disabled={filters.organizationId === ""}
                 >
                   <MenuItem value="">
                     <em>None</em>
                   </MenuItem>
-                  {organizationUsers.data
-                    ?.map(({ email }) => email)
-                    .map((option) => (
-                      <MenuItem key={String(option)} value={String(option)}>
-                        {String(option)}
-                      </MenuItem>
-                    ))}
+                  {membershipList?.map((member) => (
+                    <MenuItem
+                      key={member.id}
+                      value={member.publicUserData.identifier}
+                    >
+                      {member.publicUserData.identifier}
+                    </MenuItem>
+                  ))}
                 </TextField>
+              </Grid2>
+              <Grid2 xs={12}>
+                <TextField
+                  type="datetime-local"
+                  fullWidth
+                  id="dueDate"
+                  label="Due Date"
+                  name="dueDate"
+                  value={filters.dueDate ?? ""}
+                  onChange={onChangeDueDate}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
               </Grid2>
               <Grid2 xs={12}>
                 <FormControl
@@ -190,7 +181,7 @@ const Defect: NextPage = () => {
                 >
                   <FormLabel component="legend">Status</FormLabel>
                   <FormGroup sx={{ display: "block" }}>
-                    {Object.values(DEFECT_STATUS).map((status) => (
+                    {Object.values(LINE_PLAN_STATUS).map((status) => (
                       <FormControlLabel
                         key={status}
                         name="status"
@@ -208,40 +199,47 @@ const Defect: NextPage = () => {
             </Grid2>
           </form>
         </FormCard>
-        <Typography variant="h4" sx={{ pb: "1rem" }}>
-          Actions
-        </Typography>
-        {defects.data && (
+
+        <LinePlanForm
+          organizationId={organization?.id ?? ""}
+          refetch={linePlans.refetch}
+        />
+
+        {linePlans.data && (
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Description</TableCell>
+                  <TableCell>Production Line</TableCell>
+                  <TableCell>Action plan</TableCell>
                   <TableCell>Assigned To</TableCell>
-                  <TableCell>Created By</TableCell>
-                  <TableCell>Plant</TableCell>
-                  <TableCell>Definition</TableCell>
-                  <TableCell align="right">Created At</TableCell>
-                  <TableCell align="right">Due Date</TableCell>
+                  <TableCell>Created At</TableCell>
+                  <TableCell>Due Date</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {defects.data.map((defect) => (
-                  <TableRow key={defect.id}>
-                    <TableCell>{defect.status}</TableCell>
-                    <TableCell>{defect.description}</TableCell>
-                    <TableCell>{defect.assignedTo}</TableCell>
-                    <TableCell>{defect.createdBy}</TableCell>
-                    <TableCell>{defect.plant.name}</TableCell>
+                {linePlans.data.map((linePlan) => (
+                  <TableRow
+                    key={linePlan.id}
+                    sx={{
+                      backgroundColor:
+                        linePlan.status === LINE_PLAN_STATUS.OK
+                          ? "green"
+                          : "red",
+                    }}
+                  >
+                    <TableCell>{linePlan.productionLine}</TableCell>
                     <TableCell>
-                      {defect.definitionTask.definition.name}
+                      <Link href={`lineplan/${linePlan.id}`}>
+                        Navigate to Action Plan
+                      </Link>
+                    </TableCell>
+                    <TableCell>{linePlan.assignedTo}</TableCell>
+                    <TableCell align="right">
+                      {displayDate(linePlan.createdAt)}
                     </TableCell>
                     <TableCell align="right">
-                      {displayDate(defect.createdAt)}
-                    </TableCell>
-                    <TableCell align="right">
-                      {displayDate(defect.dueDate)}
+                      {displayDate(linePlan.dueDate)}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -254,4 +252,4 @@ const Defect: NextPage = () => {
   );
 };
 
-export default Defect;
+export default LinePlan;

@@ -4,7 +4,6 @@ import Head from "next/head";
 import { api } from "~/utils/api";
 
 import Grid2 from "@mui/material/Unstable_Grid2";
-import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import Table from "@mui/material/Table";
@@ -12,60 +11,54 @@ import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Modal from "@mui/material/Modal";
-import Typography from "@mui/material/Typography";
 import React from "react";
 import FormCard from "~/components/FormCard";
-import GroupAddIcon from "@mui/icons-material/GroupAdd";
 import FormTitle from "~/components/FormTitle";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import MenuItem from "@mui/material/MenuItem";
-import { LINE_PLAN_STATUS } from "~/utils/schema/action/linePlan";
 import {
   FormControl,
   FormLabel,
   FormGroup,
   FormControlLabel,
   Checkbox,
+  Breadcrumbs,
 } from "@mui/material";
-import { displayDate, getNextDay } from "~/utils/date";
-import LinePlanForm from "~/components/action/create/LinePlanForm";
+import { displayDate } from "~/utils/date";
+import { useRouter } from "next/router";
+import { ACTION_PLAN_STATUS } from "~/utils/schema/action/actionPlan";
+import ActionPlanForm from "~/components/action/create/ActionPlanForm";
+import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
+import { useOrganization } from "@clerk/nextjs";
 
-const convertQueryToFilters = (): Parameters<
-  typeof api.linePlan.getByFilters.useQuery
->[0] => {
+const convertQueryToFilters = (): Omit<
+  Parameters<typeof api.actionPlan.getByFilters.useQuery>[0],
+  "linePlanId"
+> => {
   return {
-    organizationId: "",
-    productionLine: "",
     assignedTo: "",
     dueDate: null,
-    status: [LINE_PLAN_STATUS.OK, LINE_PLAN_STATUS.NOK] as Array<
-      keyof typeof LINE_PLAN_STATUS
-    >,
+    status: [
+      ACTION_PLAN_STATUS.COMPLETED,
+      ACTION_PLAN_STATUS.DELEYED,
+      ACTION_PLAN_STATUS.IN_PROGRESS,
+    ] as Array<keyof typeof ACTION_PLAN_STATUS>,
   };
 };
 
-const useForm = () => {
+const useForm = (linePlanId: string) => {
   const [filters, setFilters] = React.useState(() => convertQueryToFilters());
 
-  const onChangeOrganization = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters((prev) => ({ ...prev, organizationId: e.target.value }));
-  };
-
-  const onChangeProductionLine = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters((prev) => ({ ...prev, productionLine: e.target.value }));
+  const onChangeDueDate = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilters((prev) => ({ ...prev, dueDate: e.target.valueAsDate }));
   };
 
   const onChangeAssignedTo = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters((prev) => ({ ...prev, assignedTo: e.target.value }));
   };
 
-  const onChangeDueDate = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters((prev) => ({ ...prev, dueDate: e.target.valueAsDate }));
-  };
-
-  const onChangeStatus = (status: keyof typeof LINE_PLAN_STATUS) => () => {
+  const onChangeStatus = (status: keyof typeof ACTION_PLAN_STATUS) => () => {
     const currentIndex = filters.status.indexOf(status);
     const newChecked = [...filters.status];
 
@@ -79,39 +72,39 @@ const useForm = () => {
   };
 
   return {
-    filters,
-    onChangeOrganization,
-    onChangeProductionLine,
-    onChangeAssignedTo,
+    filters: { ...filters, linePlanId },
     onChangeDueDate,
+    onChangeAssignedTo,
     onChangeStatus,
   };
 };
 
-const Action: NextPage = () => {
-  const {
-    filters,
-    onChangeOrganization,
-    onChangeProductionLine,
-    onChangeAssignedTo,
-    onChangeDueDate,
-    onChangeStatus,
-  } = useForm();
+const ActionPlan: NextPage = () => {
+  const { linePlanId } = useRouter().query;
 
-  const myOrganizations = api.organization.getMy.useQuery();
-  const organizationUsers = api.user.getByOrganizationId.useQuery(
-    { organizationId: filters.organizationId },
-    { enabled: !!filters.organizationId }
-  );
-  const linePlans = api.linePlan.getByFilters.useQuery(filters, {
-    enabled: !!filters.organizationId,
+  const { filters, onChangeDueDate, onChangeAssignedTo, onChangeStatus } =
+    useForm(linePlanId as string);
+
+  const { membershipList } = useOrganization({
+    membershipList: { limit: ORGANIZATION_MEMBERSHIP_LIMIT },
   });
+
+  const actionPlans = api.actionPlan.getByFilters.useQuery(filters, {
+    enabled: !!linePlanId,
+  });
+
+  const linePlan = api.linePlan.getById.useQuery(
+    { id: linePlanId as string },
+    {
+      enabled: !!linePlanId,
+    }
+  );
 
   return (
     <>
       <Head>
-        <title>Line Plans</title>
-        <meta name="description" content="Manage Line Plans" />
+        <title>Action Plan</title>
+        <meta name="description" content="Manage Action Plans" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Box component="main">
@@ -121,35 +114,6 @@ const Action: NextPage = () => {
             <Grid2 container spacing={2}>
               <Grid2 xs={12}>
                 <TextField
-                  autoFocus
-                  select
-                  fullWidth
-                  id="organizationId"
-                  label="Organization"
-                  name="organizationId"
-                  value={filters.organizationId}
-                  onChange={onChangeOrganization}
-                >
-                  {Object.values(myOrganizations.data ?? []).map((option) => (
-                    <MenuItem key={option.id} value={option.id}>
-                      {option.name}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid2>
-              <Grid2 xs={12}>
-                <TextField
-                  fullWidth
-                  autoFocus
-                  id="productionLine"
-                  label="Production Line"
-                  name="productionLine"
-                  value={filters.productionLine}
-                  onChange={onChangeProductionLine}
-                />
-              </Grid2>
-              <Grid2 xs={12}>
-                <TextField
                   select
                   fullWidth
                   id="assignedTo"
@@ -157,18 +121,18 @@ const Action: NextPage = () => {
                   name="assignedTo"
                   value={filters.assignedTo}
                   onChange={onChangeAssignedTo}
-                  disabled={filters.organizationId === ""}
                 >
                   <MenuItem value="">
                     <em>None</em>
                   </MenuItem>
-                  {organizationUsers.data
-                    ?.map(({ email }) => email)
-                    .map((option) => (
-                      <MenuItem key={String(option)} value={String(option)}>
-                        {String(option)}
-                      </MenuItem>
-                    ))}
+                  {membershipList?.map((member) => (
+                    <MenuItem
+                      key={member.id}
+                      value={member.publicUserData.identifier}
+                    >
+                      {member.publicUserData.identifier}
+                    </MenuItem>
+                  ))}
                 </TextField>
               </Grid2>
               <Grid2 xs={12}>
@@ -197,7 +161,7 @@ const Action: NextPage = () => {
                 >
                   <FormLabel component="legend">Status</FormLabel>
                   <FormGroup sx={{ display: "block" }}>
-                    {Object.values(LINE_PLAN_STATUS).map((status) => (
+                    {Object.values(ACTION_PLAN_STATUS).map((status) => (
                       <FormControlLabel
                         key={status}
                         name="status"
@@ -215,45 +179,72 @@ const Action: NextPage = () => {
             </Grid2>
           </form>
         </FormCard>
-        <Typography variant="h4" sx={{ pb: "1rem" }}>
-          Line Plans
-        </Typography>
-        <LinePlanForm organizationId={filters.organizationId} />
-        {linePlans.data && (
+
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            marginBlock: "2rem",
+          }}
+        >
+          <ActionPlanForm
+            linePlanId={linePlanId as string}
+            refetch={actionPlans.refetch}
+          />
+          <Breadcrumbs sx={{ paddingInline: "1rem" }}>
+            <Breadcrumbs separator="-" aria-label="breadcrumb">
+              <Link color="inherit" href="/lineplan">
+                Line Plan - {linePlan.data?.productionLine}
+              </Link>
+            </Breadcrumbs>
+          </Breadcrumbs>
+        </Box>
+        {actionPlans.data && (
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Production Line</TableCell>
-                  <TableCell>Action plan</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Actions</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Description</TableCell>
                   <TableCell>Assigned To</TableCell>
-                  <TableCell>Created At</TableCell>
-                  <TableCell>Due Date</TableCell>
+                  <TableCell>Created By</TableCell>
+                  <TableCell align="right">Created At</TableCell>
+                  <TableCell align="right">Due Date</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {linePlans.data.map((linePlan) => (
+                {actionPlans.data.map((actionPlan) => (
                   <TableRow
-                    key={linePlan.id}
+                    key={actionPlan.id}
                     sx={{
                       backgroundColor:
-                        linePlan.status === LINE_PLAN_STATUS.OK
+                        actionPlan.status === ACTION_PLAN_STATUS.COMPLETED
                           ? "green"
                           : "red",
                     }}
                   >
-                    <TableCell>{linePlan.productionLine}</TableCell>
+                    <TableCell>{actionPlan.status}</TableCell>
                     <TableCell>
-                      <Link href={`action/${linePlan.id}`}>
-                        Navigate to Action Plan
+                      <Link
+                        href={`/lineplan/${String(linePlanId)}/${
+                          actionPlan.id
+                        }`}
+                      >
+                        Navigate to Actions
                       </Link>
                     </TableCell>
-                    <TableCell>{linePlan.assignedTo}</TableCell>
+                    <TableCell>{actionPlan.name}</TableCell>
+                    <TableCell>{actionPlan.description}</TableCell>
+                    <TableCell>{actionPlan.assignedTo}</TableCell>
+                    <TableCell>{actionPlan.createdBy}</TableCell>
                     <TableCell align="right">
-                      {displayDate(linePlan.createdAt)}
+                      {displayDate(actionPlan.createdAt)}
                     </TableCell>
                     <TableCell align="right">
-                      {displayDate(linePlan.dueDate)}
+                      {displayDate(actionPlan.dueDate)}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -266,4 +257,4 @@ const Action: NextPage = () => {
   );
 };
 
-export default Action;
+export default ActionPlan;

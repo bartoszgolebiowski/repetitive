@@ -4,7 +4,8 @@ import {
 } from "~/server/api/trpc";
 import { handleErrorRouter } from "~/utils/httpErrors";
 import { ACTION_PLAN_STATUS, actionPlanCreateSchema, actionPlanEditSchema, actionPlanFilterSchema } from "~/utils/schema/action/actionPlan";
-import { extractEmailOrUserId } from "~/utils/user";
+import { byIdSchema } from "~/utils/schema/general";
+import { extractUserId } from "~/utils/user";
 
 type RemoveUndefined<T> = T extends undefined ? never : T;
 
@@ -31,6 +32,22 @@ export const actionPlanRouter = createTRPCRouter({
                 handleErrorRouter(error)
             }
         }),
+    getById: protectedProcedure
+        .input(byIdSchema)
+        .query(async ({ ctx, input }) => {
+            try {
+                const actionPlan = await ctx.prisma.actionPlan.findUnique({
+                    where: {
+                        id: input.id,
+                    },
+                });
+
+                return actionPlan;
+            }
+            catch (error) {
+                handleErrorRouter(error)
+            }
+        }),
     create: protectedProcedure
         .input(actionPlanCreateSchema)
         .mutation(async ({ ctx, input }) => {
@@ -38,8 +55,8 @@ export const actionPlanRouter = createTRPCRouter({
                 const linePlan = await ctx.prisma.actionPlan.create({
                     data: {
                         ...input,
-                        createdBy: extractEmailOrUserId(ctx.session),
-                        updatedBy: extractEmailOrUserId(ctx.session),
+                        createdBy: extractUserId(ctx.auth),
+                        updatedBy: extractUserId(ctx.auth),
                         status: ACTION_PLAN_STATUS.COMPLETED,
                     },
                 });
@@ -61,7 +78,7 @@ export const actionPlanRouter = createTRPCRouter({
                     },
                     data: {
                         ...input,
-                        updatedBy: extractEmailOrUserId(ctx.session),
+                        updatedBy: extractUserId(ctx.auth),
                     },
                 });
 

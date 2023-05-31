@@ -1,41 +1,32 @@
-import {
-  FormControlLabel,
-  Checkbox,
-  Modal,
-  TextField,
-  MenuItem,
-  FormControl,
-  FormLabel,
-  RadioGroup,
-  Radio,
-  Button,
-} from "@mui/material";
+import { Modal, TextField, MenuItem, Button } from "@mui/material";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import React from "react";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
 import { linePlanItemCreateSchema } from "~/utils/schema/action/linePlan";
 import { api } from "~/utils/api";
+import { useOrganization } from "@clerk/nextjs";
+import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
 
 type Props = {
   organizationId?: string;
+  refetch: () => Promise<unknown>;
 };
 
 const LinePlanForm = (props: Props) => {
-  const { organizationId } = props;
+  const { organizationId, refetch } = props;
   const ref = React.useRef<HTMLDivElement>(null);
   const [open, setOpen] = React.useState(false);
 
-  const organizationUsers = api.user.getByOrganizationId.useQuery(
-    {
-      organizationId: organizationId!,
-    },
-    {
-      enabled: !!organizationId,
-    }
-  );
+  const { membershipList } = useOrganization({
+    membershipList: { limit: ORGANIZATION_MEMBERSHIP_LIMIT },
+  });
 
-  const createLinePlan = api.linePlan.create.useMutation();
+  const createLinePlan = api.linePlan.create.useMutation({
+    onSuccess: async () => {
+      await refetch();
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -96,13 +87,14 @@ const LinePlanForm = (props: Props) => {
                   <MenuItem value="">
                     <em>None</em>
                   </MenuItem>
-                  {organizationUsers.data
-                    ?.map(({ email }) => email)
-                    .map((option) => (
-                      <MenuItem key={String(option)} value={String(option)}>
-                        {String(option)}
-                      </MenuItem>
-                    ))}
+                  {membershipList?.map((member) => (
+                    <MenuItem
+                      key={member.id}
+                      value={member.publicUserData.identifier}
+                    >
+                      {member.publicUserData.identifier}
+                    </MenuItem>
+                  ))}
                 </TextField>
               </Grid2>
               <Grid2 xs={12}>
