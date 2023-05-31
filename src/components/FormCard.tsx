@@ -9,18 +9,20 @@ const MAX_WIDTHS = {
   small: "20rem",
   medium: "30rem",
   large: "40rem",
-};
+} as const;
 
 const FormCard = forwardRef(
   (props: Props, ref: React.ForwardedRef<HTMLDivElement>) => {
-    const { size = "small", ...rest } = props;
+    const { size = "small", sx, ...rest } = props;
     return (
       <Card
         ref={ref}
         sx={{
           maxWidth: MAX_WIDTHS[size],
+          maxHeight: "90vh",
           padding: "2rem",
           margin: "0 auto",
+          ...sx,
         }}
         {...rest}
       />

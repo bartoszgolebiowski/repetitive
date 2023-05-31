@@ -18,11 +18,11 @@ import BusinessIcon from "@mui/icons-material/Business";
 import WorkplaceIcon from "@mui/icons-material/Workspaces";
 import EngineeringIcon from "@mui/icons-material/Engineering";
 
-import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 
 import { Roboto } from "next/font/google";
 import { styled, useTheme, type Theme } from "@mui/material/styles";
+import { OrganizationSwitcher, UserButton } from "@clerk/nextjs";
 
 const roboto = Roboto({
   weight: "400",
@@ -64,6 +64,7 @@ const DrawerHeader = styled("div")(({ theme }) => ({
 
 const Drawer = styled(MuiDrawer, {
   shouldForwardProp: (prop) => prop !== "open",
+  //@ts-expect-error some issue with emotion and the sx prop
 })(({ theme, open }) => ({
   width: DRAWER_WIDTH_OPEN,
   flexShrink: 0,
@@ -95,14 +96,9 @@ const drawerItems = [
     href: "organization",
   },
   {
-    text: "Workplace",
-    icon: <WorkplaceIcon />,
-    href: "workplace",
-  },
-  {
-    text: "Action",
+    text: "Line plan",
     icon: <EngineeringIcon />,
-    href: "action",
+    href: "linePlan",
   },
 ] as const;
 
@@ -110,7 +106,6 @@ const Navigation = (props: Props) => {
   const { children } = props;
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
-  const { data: session } = useSession();
 
   const handleToggle = () => {
     setOpen((state) => !state);
@@ -131,12 +126,8 @@ const Navigation = (props: Props) => {
         <AppBar position="fixed">
           <Toolbar>
             <Box sx={{ flexGrow: 1 }}></Box>
-            <Button
-              color="inherit"
-              onClick={session ? () => void signOut() : () => void signIn()}
-            >
-              {session ? "Logout" : "Login"}
-            </Button>
+            <OrganizationSwitcher />
+            <UserButton />
           </Toolbar>
         </AppBar>
       </Box>

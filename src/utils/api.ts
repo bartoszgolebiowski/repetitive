@@ -11,8 +11,8 @@ import superjson from "superjson";
 
 import { type AppRouter } from "~/server/api/root";
 
-const ONE_MINUTE = 60 * 1000;
-const TEN_MINUTES = 10 * ONE_MINUTE;
+const STALE_TIME = 0;
+const CACHE_TIME = 60 * 1000;
 
 const getBaseUrl = () => {
   if (typeof window !== "undefined") return ""; // browser should use relative url
@@ -46,14 +46,16 @@ export const api = createTRPCNext<AppRouter>({
           url: `${getBaseUrl()}/api/trpc`,
         }),
       ],
-      queryClientConfig:{
+      queryClientConfig: {
         defaultOptions: {
           queries: {
-            refetchOnWindowFocus: false,
-            refetchOnReconnect: false,
-            refetchInterval: false,
-            cacheTime: TEN_MINUTES,
-            staleTime: ONE_MINUTE,
+            refetchOnWindowFocus: true,
+            refetchOnReconnect: true,
+            refetchInterval: CACHE_TIME,
+            refetchOnMount: true,
+            refetchIntervalInBackground: true,
+            cacheTime: CACHE_TIME,
+            staleTime: STALE_TIME,
           }
         }
       }
