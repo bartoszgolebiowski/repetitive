@@ -74,6 +74,7 @@ const LinePlanForm = (props: Props) => {
                   id="productionLine"
                   label="Production Line"
                   name="productionLine"
+                  required
                 />
               </Grid2>
               <Grid2 xs={12}>
@@ -83,6 +84,7 @@ const LinePlanForm = (props: Props) => {
                   id="assignedTo"
                   label="Assigned To"
                   name="assignedTo"
+                  required
                 >
                   <MenuItem value="">
                     <em>None</em>
@@ -99,7 +101,7 @@ const LinePlanForm = (props: Props) => {
               </Grid2>
               <Grid2 xs={12}>
                 <TextField
-                  type="datetime-local"
+                  type="date"
                   fullWidth
                   id="dueDate"
                   label="Due Date"
@@ -107,6 +109,7 @@ const LinePlanForm = (props: Props) => {
                   InputLabelProps={{
                     shrink: true,
                   }}
+                  required
                 />
               </Grid2>
               <Grid2 xs={6}>

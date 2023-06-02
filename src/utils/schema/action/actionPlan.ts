@@ -35,5 +35,7 @@ export const actionPlanFilterSchema = linePlanSchema.merge(z.object({
         ACTION_PLAN_STATUS.IN_PROGRESS,
         ACTION_PLAN_STATUS.COMPLETED,
         ACTION_PLAN_STATUS.DELAYED,
+        ACTION_PLAN_STATUS.REJECTED,
+        ACTION_PLAN_STATUS.DELETED,
     ])),
 }))

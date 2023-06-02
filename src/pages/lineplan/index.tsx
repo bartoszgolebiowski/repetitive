@@ -29,11 +29,15 @@ import {
   FormControlLabel,
   Checkbox,
   Breadcrumbs,
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
 } from "@mui/material";
 import { displayDate } from "~/utils/date";
 import LinePlanForm from "~/components/action/create/LinePlanForm";
 import { useOrganization } from "@clerk/nextjs";
 import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const convertQueryToFilters = (): Omit<
   Parameters<typeof api.linePlan.getByFilters.useQuery>[0],
@@ -43,9 +47,13 @@ const convertQueryToFilters = (): Omit<
     productionLine: "",
     assignedTo: "",
     dueDate: null,
-    status: [LINE_PLAN_STATUS.OK, LINE_PLAN_STATUS.NOK] as Array<
-      keyof typeof LINE_PLAN_STATUS
-    >,
+    status: [
+      LINE_PLAN_STATUS.IN_PROGRESS,
+      LINE_PLAN_STATUS.COMPLETED,
+      LINE_PLAN_STATUS.DELAYED,
+      LINE_PLAN_STATUS.REJECTED,
+      LINE_PLAN_STATUS.DELETED,
+    ],
   };
 };
 
@@ -117,94 +125,105 @@ const LinePlan: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Box component="main">
-        <FormCard size="large">
-          <FormTitle>Filters</FormTitle>
-          <form>
-            <Grid2 container spacing={2}>
-              <Grid2 xs={12}>
-                <TextField
-                  fullWidth
-                  autoFocus
-                  id="productionLine"
-                  label="Production Line"
-                  name="productionLine"
-                  value={filters.productionLine}
-                  onChange={onChangeProductionLine}
-                />
-              </Grid2>
-              <Grid2 xs={12}>
-                <TextField
-                  select
-                  fullWidth
-                  id="assignedTo"
-                  label="Assigned To"
-                  name="assignedTo"
-                  value={filters.assignedTo}
-                  onChange={onChangeAssignedTo}
-                >
-                  <MenuItem value="">
-                    <em>None</em>
-                  </MenuItem>
-                  {membershipList?.map((member) => (
-                    <MenuItem
-                      key={member.id}
-                      value={member.publicUserData.identifier}
-                    >
-                      {member.publicUserData.identifier}
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5">Line Plans Filters</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <form>
+              <Grid2 container spacing={2}>
+                <Grid2 xs={12}>
+                  <TextField
+                    fullWidth
+                    autoFocus
+                    id="productionLine"
+                    label="Production Line"
+                    name="productionLine"
+                    value={filters.productionLine}
+                    onChange={onChangeProductionLine}
+                  />
+                </Grid2>
+                <Grid2 xs={12}>
+                  <TextField
+                    select
+                    fullWidth
+                    id="assignedTo"
+                    label="Assigned To"
+                    name="assignedTo"
+                    value={filters.assignedTo}
+                    onChange={onChangeAssignedTo}
+                  >
+                    <MenuItem value="">
+                      <em>None</em>
                     </MenuItem>
-                  ))}
-                </TextField>
-              </Grid2>
-              <Grid2 xs={12}>
-                <TextField
-                  type="datetime-local"
-                  fullWidth
-                  id="dueDate"
-                  label="Due Date"
-                  name="dueDate"
-                  value={filters.dueDate ?? ""}
-                  onChange={onChangeDueDate}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                />
-              </Grid2>
-              <Grid2 xs={12}>
-                <FormControl
-                  sx={{
-                    borderRadius: "4px",
-                    border: 0,
-                    padding: 0,
-                    display: "block",
-                  }}
-                  component={"fieldset"}
-                >
-                  <FormLabel component="legend">Status</FormLabel>
-                  <FormGroup sx={{ display: "block" }}>
-                    {Object.values(LINE_PLAN_STATUS).map((status) => (
-                      <FormControlLabel
-                        key={status}
-                        name="status"
-                        id={String(status)}
-                        value={String(status)}
-                        label={status}
-                        onChange={onChangeStatus(status)}
-                        checked={filters.status.includes(status)}
-                        control={<Checkbox />}
-                      />
+                    {membershipList?.map((member) => (
+                      <MenuItem
+                        key={member.id}
+                        value={member.publicUserData.identifier}
+                      >
+                        {member.publicUserData.identifier}
+                      </MenuItem>
                     ))}
-                  </FormGroup>
-                </FormControl>
+                  </TextField>
+                </Grid2>
+                <Grid2 xs={12}>
+                  <TextField
+                    type="date"
+                    fullWidth
+                    id="dueDate"
+                    label="Due Date"
+                    name="dueDate"
+                    value={filters.dueDate?.toISOString().split("T")[0] ?? ""}
+                    onChange={onChangeDueDate}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                  />
+                </Grid2>
+                <Grid2 xs={12}>
+                  <FormControl
+                    sx={{
+                      borderRadius: "4px",
+                      border: 0,
+                      padding: 0,
+                      display: "block",
+                    }}
+                    component={"fieldset"}
+                  >
+                    <FormLabel component="legend">Status</FormLabel>
+                    <FormGroup sx={{ display: "block" }}>
+                      {Object.values(LINE_PLAN_STATUS).map((status) => (
+                        <FormControlLabel
+                          key={status}
+                          name="status"
+                          id={String(status)}
+                          value={String(status)}
+                          label={status}
+                          onChange={onChangeStatus(status)}
+                          checked={filters.status.includes(status)}
+                          control={<Checkbox />}
+                        />
+                      ))}
+                    </FormGroup>
+                  </FormControl>
+                </Grid2>
               </Grid2>
-            </Grid2>
-          </form>
-        </FormCard>
-
-        <LinePlanForm
-          organizationId={organization?.id ?? ""}
-          refetch={linePlans.refetch}
-        />
-
+            </form>
+          </AccordionDetails>
+        </Accordion>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            marginBlock: "2rem",
+          }}
+        >
+          <LinePlanForm
+            organizationId={organization?.id ?? ""}
+            refetch={linePlans.refetch}
+          />
+        </Box>
         {linePlans.data && (
           <TableContainer component={Paper}>
             <Table>
@@ -223,7 +242,7 @@ const LinePlan: NextPage = () => {
                     key={linePlan.id}
                     sx={{
                       backgroundColor:
-                        linePlan.status === LINE_PLAN_STATUS.OK
+                        linePlan.status === LINE_PLAN_STATUS.COMPLETED
                           ? "green"
                           : "red",
                     }}

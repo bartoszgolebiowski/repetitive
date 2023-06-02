@@ -9,27 +9,31 @@ import {
   RadioGroup,
   Radio,
   Button,
+  IconButton,
+  Tooltip,
+  TableCell,
 } from "@mui/material";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import React from "react";
+import { type z } from "zod";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
 import { api } from "~/utils/api";
+import { defaultValueDate } from "~/utils/date";
 import {
   ACTION_PRIORITY,
-  actionItemSchema,
+  actionEditItemSchema,
 } from "~/utils/schema/action/action";
-import { ACTION_STATUS } from "~/utils/schema/action/action";
 import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
+import EditIcon from "@mui/icons-material/Edit";
+import { grey, blue } from "@mui/material/colors";
 
 type Props = {
-  linePlanId?: string;
-  actionPlanId?: string;
-  refetch: () => Promise<unknown>;
+  defaultValues: z.infer<typeof actionEditItemSchema>;
 };
 
-const ActionForm = (props: Props) => {
-  const { actionPlanId, refetch } = props;
+const EditActionCell = (props: Props) => {
+  const { defaultValues } = props;
   const ref = React.useRef<HTMLDivElement>(null);
   const [open, setOpen] = React.useState(false);
 
@@ -37,11 +41,7 @@ const ActionForm = (props: Props) => {
     membershipList: { limit: ORGANIZATION_MEMBERSHIP_LIMIT },
   });
 
-  const createAction = api.action.create.useMutation({
-    onSuccess: async () => {
-      await refetch();
-    },
-  });
+  const updateAction = api.action.update.useMutation({});
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -56,31 +56,44 @@ const ActionForm = (props: Props) => {
     const startDate = String(data.startDate);
     data.dueDate = new Date(dueDate);
     data.startDate = new Date(startDate);
-    const result = actionItemSchema.safeParse({
-      ...data,
-      status: ACTION_STATUS.IN_PROGRESS,
-    });
+    const result = actionEditItemSchema.safeParse(data);
 
     if (result.success) {
-      createAction.mutate(result.data);
+      updateAction.mutate(result.data);
     }
-    //todo: handle error
-    handleClose();
+
+    toggle();
   };
 
-  const handleClose = () => setOpen(false);
-  const handleOpen = () => setOpen(true);
+  const toggle = () => setOpen((prev) => !prev);
 
   return (
     <>
-      <Button variant="contained" color="primary" onClick={handleOpen}>
-        Create
-      </Button>
-      <Modal open={open} onClose={handleClose}>
+      <TableCell>
+        <Tooltip title="Edit">
+          <IconButton
+            aria-label="edit"
+            onClick={toggle}
+            color="primary"
+            disabled={updateAction.status === "loading"}
+            sx={{
+              marginLeft: 1,
+              backgroundColor: grey[400],
+              borderRadius: 2,
+              "&:hover": {
+                backgroundColor: grey[700],
+                color: blue[200],
+              },
+            }}
+          >
+            <EditIcon />
+          </IconButton>
+        </Tooltip>
+      </TableCell>
+      <Modal open={open} onClose={toggle}>
         <FormCard size="large" ref={ref} sx={{ orverflowY: "scroll" }}>
-          <FormTitle>Create Action Plan</FormTitle>
+          <FormTitle>Update Action Plan</FormTitle>
           <form onSubmit={handleSubmit}>
-            <input type="hidden" name="actionPlanId" value={actionPlanId} />
             <Grid2 container spacing={2}>
               <Grid2 xs={12}>
                 <TextField
@@ -90,6 +103,7 @@ const ActionForm = (props: Props) => {
                   label="Name"
                   name="name"
                   required
+                  defaultValue={defaultValues.name}
                 />
               </Grid2>
               <Grid2 xs={12}>
@@ -100,6 +114,8 @@ const ActionForm = (props: Props) => {
                   label="Description"
                   name="description"
                   multiline
+                  required
+                  defaultValue={defaultValues.description}
                 />
               </Grid2>
               <Grid2 xs={12}>
@@ -110,6 +126,7 @@ const ActionForm = (props: Props) => {
                   label="Comment"
                   name="comment"
                   multiline
+                  defaultValue={defaultValues.comment}
                 />
               </Grid2>
               <Grid2 xs={12}>
@@ -123,6 +140,7 @@ const ActionForm = (props: Props) => {
                     shrink: true,
                   }}
                   required
+                  defaultValue={defaultValueDate(defaultValues.startDate)}
                 />
               </Grid2>
               <Grid2 xs={12}>
@@ -136,6 +154,7 @@ const ActionForm = (props: Props) => {
                     shrink: true,
                   }}
                   required
+                  defaultValue={defaultValueDate(defaultValues.dueDate)}
                 />
               </Grid2>
               <Grid2 xs={12}>
@@ -145,7 +164,7 @@ const ActionForm = (props: Props) => {
                   id="assignedTo"
                   label="Assigned To"
                   name="assignedTo"
-                  defaultValue=""
+                  defaultValue={defaultValues.assignedTo}
                   required
                 >
                   <MenuItem value="">
@@ -168,8 +187,8 @@ const ActionForm = (props: Props) => {
                   id="leader"
                   label="Leader"
                   name="leader"
-                  defaultValue=""
                   required
+                  defaultValue={defaultValues.leader}
                 >
                   <MenuItem value="">
                     <em>None</em>
@@ -194,6 +213,7 @@ const ActionForm = (props: Props) => {
                         value={status}
                         label={status}
                         control={<Radio required />}
+                        defaultChecked={defaultValues.priority === status}
                       />
                     ))}
                   </RadioGroup>
@@ -204,8 +224,8 @@ const ActionForm = (props: Props) => {
                   fullWidth
                   variant="contained"
                   color="secondary"
-                  onClick={handleClose}
-                  disabled={createAction.status === "loading"}
+                  onClick={toggle}
+                  disabled={updateAction.status === "loading"}
                 >
                   Cancel
                 </Button>
@@ -216,7 +236,7 @@ const ActionForm = (props: Props) => {
                   variant="contained"
                   color="primary"
                   type="submit"
-                  disabled={createAction.status === "loading"}
+                  disabled={updateAction.status === "loading"}
                 >
                   Create
                 </Button>
@@ -229,4 +249,4 @@ const ActionForm = (props: Props) => {
   );
 };
 
-export default ActionForm;
+export default EditActionCell;

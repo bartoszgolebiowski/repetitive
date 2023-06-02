@@ -11,6 +11,7 @@ export const ACTION_STATUS = {
 
 export const ACTION_PRIORITY = {
     LOW: 'LOW',
+    MEDIUM: 'MEDIUM',
     HIGH: 'HIGH',
 } as const;
 
@@ -24,12 +25,14 @@ export const actionItemSchema = z.object({
         ACTION_STATUS.IN_PROGRESS,
         ACTION_STATUS.COMPLETED,
         ACTION_STATUS.DELAYED,
-        ACTION_STATUS.REJECTED,
+        ACTION_STATUS.DELETED,
+        ACTION_STATUS.REJECTED
     ]),
     assignedTo: z.string(),
     leader: z.string(),
     priority: z.enum([
         ACTION_PRIORITY.LOW,
+        ACTION_PRIORITY.MEDIUM,
         ACTION_PRIORITY.HIGH,
     ]),
     comment: z.string().optional().default(''),
@@ -44,12 +47,14 @@ export const actionEditItemSchema = byIdSchema.merge(z.object({
         ACTION_STATUS.IN_PROGRESS,
         ACTION_STATUS.COMPLETED,
         ACTION_STATUS.DELAYED,
-        ACTION_STATUS.REJECTED,
+        ACTION_STATUS.DELETED,
+        ACTION_STATUS.REJECTED
     ]).optional(),
     assignedTo: z.string().optional(),
     leader: z.string().optional(),
     priority: z.enum([
         ACTION_PRIORITY.LOW,
+        ACTION_PRIORITY.MEDIUM,
         ACTION_PRIORITY.HIGH,
     ]).optional(),
     comment: z.string().optional(),
@@ -64,32 +69,15 @@ export const actionFilterSchema = z.object({
         leader: z.string().optional(),
         priority: z.array(z.enum([
             ACTION_PRIORITY.LOW,
+            ACTION_PRIORITY.MEDIUM,
             ACTION_PRIORITY.HIGH,
         ])),
         status: z.array(z.enum([
             ACTION_STATUS.IN_PROGRESS,
             ACTION_STATUS.COMPLETED,
             ACTION_STATUS.DELAYED,
-            ACTION_STATUS.REJECTED,
-            ACTION_STATUS.DELETED
+            ACTION_STATUS.DELETED,
+            ACTION_STATUS.REJECTED
         ])),
     }),
-    orderBy: z.object({
-        field: z.enum([
-            'name',
-            'startDate',
-            'dueDate',
-            'status',
-            'assignedTo',
-            'leader',
-            'priority',
-            'createdAt',
-            'updatedAt',
-            'description'
-        ]),
-        direction: z.enum([
-            'asc',
-            'desc',
-        ]),
-    }).optional(),
 })

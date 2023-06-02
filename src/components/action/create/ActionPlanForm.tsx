@@ -104,7 +104,7 @@ const ActionPlanForm = (props: Props) => {
               </Grid2>
               <Grid2 xs={12}>
                 <TextField
-                  type="datetime-local"
+                  type="date"
                   fullWidth
                   id="dueDate"
                   label="Due Date"

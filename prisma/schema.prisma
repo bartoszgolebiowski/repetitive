@@ -11,7 +11,19 @@ datasource db {
     directUrl = env("DIRECT_URL")
 }
 
-// action plans
+enum Status {
+    IN_PROGRESS
+    COMPLETED
+    DELAYED
+    REJECTED
+    DELETED
+}
+
+enum Priority {
+    LOW
+    MEDIUM
+    HIGH
+}
 
 model LinePlan {
     id        String   @id @default(cuid())
@@ -25,10 +37,9 @@ model LinePlan {
 
     assignedTo String
     dueDate    DateTime
-    status     String
+    status     Status
     comment    String
 
-    attachments Attachment[]
     actionPlans ActionPlan[]
 }
 
@@ -39,16 +50,15 @@ model ActionPlan {
     updatedAt DateTime @updatedAt
     updatedBy String
 
-    status      String
+    status      Status
     name        String
     description String
     assignedTo  String
     dueDate     DateTime
 
-    attachments Attachment[]
-    actions     Action[]
-    linePlan    LinePlan     @relation(fields: [linePlanId], references: [id])
-    linePlanId  String
+    actions    Action[]
+    linePlan   LinePlan @relation(fields: [linePlanId], references: [id])
+    linePlanId String
 }
 
 model Action {
@@ -63,28 +73,11 @@ model Action {
     startDate   DateTime
     dueDate     DateTime
     assignedTo  String
-    priority    String
-    status      String
+    priority    Priority
+    status      Status
     leader      String
     comment     String
 
-    attachments  Attachment[]
-    actionPlan   ActionPlan   @relation(fields: [actionPlanId], references: [id])
+    actionPlan   ActionPlan @relation(fields: [actionPlanId], references: [id])
     actionPlanId String
-}
-
-model Attachment {
-    id        String   @id @default(cuid())
-    blob      Bytes
-    createdAt DateTime @default(now())
-    createdBy String
-    updatedAt DateTime @updatedAt
-    updatedBy String
-
-    linePlan     LinePlan?   @relation(fields: [linePlanId], references: [id])
-    linePlanId   String?
-    actionPlan   ActionPlan? @relation(fields: [actionPlanId], references: [id])
-    actionPlanId String?
-    action       Action?     @relation(fields: [actionId], references: [id])
-    actionId     String?
 }

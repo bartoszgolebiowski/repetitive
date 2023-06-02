@@ -7,14 +7,11 @@ import { actionEditItemSchema, actionFilterSchema, actionItemSchema, ACTION_STAT
 import { byIdSchema } from "~/utils/schema/general";
 import { extractUserId } from "~/utils/user";
 
-type RemoveUndefined<T> = T extends undefined ? never : T;
-
 export const actionRouter = createTRPCRouter({
     getByFilters: protectedProcedure
         .input(actionFilterSchema)
         .query(async ({ ctx, input }) => {
             const { actionPlanId, leader, priority, startDate, dueDate, assignedTo, status } = input.filters;
-            const { field, direction } = input?.orderBy || { field: 'dueDate', direction: 'asc' };
             const where = {
                 actionPlanId: actionPlanId,
                 ...{ leader: leader ? { equals: leader } : {} },
@@ -23,16 +20,11 @@ export const actionRouter = createTRPCRouter({
                 ...{ dueDate: dueDate ? { lte: dueDate } : {} },
                 ...{ assignedTo: assignedTo ? { equals: assignedTo } : {} },
                 ...{ status: status ? { in: status } : {} },
-            } satisfies RemoveUndefined<Parameters<typeof ctx.prisma.action.findMany>['0']>['where']
-
-            const orderBy = {
-                [field]: direction,
-            } satisfies RemoveUndefined<Parameters<typeof ctx.prisma.action.findMany>['0']>['orderBy']
+            }
 
             try {
                 const linePlans = await ctx.prisma.action.findMany({
                     where,
-                    orderBy,
                 });
 
                 return linePlans;

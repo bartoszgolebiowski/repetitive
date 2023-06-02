@@ -20,7 +20,7 @@ export const linePlanRouter = createTRPCRouter({
                 ...{ assignedTo: assignedTo ? { equals: assignedTo } : {} },
                 ...{ productionLine: productionLine ? { equals: productionLine } : {} },
                 ...{ status: status ? { in: status } : {} },
-            } satisfies RemoveUndefined<Parameters<typeof ctx.prisma.linePlan.findMany>['0']>['where']
+            }
 
             try {
                 const linePlans = await ctx.prisma.linePlan.findMany({
@@ -58,7 +58,7 @@ export const linePlanRouter = createTRPCRouter({
                         ...input,
                         createdBy: extractUserId(ctx.auth),
                         updatedBy: extractUserId(ctx.auth),
-                        status: LINE_PLAN_STATUS.OK,
+                        status: LINE_PLAN_STATUS.COMPLETED,
                         comment: input.comment,
                     },
                 });

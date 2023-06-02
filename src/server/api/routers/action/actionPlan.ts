@@ -7,8 +7,6 @@ import { ACTION_PLAN_STATUS, actionPlanCreateSchema, actionPlanEditSchema, actio
 import { byIdSchema } from "~/utils/schema/general";
 import { extractUserId } from "~/utils/user";
 
-type RemoveUndefined<T> = T extends undefined ? never : T;
-
 export const actionPlanRouter = createTRPCRouter({
     getByFilters: protectedProcedure
         .input(actionPlanFilterSchema)
@@ -19,7 +17,7 @@ export const actionPlanRouter = createTRPCRouter({
                 ...{ dueDate: dueDate ? { lte: dueDate } : {} },
                 ...{ assignedTo: assignedTo ? { equals: assignedTo } : {} },
                 ...{ status: status ? { in: status } : {} },
-            } satisfies RemoveUndefined<Parameters<typeof ctx.prisma.actionPlan.findMany>['0']>['where']
+            }
 
             try {
                 const linePlans = await ctx.prisma.actionPlan.findMany({
