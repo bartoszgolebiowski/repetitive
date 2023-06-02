@@ -41,7 +41,7 @@ const convertQueryToFilters = (): Omit<
     dueDate: null,
     status: [
       ACTION_PLAN_STATUS.COMPLETED,
-      ACTION_PLAN_STATUS.DELEYED,
+      ACTION_PLAN_STATUS.DELAYED,
       ACTION_PLAN_STATUS.IN_PROGRESS,
     ] as Array<keyof typeof ACTION_PLAN_STATUS>,
   };

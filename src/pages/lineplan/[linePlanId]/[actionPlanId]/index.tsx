@@ -47,7 +47,7 @@ const convertQueryToFilters = (): Omit<
     >,
     status: [
       ACTION_STATUS.COMPLETED,
-      ACTION_STATUS.DELEYED,
+      ACTION_STATUS.DELAYED,
       ACTION_STATUS.IN_PROGRESS,
       ACTION_STATUS.REJECTED,
       ACTION_STATUS.DELETED,

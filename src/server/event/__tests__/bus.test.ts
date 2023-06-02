@@ -27,7 +27,8 @@ describe('bus', () => {
                 'action:created',
                 'action:deleted',
                 'action:updated',
-                'actionPlan:allActionsCompletedOrDeletedOrDelayed',
+                'actionPlan:allActionsCompletedOrRejected',
+                'actionPlan:atLeastOneActionDelayed',
             ] as const
 
             const allEvents = [
@@ -46,21 +47,27 @@ describe('bus', () => {
                 assertType<{ actionPlanId: string }>(input)
                 return Promise.resolve(null)
             })
-            
+
             bus.on('action:updated', (input) => {
                 assertType<{ actionPlanId: string }>(input)
                 return Promise.resolve(null)
             })
 
-            bus.on('actionPlan:allActionsCompletedOrDeletedOrDelayed', (input) => {
-                assertType<{ linePlanId: string }>(input)
+            bus.on('actionPlan:allActionsCompletedOrRejected', (input) => {
+                assertType<{ actionPlanId: string }>(input)
+                return Promise.resolve(null)
+            })
+
+            bus.on('actionPlan:atLeastOneActionDelayed', (input) => {
+                assertType<{ actionPlanId: string }>(input)
                 return Promise.resolve(null)
             })
 
             bus.emit('action:created', { actionPlanId: 'actionPlanId' })
             bus.emit('action:deleted', { actionPlanId: 'actionPlanId' })
             bus.emit('action:updated', { actionPlanId: 'actionPlanId' })
-            bus.emit('actionPlan:allActionsCompletedOrDeletedOrDelayed', { linePlanId: 'linePlanId' })
+            bus.emit('actionPlan:atLeastOneActionDelayed', { actionPlanId: 'linePlanId' })
+            bus.emit('actionPlan:allActionsCompletedOrRejected', { actionPlanId: 'linePlanId' })
         })
     })
 })

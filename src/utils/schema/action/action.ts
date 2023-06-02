@@ -4,7 +4,7 @@ import { byIdSchema } from "../general";
 export const ACTION_STATUS = {
     IN_PROGRESS: 'IN_PROGRESS',
     COMPLETED: 'COMPLETED',
-    DELEYED: 'DELEYED',
+    DELAYED: 'DELAYED',
     REJECTED: 'REJECTED',
     DELETED: 'DELETED',
 } as const;
@@ -23,7 +23,7 @@ export const actionItemSchema = z.object({
     status: z.enum([
         ACTION_STATUS.IN_PROGRESS,
         ACTION_STATUS.COMPLETED,
-        ACTION_STATUS.DELEYED,
+        ACTION_STATUS.DELAYED,
         ACTION_STATUS.REJECTED,
     ]),
     assignedTo: z.string(),
@@ -43,7 +43,7 @@ export const actionEditItemSchema = byIdSchema.merge(z.object({
     status: z.enum([
         ACTION_STATUS.IN_PROGRESS,
         ACTION_STATUS.COMPLETED,
-        ACTION_STATUS.DELEYED,
+        ACTION_STATUS.DELAYED,
         ACTION_STATUS.REJECTED,
     ]).optional(),
     assignedTo: z.string().optional(),
@@ -69,7 +69,7 @@ export const actionFilterSchema = z.object({
         status: z.array(z.enum([
             ACTION_STATUS.IN_PROGRESS,
             ACTION_STATUS.COMPLETED,
-            ACTION_STATUS.DELEYED,
+            ACTION_STATUS.DELAYED,
             ACTION_STATUS.REJECTED,
             ACTION_STATUS.DELETED
         ])),
