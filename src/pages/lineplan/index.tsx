@@ -4,7 +4,6 @@ import Head from "next/head";
 import { api } from "~/utils/api";
 
 import Grid2 from "@mui/material/Unstable_Grid2";
-import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Box from "@mui/material/Box";
 import Table from "@mui/material/Table";
@@ -12,12 +11,8 @@ import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Modal from "@mui/material/Modal";
 import Typography from "@mui/material/Typography";
 import React from "react";
-import FormCard from "~/components/FormCard";
-import GroupAddIcon from "@mui/icons-material/GroupAdd";
-import FormTitle from "~/components/FormTitle";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import MenuItem from "@mui/material/MenuItem";
@@ -28,7 +23,6 @@ import {
   FormGroup,
   FormControlLabel,
   Checkbox,
-  Breadcrumbs,
   Accordion,
   AccordionDetails,
   AccordionSummary,
@@ -38,6 +32,7 @@ import LinePlanForm from "~/components/action/create/LinePlanForm";
 import { useOrganization } from "@clerk/nextjs";
 import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import StatusCircle from "~/components/action/table/action/StatusCircle";
 
 const convertQueryToFilters = (): Omit<
   Parameters<typeof api.linePlan.getByFilters.useQuery>[0],
@@ -47,13 +42,7 @@ const convertQueryToFilters = (): Omit<
     productionLine: "",
     assignedTo: "",
     dueDate: null,
-    status: [
-      LINE_PLAN_STATUS.IN_PROGRESS,
-      LINE_PLAN_STATUS.COMPLETED,
-      LINE_PLAN_STATUS.DELAYED,
-      LINE_PLAN_STATUS.REJECTED,
-      LINE_PLAN_STATUS.DELETED,
-    ],
+    status: Object.keys(LINE_PLAN_STATUS) as (keyof typeof LINE_PLAN_STATUS)[],
   };
 };
 
@@ -125,7 +114,7 @@ const LinePlan: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Box component="main">
-        <Accordion>
+        <Accordion sx={{ maxWidth: "40rem" }}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5">Line Plans Filters</Typography>
           </AccordionSummary>
@@ -229,30 +218,28 @@ const LinePlan: NextPage = () => {
             <Table>
               <TableHead>
                 <TableRow>
+                  <TableCell>Status</TableCell>
                   <TableCell>Production Line</TableCell>
                   <TableCell>Action plan</TableCell>
                   <TableCell>Assigned To</TableCell>
-                  <TableCell>Created At</TableCell>
-                  <TableCell>Due Date</TableCell>
+                  <TableCell align="right">Created At</TableCell>
+                  <TableCell align="right">Due Date</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {linePlans.data.map((linePlan) => (
-                  <TableRow
-                    key={linePlan.id}
-                    sx={{
-                      backgroundColor:
-                        linePlan.status === LINE_PLAN_STATUS.COMPLETED
-                          ? "green"
-                          : "red",
-                    }}
-                  >
-                    <TableCell>{linePlan.productionLine}</TableCell>
+                  <TableRow key={linePlan.id}>
+                    <TableCell sx={{ display: "flex" }}>
+                      <StatusCircle status={linePlan.status}>
+                        {linePlan.status}
+                      </StatusCircle>
+                    </TableCell>
                     <TableCell>
                       <Link href={`lineplan/${linePlan.id}`}>
                         Navigate to Action Plan
                       </Link>
                     </TableCell>
+                    <TableCell>{linePlan.productionLine}</TableCell>
                     <TableCell>{linePlan.assignedTo}</TableCell>
                     <TableCell align="right">
                       {displayDate(linePlan.createdAt)}

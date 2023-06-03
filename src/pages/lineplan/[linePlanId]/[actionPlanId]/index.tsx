@@ -41,6 +41,7 @@ import CommentCell, {
   SIZE_COMMENT_CELL,
 } from "~/components/action/table/action/CommentCell";
 import StatusCircle from "~/components/action/table/action/StatusCircle";
+import EditActionCell from "~/components/action/table/action/EditActionCell";
 
 const convertQueryToFilters = (): Omit<
   Parameters<typeof api.action.getByFilters.useQuery>[0]["filters"],
@@ -51,18 +52,8 @@ const convertQueryToFilters = (): Omit<
     dueDate: null,
     assignedTo: "",
     leader: "",
-    priority: [
-      ACTION_PRIORITY.LOW,
-      ACTION_PRIORITY.MEDIUM,
-      ACTION_PRIORITY.HIGH,
-    ] as Array<keyof typeof ACTION_PRIORITY>,
-    status: [
-      ACTION_STATUS.COMPLETED,
-      ACTION_STATUS.DELAYED,
-      ACTION_STATUS.IN_PROGRESS,
-      ACTION_STATUS.REJECTED,
-      ACTION_STATUS.DELETED,
-    ] as Array<keyof typeof ACTION_STATUS>,
+    priority: Object.keys(ACTION_PRIORITY) as (keyof typeof ACTION_PRIORITY)[],
+    status: Object.keys(ACTION_STATUS) as (keyof typeof ACTION_STATUS)[],
   };
 };
 
@@ -145,6 +136,7 @@ const Actions: NextPage = () => {
       enabled: !!linePlanId,
     }
   );
+
   const linePlan = api.linePlan.getById.useQuery(
     { id: linePlanId as string },
     {
@@ -195,7 +187,7 @@ const Actions: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Box component="main">
-        <Accordion>
+        <Accordion sx={{ maxWidth: "40rem" }}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5">Actions Filters</Typography>
           </AccordionSummary>
@@ -361,7 +353,12 @@ const Actions: NextPage = () => {
           </Breadcrumbs>
         </Box>
         {actions.data && (
-          <TableContainer component={Paper}>
+          <TableContainer
+            component={Paper}
+            sx={{
+              opacity: updateAction.isLoading ? 0.7 : 1,
+            }}
+          >
             <Table>
               <TableHead>
                 <TableRow>
@@ -395,8 +392,8 @@ const Actions: NextPage = () => {
                     </ActionCell>
                     <CommentCell
                       comment={action.comment}
-                      onSubmit={handleCommentChange(action.id)}
                       status={updateAction.status}
+                      onSubmit={handleCommentChange(action.id)}
                     >
                       {action.comment}
                     </CommentCell>
@@ -407,7 +404,11 @@ const Actions: NextPage = () => {
                     <TableCell>{action.leader}</TableCell>
                     <TableCell>{displayDate(action.startDate)}</TableCell>
                     <TableCell>{displayDate(action.dueDate)}</TableCell>
-                    <ActionForm />
+                    <EditActionCell
+                      defaultValues={action}
+                      status={updateAction.status}
+                      onSubmit={updateAction.mutate}
+                    />
                   </TableRow>
                 ))}
               </TableBody>

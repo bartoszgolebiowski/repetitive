@@ -6,7 +6,6 @@ export const ACTION_STATUS = {
     COMPLETED: 'COMPLETED',
     DELAYED: 'DELAYED',
     REJECTED: 'REJECTED',
-    DELETED: 'DELETED',
 } as const;
 
 export const ACTION_PRIORITY = {
@@ -25,7 +24,6 @@ export const actionItemSchema = z.object({
         ACTION_STATUS.IN_PROGRESS,
         ACTION_STATUS.COMPLETED,
         ACTION_STATUS.DELAYED,
-        ACTION_STATUS.DELETED,
         ACTION_STATUS.REJECTED
     ]),
     assignedTo: z.string(),
@@ -47,7 +45,6 @@ export const actionEditItemSchema = byIdSchema.merge(z.object({
         ACTION_STATUS.IN_PROGRESS,
         ACTION_STATUS.COMPLETED,
         ACTION_STATUS.DELAYED,
-        ACTION_STATUS.DELETED,
         ACTION_STATUS.REJECTED
     ]).optional(),
     assignedTo: z.string().optional(),
@@ -76,7 +73,6 @@ export const actionFilterSchema = z.object({
             ACTION_STATUS.IN_PROGRESS,
             ACTION_STATUS.COMPLETED,
             ACTION_STATUS.DELAYED,
-            ACTION_STATUS.DELETED,
             ACTION_STATUS.REJECTED
         ])),
     }),

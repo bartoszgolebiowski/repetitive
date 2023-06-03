@@ -36,6 +36,7 @@ import ActionPlanForm from "~/components/action/create/ActionPlanForm";
 import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
 import { useOrganization } from "@clerk/nextjs";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import StatusCircle from "~/components/action/table/action/StatusCircle";
 
 const convertQueryToFilters = (): Omit<
   Parameters<typeof api.actionPlan.getByFilters.useQuery>[0],
@@ -44,13 +45,9 @@ const convertQueryToFilters = (): Omit<
   return {
     assignedTo: "",
     dueDate: null,
-    status: [
-      ACTION_PLAN_STATUS.COMPLETED,
-      ACTION_PLAN_STATUS.DELAYED,
-      ACTION_PLAN_STATUS.IN_PROGRESS,
-      ACTION_PLAN_STATUS.REJECTED,
-      ACTION_PLAN_STATUS.DELETED,
-    ] as Array<keyof typeof ACTION_PLAN_STATUS>,
+    status: Object.keys(
+      ACTION_PLAN_STATUS
+    ) as (keyof typeof ACTION_PLAN_STATUS)[],
   };
 };
 
@@ -115,7 +112,7 @@ const ActionPlan: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Box component="main">
-        <Accordion>
+        <Accordion sx={{ maxWidth: "40rem" }}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="h5">Action Plans Filters</Typography>
           </AccordionSummary>
@@ -220,23 +217,18 @@ const ActionPlan: NextPage = () => {
                   <TableCell>Name</TableCell>
                   <TableCell>Description</TableCell>
                   <TableCell>Assigned To</TableCell>
-                  <TableCell>Created By</TableCell>
                   <TableCell align="right">Created At</TableCell>
                   <TableCell align="right">Due Date</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {actionPlans.data.map((actionPlan) => (
-                  <TableRow
-                    key={actionPlan.id}
-                    sx={{
-                      backgroundColor:
-                        actionPlan.status === ACTION_PLAN_STATUS.COMPLETED
-                          ? "green"
-                          : "red",
-                    }}
-                  >
-                    <TableCell>{actionPlan.status}</TableCell>
+                  <TableRow key={actionPlan.id}>
+                    <TableCell sx={{ display: "flex" }}>
+                      <StatusCircle status={actionPlan.status}>
+                        {actionPlan.status}
+                      </StatusCircle>
+                    </TableCell>
                     <TableCell>
                       <Link
                         href={`/lineplan/${String(linePlanId)}/${
@@ -249,7 +241,6 @@ const ActionPlan: NextPage = () => {
                     <TableCell>{actionPlan.name}</TableCell>
                     <TableCell>{actionPlan.description}</TableCell>
                     <TableCell>{actionPlan.assignedTo}</TableCell>
-                    <TableCell>{actionPlan.createdBy}</TableCell>
                     <TableCell align="right">
                       {displayDate(actionPlan.createdAt)}
                     </TableCell>

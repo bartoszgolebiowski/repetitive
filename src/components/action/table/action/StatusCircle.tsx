@@ -3,7 +3,7 @@ import { ACTION_STATUS } from "~/utils/schema/action/action";
 import CircleIcon from "@mui/icons-material/Circle";
 
 type Props = {
-  status: keyof typeof ACTION_STATUS | string;
+  status: keyof typeof ACTION_STATUS;
 };
 
 const StatusCircle = (props: React.PropsWithChildren<Props>) => {

@@ -5,7 +5,6 @@ export const ACTION_PLAN_STATUS = {
     IN_PROGRESS: 'IN_PROGRESS',
     COMPLETED: 'COMPLETED',
     DELAYED: 'DELAYED',
-    DELETED: 'DELETED',
     REJECTED: 'REJECTED',
 } as const;
 
@@ -36,6 +35,5 @@ export const actionPlanFilterSchema = linePlanSchema.merge(z.object({
         ACTION_PLAN_STATUS.COMPLETED,
         ACTION_PLAN_STATUS.DELAYED,
         ACTION_PLAN_STATUS.REJECTED,
-        ACTION_PLAN_STATUS.DELETED,
     ])),
 }))

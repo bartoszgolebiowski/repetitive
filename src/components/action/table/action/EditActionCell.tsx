@@ -30,18 +30,18 @@ import { grey, blue } from "@mui/material/colors";
 
 type Props = {
   defaultValues: z.infer<typeof actionEditItemSchema>;
+  status: "error" | "success" | "loading" | "idle";
+  onSubmit: (data: z.infer<typeof actionEditItemSchema>) => void;
 };
 
 const EditActionCell = (props: Props) => {
-  const { defaultValues } = props;
+  const { defaultValues, onSubmit, status } = props;
   const ref = React.useRef<HTMLDivElement>(null);
   const [open, setOpen] = React.useState(false);
 
   const { membershipList } = useOrganization({
     membershipList: { limit: ORGANIZATION_MEMBERSHIP_LIMIT },
   });
-
-  const updateAction = api.action.update.useMutation({});
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -59,7 +59,7 @@ const EditActionCell = (props: Props) => {
     const result = actionEditItemSchema.safeParse(data);
 
     if (result.success) {
-      updateAction.mutate(result.data);
+      onSubmit(result.data);
     }
 
     toggle();
@@ -75,7 +75,7 @@ const EditActionCell = (props: Props) => {
             aria-label="edit"
             onClick={toggle}
             color="primary"
-            disabled={updateAction.status === "loading"}
+            disabled={status === "loading"}
             sx={{
               marginLeft: 1,
               backgroundColor: grey[400],
@@ -94,6 +94,7 @@ const EditActionCell = (props: Props) => {
         <FormCard size="large" ref={ref} sx={{ orverflowY: "scroll" }}>
           <FormTitle>Update Action Plan</FormTitle>
           <form onSubmit={handleSubmit}>
+            <input type="hidden" name="id" defaultValue={defaultValues.id} />
             <Grid2 container spacing={2}>
               <Grid2 xs={12}>
                 <TextField
@@ -206,14 +207,17 @@ const EditActionCell = (props: Props) => {
               <Grid2 xs={12}>
                 <FormControl>
                   <FormLabel id="radio-priority">Priority</FormLabel>
-                  <RadioGroup aria-labelledby="radio-priority" name="priority">
+                  <RadioGroup
+                    aria-labelledby="radio-priority"
+                    name="priority"
+                    defaultValue={defaultValues.priority}
+                  >
                     {Object.values(ACTION_PRIORITY).map((status) => (
                       <FormControlLabel
                         key={status}
                         value={status}
                         label={status}
                         control={<Radio required />}
-                        defaultChecked={defaultValues.priority === status}
                       />
                     ))}
                   </RadioGroup>
@@ -225,7 +229,7 @@ const EditActionCell = (props: Props) => {
                   variant="contained"
                   color="secondary"
                   onClick={toggle}
-                  disabled={updateAction.status === "loading"}
+                  disabled={status === "loading"}
                 >
                   Cancel
                 </Button>
@@ -236,9 +240,9 @@ const EditActionCell = (props: Props) => {
                   variant="contained"
                   color="primary"
                   type="submit"
-                  disabled={updateAction.status === "loading"}
+                  disabled={status === "loading"}
                 >
-                  Create
+                  Update
                 </Button>
               </Grid2>
             </Grid2>

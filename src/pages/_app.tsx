@@ -1,5 +1,5 @@
 import { type AppType } from "next/app";
-import { Container, ThemeProvider } from "@mui/material";
+import { Box, ThemeProvider } from "@mui/material";
 import { CacheProvider } from "@emotion/react";
 
 import Navigation from "~/components/navigation/AppNavigation";
@@ -18,9 +18,9 @@ const MyApp: AppType = ({ Component, pageProps }) => {
       <ThemeProvider theme={theme}>
         <ClerkProvider {...pageProps}>
           <Navigation>
-            <Container maxWidth="lg" sx={{ pt: "1rem" }}>
+            <Box sx={{ p: 4 }}>
               <Component {...pageProps} />
-            </Container>
+            </Box>
           </Navigation>
         </ClerkProvider>
       </ThemeProvider>

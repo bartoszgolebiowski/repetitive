@@ -1,11 +1,4 @@
-const displayINTL = new Intl.DateTimeFormat("pl-PL", {
-    hourCycle: "h23",
-    hour: "numeric",
-    minute: "numeric",
-    second: "numeric",
-    day: "numeric",
-    month: "numeric",
-});
+const displayINTL = new Intl.DateTimeFormat();
 
 export const displayDate = (date: Date) => {
     return displayINTL.format(date);

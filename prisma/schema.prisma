@@ -16,7 +16,6 @@ enum Status {
     COMPLETED
     DELAYED
     REJECTED
-    DELETED
 }
 
 enum Priority {
