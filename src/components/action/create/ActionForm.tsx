@@ -14,6 +14,7 @@ import Grid2 from "@mui/material/Unstable_Grid2";
 import React from "react";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
+import TextFieldAutoFocus from "~/components/TextFieldAutofocus";
 import { api } from "~/utils/api";
 import {
   ACTION_PRIORITY,
@@ -83,7 +84,7 @@ const ActionForm = (props: Props) => {
             <input type="hidden" name="actionPlanId" value={actionPlanId} />
             <Grid2 container spacing={2}>
               <Grid2 xs={12}>
-                <TextField
+                <TextFieldAutoFocus
                   fullWidth
                   autoFocus
                   id="name"

@@ -29,7 +29,7 @@ import {
   AccordionSummary,
   Typography,
 } from "@mui/material";
-import { displayDate } from "~/utils/date";
+import { displayDate, displayDateFull } from "~/utils/date";
 import { useRouter } from "next/router";
 import { ACTION_PLAN_STATUS } from "~/utils/schema/action/actionPlan";
 import ActionPlanForm from "~/components/action/create/ActionPlanForm";
@@ -217,8 +217,9 @@ const ActionPlan: NextPage = () => {
                   <TableCell>Name</TableCell>
                   <TableCell>Description</TableCell>
                   <TableCell>Assigned To</TableCell>
-                  <TableCell align="right">Created At</TableCell>
                   <TableCell align="right">Due Date</TableCell>
+                  <TableCell align="right">Created At</TableCell>
+                  <TableCell align="right">Updated At</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -242,10 +243,13 @@ const ActionPlan: NextPage = () => {
                     <TableCell>{actionPlan.description}</TableCell>
                     <TableCell>{actionPlan.assignedTo}</TableCell>
                     <TableCell align="right">
-                      {displayDate(actionPlan.createdAt)}
+                      {displayDate(actionPlan.dueDate)}
                     </TableCell>
                     <TableCell align="right">
-                      {displayDate(actionPlan.dueDate)}
+                      {displayDateFull(actionPlan.createdAt)}
+                    </TableCell>
+                    <TableCell align="right">
+                      {displayDateFull(actionPlan.updatedAt)}
                     </TableCell>
                   </TableRow>
                 ))}

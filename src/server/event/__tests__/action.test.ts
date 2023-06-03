@@ -54,7 +54,6 @@ describe('action event handler', () => {
                 { status: ACTION_PLAN_STATUS.COMPLETED },
                 { status: ACTION_PLAN_STATUS.IN_PROGRESS },
                 { status: ACTION_PLAN_STATUS.DELAYED },
-                { status: ACTION_PLAN_STATUS.DELETED },
             ])
 
             actionPlanRepository.updateStatus.mockResolvedValue({
@@ -138,7 +137,6 @@ describe('action event handler', () => {
             })
             actionRepository.getAllByActionPlanId.mockResolvedValue([
                 { status: ACTION_STATUS.COMPLETED },
-                { status: ACTION_STATUS.DELETED }
             ])
             const eventHandler = createHandlersActionRepositories(
                 actionRepository,
@@ -166,7 +164,6 @@ describe('action event handler', () => {
             actionRepository.getAllByActionPlanId.mockResolvedValue([
                 { status: ACTION_STATUS.COMPLETED },
                 { status: ACTION_STATUS.DELAYED },
-                { status: ACTION_STATUS.DELETED }
             ])
             const eventHandler = createHandlersActionRepositories(
                 actionRepository,
@@ -241,7 +238,6 @@ describe('action event handler', () => {
             })
             actionRepository.getAllByActionPlanId.mockResolvedValue([
                 { status: ACTION_STATUS.COMPLETED },
-                { status: ACTION_STATUS.DELETED }
             ])
             const eventHandler = createHandlersActionRepositories(
                 actionRepository,
@@ -267,7 +263,6 @@ describe('action event handler', () => {
             })
             actionRepository.getAllByActionPlanId.mockResolvedValue([
                 { status: ACTION_STATUS.COMPLETED },
-                { status: ACTION_STATUS.DELETED },
                 { status: ACTION_STATUS.DELAYED }
             ])
             const eventHandler = createHandlersActionRepositories(

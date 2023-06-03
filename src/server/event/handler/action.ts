@@ -159,7 +159,6 @@ class LinePlanService implements ILinePlanService {
     }
 }
 
-const filterDeleted = (action: { status: string; }): boolean => action.status !== ACTION_STATUS.DELETED;
 const isDelayed = (action: { status: string; }): boolean => action.status === ACTION_STATUS.DELAYED;
 const isCompleted = (action: { status: string; }): boolean => action.status === ACTION_STATUS.COMPLETED;
 const isRejected = (action: { status: string; }): boolean => action.status === ACTION_STATUS.REJECTED;
@@ -188,7 +187,6 @@ export const createHandlersActionRepositories = (
             const actionPlans = await actionPlanRepository.getAllByLinePlanId({ linePlanId })
 
             const isAtLeastOneDelay = actionPlans
-                .filter(filterDeleted)
                 .some(isDelayed)
 
             if (isAtLeastOneDelay) {
@@ -197,7 +195,6 @@ export const createHandlersActionRepositories = (
             }
 
             const isAllCompletedOrRejected = actionPlans
-                .filter(filterDeleted)
                 .every(isCompletedOrRejected)
 
             if (isAllCompletedOrRejected) {
@@ -215,7 +212,6 @@ export const createHandlersActionRepositories = (
             })
 
             const isAtLeastOneActionDelay = actions
-                .filter(filterDeleted)
                 .some(isDelayed)
 
             if (isAtLeastOneActionDelay) {
@@ -225,7 +221,6 @@ export const createHandlersActionRepositories = (
             }
 
             const isAllActionsCompleted = actions
-                .filter(filterDeleted)
                 .every(isCompletedOrRejected)
 
             if (isAllActionsCompleted) {
@@ -239,13 +234,13 @@ export const createHandlersActionRepositories = (
         }
 
         return {
+            "actionPlan:atLeastOneActionDelayed": async (input) => {
+                const { linePlanId } = await actionPlanService.updateStatusToDelayed(input)
+                return linePlanService.updateStatusToDelayed({ linePlanId })
+            },
             "actionPlan:allActionsCompletedOrRejected": async (input) => {
                 const { linePlanId } = await actionPlanService.updateStatusToCompleted(input)
                 return linePlanUpdate(linePlanId)
-            },
-            "actionPlan:atLeastOneActionDelayed": async (input) => {
-                const { linePlanId } = await actionPlanService.updateStatusToDelayed(input)
-                return await linePlanService.updateStatusToDelayed({ linePlanId })
             },
             "action:created": async (input) => {
                 const { linePlanId } = await actionPlanService.updateStatusToInProgress(input)

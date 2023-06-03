@@ -7,6 +7,7 @@ import { linePlanItemCreateSchema } from "~/utils/schema/action/linePlan";
 import { api } from "~/utils/api";
 import { useOrganization } from "@clerk/nextjs";
 import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
+import TextFieldAutoFocus from "~/components/TextFieldAutofocus";
 
 type Props = {
   organizationId?: string;
@@ -68,9 +69,8 @@ const LinePlanForm = (props: Props) => {
             <input type="hidden" name="organizationId" value={organizationId} />
             <Grid2 container spacing={2}>
               <Grid2 xs={12}>
-                <TextField
+                <TextFieldAutoFocus
                   fullWidth
-                  autoFocus
                   id="productionLine"
                   label="Production Line"
                   name="productionLine"

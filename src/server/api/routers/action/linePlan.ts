@@ -25,6 +25,15 @@ export const linePlanRouter = createTRPCRouter({
             try {
                 const linePlans = await ctx.prisma.linePlan.findMany({
                     where,
+                    select: {
+                        id: true,
+                        status: true,
+                        productionLine: true,
+                        assignedTo: true,
+                        dueDate: true,
+                        createdAt: true,
+                        updatedAt: true,
+                    }
                 });
 
                 return linePlans;

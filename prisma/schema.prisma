@@ -56,7 +56,7 @@ model ActionPlan {
     dueDate     DateTime
 
     actions    Action[]
-    linePlan   LinePlan @relation(fields: [linePlanId], references: [id])
+    linePlan   LinePlan @relation(fields: [linePlanId], references: [id], onDelete: Cascade)
     linePlanId String
 }
 
@@ -77,6 +77,6 @@ model Action {
     leader      String
     comment     String
 
-    actionPlan   ActionPlan @relation(fields: [actionPlanId], references: [id])
+    actionPlan   ActionPlan @relation(fields: [actionPlanId], references: [id], onDelete: Cascade)
     actionPlanId String
 }

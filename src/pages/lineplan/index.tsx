@@ -27,7 +27,7 @@ import {
   AccordionDetails,
   AccordionSummary,
 } from "@mui/material";
-import { displayDate } from "~/utils/date";
+import { displayDate, displayDateFull } from "~/utils/date";
 import LinePlanForm from "~/components/action/create/LinePlanForm";
 import { useOrganization } from "@clerk/nextjs";
 import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
@@ -222,8 +222,9 @@ const LinePlan: NextPage = () => {
                   <TableCell>Production Line</TableCell>
                   <TableCell>Action plan</TableCell>
                   <TableCell>Assigned To</TableCell>
-                  <TableCell align="right">Created At</TableCell>
                   <TableCell align="right">Due Date</TableCell>
+                  <TableCell align="right">Created At</TableCell>
+                  <TableCell align="right">Updated At</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -242,10 +243,13 @@ const LinePlan: NextPage = () => {
                     <TableCell>{linePlan.productionLine}</TableCell>
                     <TableCell>{linePlan.assignedTo}</TableCell>
                     <TableCell align="right">
-                      {displayDate(linePlan.createdAt)}
+                      {displayDate(linePlan.dueDate)}
                     </TableCell>
                     <TableCell align="right">
-                      {displayDate(linePlan.dueDate)}
+                      {displayDateFull(linePlan.createdAt)}
+                    </TableCell>
+                    <TableCell align="right">
+                      {displayDateFull(linePlan.updatedAt)}
                     </TableCell>
                   </TableRow>
                 ))}

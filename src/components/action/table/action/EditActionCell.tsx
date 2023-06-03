@@ -27,6 +27,7 @@ import {
 import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
 import EditIcon from "@mui/icons-material/Edit";
 import { grey, blue } from "@mui/material/colors";
+import TextFieldAutoFocus from "~/components/TextFieldAutofocus";
 
 type Props = {
   defaultValues: z.infer<typeof actionEditItemSchema>;
@@ -97,7 +98,7 @@ const EditActionCell = (props: Props) => {
             <input type="hidden" name="id" defaultValue={defaultValues.id} />
             <Grid2 container spacing={2}>
               <Grid2 xs={12}>
-                <TextField
+                <TextFieldAutoFocus
                   fullWidth
                   autoFocus
                   id="name"

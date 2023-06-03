@@ -13,6 +13,7 @@ import { blue, grey } from "@mui/material/colors";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
+import TextFieldAutoFocus from "~/components/TextFieldAutofocus";
 
 type Props = {
   comment: string;
@@ -88,9 +89,8 @@ const CommentCell = (props: React.PropsWithChildren<Props>) => {
           <form onSubmit={handleSubmit}>
             <Grid2 container spacing={2}>
               <Grid2 xs={12}>
-                <TextField
+                <TextFieldAutoFocus
                   fullWidth
-                  autoFocus
                   id="comment"
                   label="Comment"
                   name="comment"

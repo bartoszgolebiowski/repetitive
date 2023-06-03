@@ -27,7 +27,7 @@ import {
   AccordionSummary,
   Typography,
 } from "@mui/material";
-import { displayDate } from "~/utils/date";
+import { displayDate, displayDateFull } from "~/utils/date";
 import { useRouter } from "next/router";
 import { ACTION_PRIORITY, ACTION_STATUS } from "~/utils/schema/action/action";
 import ActionForm from "~/components/action/create/ActionForm";
@@ -373,9 +373,11 @@ const Actions: NextPage = () => {
                   <TableCell>Description</TableCell>
                   <TableCell>Assigned To</TableCell>
                   <TableCell>Leader</TableCell>
-                  <TableCell>Start Date</TableCell>
-                  <TableCell>Due Date</TableCell>
-                  <TableCell>Edit</TableCell>
+                  <TableCell align="right">Start Date</TableCell>
+                  <TableCell align="right">Due Date</TableCell>
+                  <TableCell align="right">Created At</TableCell>
+                  <TableCell align="right">Updated At</TableCell>
+                  <TableCell align="right">Edit</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -402,8 +404,18 @@ const Actions: NextPage = () => {
                     <TableCell>{action.description}</TableCell>
                     <TableCell>{action.assignedTo}</TableCell>
                     <TableCell>{action.leader}</TableCell>
-                    <TableCell>{displayDate(action.startDate)}</TableCell>
-                    <TableCell>{displayDate(action.dueDate)}</TableCell>
+                    <TableCell align="right">
+                      {displayDate(action.startDate)}
+                    </TableCell>
+                    <TableCell align="right">
+                      {displayDate(action.dueDate)}
+                    </TableCell>
+                    <TableCell align="right">
+                      {displayDateFull(action.createdAt)}
+                    </TableCell>
+                    <TableCell align="right">
+                      {displayDateFull(action.updatedAt)}
+                    </TableCell>
                     <EditActionCell
                       defaultValues={action}
                       status={updateAction.status}
