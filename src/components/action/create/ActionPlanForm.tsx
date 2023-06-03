@@ -4,7 +4,7 @@ import Grid2 from "@mui/material/Unstable_Grid2";
 import React from "react";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
-import TextFieldAutoFocus from "~/components/TextFieldAutofocus";
+import TextFieldAutoFocus from "~/components/TextFieldAutoFocus";
 import { api } from "~/utils/api";
 import { actionPlanCreateSchema } from "~/utils/schema/action/actionPlan";
 import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";

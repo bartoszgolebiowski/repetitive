@@ -27,7 +27,7 @@ import {
 import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
 import EditIcon from "@mui/icons-material/Edit";
 import { grey, blue } from "@mui/material/colors";
-import TextFieldAutoFocus from "~/components/TextFieldAutofocus";
+import TextFieldAutoFocus from "~/components/TextFieldAutoFocus";
 
 type Props = {
   defaultValues: z.infer<typeof actionEditItemSchema>;

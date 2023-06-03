@@ -42,3 +42,9 @@ yarn-error.log*
 *.tsbuildinfo
 
 .vercel
+/test-results/
+/playwright-report/
+/playwright/.cache/
+/test-results/
+/playwright-report/
+/playwright/.cache/

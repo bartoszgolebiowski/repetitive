@@ -6,8 +6,7 @@ import { LINE_PLAN_STATUS, linePlanFilterSchema, linePlanItemCreateSchema, lineP
 import { handleErrorRouter } from "~/utils/httpErrors";
 import { extractUserId } from "~/utils/user";
 import { byIdSchema } from "~/utils/schema/general";
-
-type RemoveUndefined<T> = T extends undefined ? never : T;
+import { TRPCError } from "@trpc/server";
 
 export const linePlanRouter = createTRPCRouter({
     getByFilters: protectedProcedure
@@ -45,13 +44,19 @@ export const linePlanRouter = createTRPCRouter({
     getById: protectedProcedure
         .input(byIdSchema)
         .query(async ({ ctx, input }) => {
+            console.log('cze')
             try {
                 const linePlan = await ctx.prisma.linePlan.findUnique({
                     where: {
                         id: input.id,
                     },
                 });
-
+                if (!linePlan) {
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: 'Line plan not found',
+                    });
+                }
                 return linePlan;
             }
             catch (error) {

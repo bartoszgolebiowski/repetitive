@@ -13,7 +13,7 @@ import { blue, grey } from "@mui/material/colors";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
-import TextFieldAutoFocus from "~/components/TextFieldAutofocus";
+import TextFieldAutoFocus from "~/components/TextFieldAutoFocus";
 
 type Props = {
   comment: string;

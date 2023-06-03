@@ -1,7 +1,7 @@
 import { createTRPCRouter } from "~/server/api/trpc";
-import { linePlanRouter } from "./routers/action/linePlan";
-import { actionPlanRouter } from "./routers/action/actionPlan";
-import { actionRouter } from "./routers/action/action";
+import { linePlanRouter } from "./routers/linePlan";
+import { actionPlanRouter } from "./routers/actionPlan";
+import { actionRouter } from "./routers/action";
 
 /**
  * This is the primary router for your server.

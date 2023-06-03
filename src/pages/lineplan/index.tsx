@@ -237,7 +237,7 @@ const LinePlan: NextPage = () => {
                     </TableCell>
                     <TableCell>
                       <Link href={`lineplan/${linePlan.id}`}>
-                        Navigate to Action Plan
+                        Navigate to Action Plans
                       </Link>
                     </TableCell>
                     <TableCell>{linePlan.productionLine}</TableCell>

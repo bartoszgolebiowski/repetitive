@@ -16,7 +16,7 @@ export const linePlanItemCreateSchema = organizationSchema.merge(z.object({
 }))
 
 export const linePlanItemEditSchema = byIdSchema.merge(z.object({
-    id: z.string(),
+    productionLine: z.string().optional(),
     assignedTo: z.string().optional(),
     dueDate: z.date().optional(),
     comment: z.string().optional(),

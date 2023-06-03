@@ -7,7 +7,7 @@ import { linePlanItemCreateSchema } from "~/utils/schema/action/linePlan";
 import { api } from "~/utils/api";
 import { useOrganization } from "@clerk/nextjs";
 import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
-import TextFieldAutoFocus from "~/components/TextFieldAutofocus";
+import TextFieldAutoFocus from "~/components/TextFieldAutoFocus";
 
 type Props = {
   organizationId?: string;
