@@ -1,7 +1,5 @@
 import { test, type Page } from '@playwright/test';
 
-type PlaywrightObject = Parameters<Parameters<typeof test>[1]>[0]
-
 const signIn = async (page: Page) => {
   await page.goto('https://alert-humpback-26.accounts.dev/sign-in?redirect_url=http%3A%2F%2Flocalhost%3A3000%2F')
   await page.getByRole('heading', { name: 'Sign in' }).waitFor({ state: 'visible' })
