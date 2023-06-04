@@ -12,8 +12,6 @@ import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import React from "react";
-import FormCard from "~/components/FormCard";
-import FormTitle from "~/components/FormTitle";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import MenuItem from "@mui/material/MenuItem";
@@ -23,15 +21,27 @@ import {
   FormGroup,
   FormControlLabel,
   Checkbox,
-  TableSortLabel,
   Breadcrumbs,
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Typography,
 } from "@mui/material";
-import { displayDate } from "~/utils/date";
+import { displayDate, displayDateFull } from "~/utils/date";
 import { useRouter } from "next/router";
 import { ACTION_PRIORITY, ACTION_STATUS } from "~/utils/schema/action/action";
 import ActionForm from "~/components/action/create/ActionForm";
-import { useOrganization } from "@clerk/nextjs";
+import { useOrganization, useUser } from "@clerk/nextjs";
 import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ActionCell, {
+  SIZE_ACTION_CELL,
+} from "~/components/action/table/action/ActionCell";
+import CommentCell, {
+  SIZE_COMMENT_CELL,
+} from "~/components/action/table/action/CommentCell";
+import StatusCircle from "~/components/action/table/action/StatusCircle";
+import EditActionCell from "~/components/action/table/action/EditActionCell";
 
 const convertQueryToFilters = (): Omit<
   Parameters<typeof api.action.getByFilters.useQuery>[0]["filters"],
@@ -42,16 +52,8 @@ const convertQueryToFilters = (): Omit<
     dueDate: null,
     assignedTo: "",
     leader: "",
-    priority: [ACTION_PRIORITY.LOW, ACTION_PRIORITY.HIGH] as Array<
-      keyof typeof ACTION_PRIORITY
-    >,
-    status: [
-      ACTION_STATUS.COMPLETED,
-      ACTION_STATUS.DELEYED,
-      ACTION_STATUS.IN_PROGRESS,
-      ACTION_STATUS.REJECTED,
-      ACTION_STATUS.DELETED,
-    ] as Array<keyof typeof ACTION_STATUS>,
+    priority: Object.keys(ACTION_PRIORITY) as (keyof typeof ACTION_PRIORITY)[],
+    status: Object.keys(ACTION_STATUS) as (keyof typeof ACTION_STATUS)[],
   };
 };
 
@@ -111,58 +113,6 @@ const useForm = (actionPlanId: string) => {
   };
 };
 
-type RemoveUndefined<T> = T extends undefined ? never : T;
-type OrderBy = RemoveUndefined<
-  Parameters<typeof api.action.getByFilters.useQuery>[0]["orderBy"]
->;
-
-const initialOrderBy: OrderBy = {
-  field: "dueDate",
-  direction: "asc",
-};
-
-const useOrderBy = () => {
-  const [orderBy, setOrderBy] = React.useState(initialOrderBy);
-
-  const onChangeOrderBy = (field: OrderBy["field"]) => () => {
-    setOrderBy((prev) => ({
-      field,
-      direction:
-        prev.field === field
-          ? prev.direction === "asc"
-            ? "desc"
-            : "asc"
-          : "asc",
-    }));
-  };
-
-  return { orderBy, onChangeOrderBy };
-};
-
-const TableHaderSort = ({
-  children,
-  field,
-  orderBy,
-  onChangeOrderBy,
-}: {
-  children: React.ReactNode;
-  orderBy: OrderBy;
-  field: OrderBy["field"];
-  onChangeOrderBy: (field: OrderBy["field"]) => () => void;
-}) => {
-  return (
-    <TableCell>
-      <TableSortLabel
-        active={orderBy.field === field}
-        direction={orderBy.direction}
-        onClick={onChangeOrderBy(field)}
-      >
-        {children}
-      </TableSortLabel>
-    </TableCell>
-  );
-};
-
 const Actions: NextPage = () => {
   const { linePlanId, actionPlanId } = useRouter().query;
 
@@ -175,18 +125,19 @@ const Actions: NextPage = () => {
     onChangePriority,
     onChangeStartDate,
   } = useForm(actionPlanId as string);
-  const { orderBy, onChangeOrderBy } = useOrderBy();
+  const userEmailAdresses = useUser().user?.emailAddresses ?? [];
 
   const { membershipList } = useOrganization({
     membershipList: { limit: ORGANIZATION_MEMBERSHIP_LIMIT },
   });
 
   const actions = api.action.getByFilters.useQuery(
-    { filters, orderBy },
+    { filters },
     {
       enabled: !!linePlanId,
     }
   );
+
   const linePlan = api.linePlan.getById.useQuery(
     { id: linePlanId as string },
     {
@@ -216,149 +167,171 @@ const Actions: NextPage = () => {
     });
   };
 
+  const markAsRejected = (id: string) => () => {
+    updateAction.mutate({
+      id,
+      status: ACTION_STATUS.REJECTED,
+    });
+  };
+
+  const handleCommentChange = (id: string) => (comment: string) =>
+    updateAction.mutateAsync({
+      id,
+      comment,
+    });
+
+  const isAllowedToEdit = (leader: string) =>
+    userEmailAdresses
+      .map(({ emailAddress }) => emailAddress.trim())
+      .includes(leader.trim());
+
   return (
     <>
       <Head>
-        <title>Action Plan</title>
-        <meta name="description" content="Manage Action Plans" />
+        <title>Actions</title>
+        <meta name="description" content="Manage Actions" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Box component="main">
-        <FormCard size="large">
-          <FormTitle>Filters</FormTitle>
-          <form>
-            <Grid2 container spacing={2}>
-              <Grid2 xs={12}>
-                <TextField
-                  select
-                  fullWidth
-                  id="assignedTo"
-                  label="Assigned To"
-                  name="assignedTo"
-                  value={filters.assignedTo}
-                  onChange={onChangeAssignedTo}
-                >
-                  <MenuItem value="">
-                    <em>None</em>
-                  </MenuItem>
-                  {membershipList?.map((member) => (
-                    <MenuItem
-                      key={member.id}
-                      value={member.publicUserData.identifier}
-                    >
-                      {member.publicUserData.identifier}
+        <Accordion sx={{ maxWidth: "40rem" }}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5">Actions Filters</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <form>
+              <Grid2 container spacing={2}>
+                <Grid2 xs={12}>
+                  <TextField
+                    select
+                    fullWidth
+                    id="assignedTo"
+                    label="Assigned To"
+                    name="assignedTo"
+                    value={filters.assignedTo}
+                    onChange={onChangeAssignedTo}
+                  >
+                    <MenuItem value="">
+                      <em>None</em>
                     </MenuItem>
-                  ))}
-                </TextField>
-              </Grid2>
-              <Grid2 xs={12}>
-                <TextField
-                  select
-                  fullWidth
-                  id="leader"
-                  label="Leader"
-                  name="leader"
-                  value={filters.leader}
-                  onChange={onChangeLeader}
-                >
-                  <MenuItem value="">
-                    <em>None</em>
-                  </MenuItem>
-                  {membershipList?.map((member) => (
-                    <MenuItem
-                      key={member.id}
-                      value={member.publicUserData.identifier}
-                    >
-                      {member.publicUserData.identifier}
+                    {membershipList?.map((member) => (
+                      <MenuItem
+                        key={member.id}
+                        value={member.publicUserData.identifier}
+                      >
+                        {member.publicUserData.identifier}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid2>
+                <Grid2 xs={12}>
+                  <TextField
+                    select
+                    fullWidth
+                    id="leader"
+                    label="Leader"
+                    name="leader"
+                    value={filters.leader}
+                    onChange={onChangeLeader}
+                  >
+                    <MenuItem value="">
+                      <em>None</em>
                     </MenuItem>
-                  ))}
-                </TextField>
-              </Grid2>
-              <Grid2 xs={12}>
-                <TextField
-                  type="datetime-local"
-                  fullWidth
-                  id="startDate"
-                  label="Start Date"
-                  name="startDate"
-                  value={filters.startDate ?? ""}
-                  onChange={onChangeStartDate}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                />
-              </Grid2>
-              <Grid2 xs={12}>
-                <TextField
-                  type="datetime-local"
-                  fullWidth
-                  id="dueDate"
-                  label="Due Date"
-                  name="dueDate"
-                  value={filters.dueDate ?? ""}
-                  onChange={onChangeDueDate}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                />
-              </Grid2>
-              <Grid2 xs={12}>
-                <FormControl
-                  sx={{
-                    borderRadius: "4px",
-                    border: 0,
-                    padding: 0,
-                    display: "block",
-                  }}
-                  component={"fieldset"}
-                >
-                  <FormLabel component="legend">Priority</FormLabel>
-                  <FormGroup sx={{ display: "block" }}>
-                    {Object.values(ACTION_PRIORITY).map((status) => (
-                      <FormControlLabel
-                        key={status}
-                        name="status"
-                        id={String(status)}
-                        value={String(status)}
-                        label={status}
-                        onChange={onChangePriority(status)}
-                        checked={filters.priority.includes(status)}
-                        control={<Checkbox />}
-                      />
+                    {membershipList?.map((member) => (
+                      <MenuItem
+                        key={member.id}
+                        value={member.publicUserData.identifier}
+                      >
+                        {member.publicUserData.identifier}
+                      </MenuItem>
                     ))}
-                  </FormGroup>
-                </FormControl>
+                  </TextField>
+                </Grid2>
+                <Grid2 xs={12}>
+                  <TextField
+                    type="date"
+                    fullWidth
+                    id="startDate"
+                    label="Start Date"
+                    name="startDate"
+                    value={filters.startDate?.toISOString().split("T")[0] ?? ""}
+                    onChange={onChangeStartDate}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                  />
+                </Grid2>
+                <Grid2 xs={12}>
+                  <TextField
+                    type="date"
+                    fullWidth
+                    id="dueDate"
+                    label="Due Date"
+                    name="dueDate"
+                    value={filters.dueDate?.toISOString().split("T")[0] ?? ""}
+                    onChange={onChangeDueDate}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                  />
+                </Grid2>
+                <Grid2 xs={12}>
+                  <FormControl
+                    sx={{
+                      borderRadius: "4px",
+                      border: 0,
+                      padding: 0,
+                      display: "block",
+                    }}
+                    component={"fieldset"}
+                  >
+                    <FormLabel component="legend">Priority</FormLabel>
+                    <FormGroup sx={{ display: "block" }}>
+                      {Object.values(ACTION_PRIORITY).map((status) => (
+                        <FormControlLabel
+                          key={status}
+                          name="status"
+                          id={String(status)}
+                          value={String(status)}
+                          label={status}
+                          onChange={onChangePriority(status)}
+                          checked={filters.priority.includes(status)}
+                          control={<Checkbox />}
+                        />
+                      ))}
+                    </FormGroup>
+                  </FormControl>
+                </Grid2>
+                <Grid2 xs={12}>
+                  <FormControl
+                    sx={{
+                      borderRadius: "4px",
+                      border: 0,
+                      padding: 0,
+                      display: "block",
+                    }}
+                    component={"fieldset"}
+                  >
+                    <FormLabel component="legend">Status</FormLabel>
+                    <FormGroup sx={{ display: "block" }}>
+                      {Object.values(ACTION_STATUS).map((status) => (
+                        <FormControlLabel
+                          key={status}
+                          name="status"
+                          id={String(status)}
+                          value={String(status)}
+                          label={status}
+                          onChange={onChangeStatus(status)}
+                          checked={filters.status.includes(status)}
+                          control={<Checkbox />}
+                        />
+                      ))}
+                    </FormGroup>
+                  </FormControl>
+                </Grid2>
               </Grid2>
-              <Grid2 xs={12}>
-                <FormControl
-                  sx={{
-                    borderRadius: "4px",
-                    border: 0,
-                    padding: 0,
-                    display: "block",
-                  }}
-                  component={"fieldset"}
-                >
-                  <FormLabel component="legend">Status</FormLabel>
-                  <FormGroup sx={{ display: "block" }}>
-                    {Object.values(ACTION_STATUS).map((status) => (
-                      <FormControlLabel
-                        key={status}
-                        name="status"
-                        id={String(status)}
-                        value={String(status)}
-                        label={status}
-                        onChange={onChangeStatus(status)}
-                        checked={filters.status.includes(status)}
-                        control={<Checkbox />}
-                      />
-                    ))}
-                  </FormGroup>
-                </FormControl>
-              </Grid2>
-            </Grid2>
-          </form>
-        </FormCard>
+            </form>
+          </AccordionDetails>
+        </Accordion>
         <Box
           sx={{
             display: "flex",
@@ -386,131 +359,76 @@ const Actions: NextPage = () => {
           </Breadcrumbs>
         </Box>
         {actions.data && (
-          <TableContainer component={Paper}>
+          <TableContainer
+            component={Paper}
+            sx={{
+              opacity: updateAction.isLoading ? 0.7 : 1,
+            }}
+          >
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableHaderSort
-                    field="priority"
-                    onChangeOrderBy={onChangeOrderBy}
-                    orderBy={orderBy}
-                  >
-                    Priority
-                  </TableHaderSort>
-
-                  <TableHaderSort
-                    field="status"
-                    onChangeOrderBy={onChangeOrderBy}
-                    orderBy={orderBy}
-                  >
-                    Status
-                  </TableHaderSort>
-
-                  <TableHaderSort
-                    field="name"
-                    onChangeOrderBy={onChangeOrderBy}
-                    orderBy={orderBy}
-                  >
-                    Name
-                  </TableHaderSort>
-
-                  <TableHaderSort
-                    field="description"
-                    onChangeOrderBy={onChangeOrderBy}
-                    orderBy={orderBy}
-                  >
-                    Description
-                  </TableHaderSort>
-
-                  <TableCell>Comment</TableCell>
-
-                  <TableHaderSort
-                    field="assignedTo"
-                    onChangeOrderBy={onChangeOrderBy}
-                    orderBy={orderBy}
-                  >
-                    Assigned To
-                  </TableHaderSort>
-
-                  <TableHaderSort
-                    field="leader"
-                    onChangeOrderBy={onChangeOrderBy}
-                    orderBy={orderBy}
-                  >
-                    Leader
-                  </TableHaderSort>
-
-                  <TableHaderSort
-                    field="startDate"
-                    onChangeOrderBy={onChangeOrderBy}
-                    orderBy={orderBy}
-                  >
-                    Start Date
-                  </TableHaderSort>
-
-                  <TableHaderSort
-                    field="dueDate"
-                    onChangeOrderBy={onChangeOrderBy}
-                    orderBy={orderBy}
-                  >
-                    Due Date
-                  </TableHaderSort>
-
-                  <TableCell>Created By</TableCell>
-
-                  <TableHaderSort
-                    field="createdAt"
-                    onChangeOrderBy={onChangeOrderBy}
-                    orderBy={orderBy}
-                  >
-                    Created At
-                  </TableHaderSort>
-
-                  <TableCell>Updated By</TableCell>
-
-                  <TableHaderSort
-                    field="updatedAt"
-                    onChangeOrderBy={onChangeOrderBy}
-                    orderBy={orderBy}
-                  >
-                    Updated At
-                  </TableHaderSort>
+                  <TableCell sx={{ minWidth: SIZE_ACTION_CELL }}>
+                    Actions
+                  </TableCell>
+                  <TableCell sx={{ minWidth: SIZE_COMMENT_CELL }}>
+                    Comment
+                  </TableCell>
+                  <TableCell>Priority</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Description</TableCell>
+                  <TableCell>Assigned To</TableCell>
+                  <TableCell>Leader</TableCell>
+                  <TableCell align="right">Start Date</TableCell>
+                  <TableCell align="right">Due Date</TableCell>
+                  <TableCell align="right">Created At</TableCell>
+                  <TableCell align="right">Updated At</TableCell>
+                  <TableCell align="right">Edit</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {actions.data.map((action) => (
-                  <TableRow
-                    key={action.id}
-                    sx={{
-                      backgroundColor:
-                        action.status === ACTION_STATUS.COMPLETED
-                          ? "green"
-                          : ACTION_STATUS.IN_PROGRESS
-                          ? "yellow"
-                          : "red",
-                    }}
-                  >
+                  <TableRow key={action.id}>
+                    <ActionCell
+                      onCompletedClick={markAsCompleted(action.id)}
+                      onRejectedClick={markAsRejected(action.id)}
+                      status={updateAction.status}
+                      disabled={isAllowedToEdit(action.leader)}
+                    >
+                      <StatusCircle status={action.status}>
+                        {action.status}
+                      </StatusCircle>
+                    </ActionCell>
+                    <CommentCell
+                      comment={action.comment}
+                      status={updateAction.status}
+                      onSubmit={handleCommentChange(action.id)}
+                    >
+                      {action.comment}
+                    </CommentCell>
                     <TableCell>{action.priority}</TableCell>
-                    <TableCell>
-                      <FormControlLabel
-                        label={action.status}
-                        onChange={markAsCompleted(action.id)}
-                        checked={action.status === ACTION_STATUS.COMPLETED}
-                        disabled={action.status === ACTION_STATUS.COMPLETED}
-                        control={<Checkbox />}
-                      />
-                    </TableCell>
                     <TableCell>{action.name}</TableCell>
                     <TableCell>{action.description}</TableCell>
-                    <TableCell>{action.comment}</TableCell>
                     <TableCell>{action.assignedTo}</TableCell>
                     <TableCell>{action.leader}</TableCell>
-                    <TableCell>{displayDate(action.startDate)}</TableCell>
-                    <TableCell>{displayDate(action.dueDate)}</TableCell>
-                    <TableCell>{action.createdBy}</TableCell>
-                    <TableCell>{displayDate(action.createdAt)}</TableCell>
-                    <TableCell>{action.updatedBy}</TableCell>
-                    <TableCell>{displayDate(action.updatedAt)}</TableCell>
+                    <TableCell align="right">
+                      {displayDate(action.startDate)}
+                    </TableCell>
+                    <TableCell align="right">
+                      {displayDate(action.dueDate)}
+                    </TableCell>
+                    <TableCell align="right">
+                      {displayDateFull(action.createdAt)}
+                    </TableCell>
+                    <TableCell align="right">
+                      {displayDateFull(action.updatedAt)}
+                    </TableCell>
+                    <EditActionCell
+                      defaultValues={action}
+                      disabled={isAllowedToEdit(action.leader)}
+                      status={updateAction.status}
+                      onSubmit={updateAction.mutate}
+                    />
                   </TableRow>
                 ))}
               </TableBody>

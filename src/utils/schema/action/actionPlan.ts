@@ -4,7 +4,8 @@ import { byIdSchema, linePlanSchema } from "../general";
 export const ACTION_PLAN_STATUS = {
     IN_PROGRESS: 'IN_PROGRESS',
     COMPLETED: 'COMPLETED',
-    DELEYED: 'DELEYED',
+    DELAYED: 'DELAYED',
+    REJECTED: 'REJECTED',
 } as const;
 
 export const actionPlanCreateSchema = linePlanSchema.merge(z.object({
@@ -22,7 +23,7 @@ export const actionPlanEditSchema = byIdSchema.merge(z.object({
     status: z.enum([
         ACTION_PLAN_STATUS.IN_PROGRESS,
         ACTION_PLAN_STATUS.COMPLETED,
-        ACTION_PLAN_STATUS.DELEYED,
+        ACTION_PLAN_STATUS.DELAYED,
     ]).optional(),
 }))
 
@@ -32,6 +33,7 @@ export const actionPlanFilterSchema = linePlanSchema.merge(z.object({
     status: z.array(z.enum([
         ACTION_PLAN_STATUS.IN_PROGRESS,
         ACTION_PLAN_STATUS.COMPLETED,
-        ACTION_PLAN_STATUS.DELEYED,
+        ACTION_PLAN_STATUS.DELAYED,
+        ACTION_PLAN_STATUS.REJECTED,
     ])),
 }))

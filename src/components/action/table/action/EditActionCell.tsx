@@ -9,39 +9,40 @@ import {
   RadioGroup,
   Radio,
   Button,
+  IconButton as IconButton,
+  Tooltip,
+  TableCell,
 } from "@mui/material";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import React from "react";
+import { type z } from "zod";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
-import TextFieldAutoFocus from "~/components/TextFieldAutoFocus";
-import { api } from "~/utils/api";
+import { defaultValueDate } from "~/utils/date";
 import {
   ACTION_PRIORITY,
-  actionItemSchema,
+  actionEditItemSchema,
 } from "~/utils/schema/action/action";
-import { ACTION_STATUS } from "~/utils/schema/action/action";
 import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
+import EditIcon from "@mui/icons-material/Edit";
+import { blue } from "@mui/material/colors";
+import TextFieldAutoFocus from "~/components/TextFieldAutoFocus";
+import { iconButtonSx } from "~/components/utils";
 
 type Props = {
-  linePlanId?: string;
-  actionPlanId?: string;
-  refetch: () => Promise<unknown>;
+  defaultValues: z.infer<typeof actionEditItemSchema>;
+  status: "error" | "success" | "loading" | "idle";
+  disabled: boolean;
+  onSubmit: (data: z.infer<typeof actionEditItemSchema>) => void;
 };
 
-const ActionForm = (props: Props) => {
-  const { actionPlanId, refetch } = props;
+const EditActionCell = (props: Props) => {
+  const { defaultValues, onSubmit, status, disabled } = props;
   const ref = React.useRef<HTMLDivElement>(null);
   const [open, setOpen] = React.useState(false);
 
   const { membershipList } = useOrganization({
     membershipList: { limit: ORGANIZATION_MEMBERSHIP_LIMIT },
-  });
-
-  const createAction = api.action.create.useMutation({
-    onSuccess: async () => {
-      await refetch();
-    },
   });
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -57,31 +58,36 @@ const ActionForm = (props: Props) => {
     const startDate = String(data.startDate);
     data.dueDate = new Date(dueDate);
     data.startDate = new Date(startDate);
-    const result = actionItemSchema.safeParse({
-      ...data,
-      status: ACTION_STATUS.IN_PROGRESS,
-    });
+    const result = actionEditItemSchema.safeParse(data);
 
     if (result.success) {
-      createAction.mutate(result.data);
+      onSubmit(result.data);
     }
-    //todo: handle error
-    handleClose();
+
+    toggle();
   };
 
-  const handleClose = () => setOpen(false);
-  const handleOpen = () => setOpen(true);
+  const toggle = () => setOpen((prev) => !prev);
 
   return (
     <>
-      <Button variant="contained" color="primary" onClick={handleOpen}>
-        Create
-      </Button>
-      <Modal open={open} onClose={handleClose}>
+      <TableCell>
+        <Tooltip title={disabled ? "Only leader can edit" : "Edit"}>
+          <IconButton
+            aria-label="edit"
+            onClick={disabled ? undefined : toggle}
+            disabled={status === "loading"}
+            sx={iconButtonSx({ disabled, color: blue[500] })}
+          >
+            <EditIcon />
+          </IconButton>
+        </Tooltip>
+      </TableCell>
+      <Modal open={open} onClose={toggle}>
         <FormCard size="large" ref={ref} sx={{ orverflowY: "scroll" }}>
-          <FormTitle>Create Action Plan</FormTitle>
+          <FormTitle>Update Action Plan</FormTitle>
           <form onSubmit={handleSubmit}>
-            <input type="hidden" name="actionPlanId" value={actionPlanId} />
+            <input type="hidden" name="id" defaultValue={defaultValues.id} />
             <Grid2 container spacing={2}>
               <Grid2 xs={12}>
                 <TextFieldAutoFocus
@@ -91,6 +97,7 @@ const ActionForm = (props: Props) => {
                   label="Name"
                   name="name"
                   required
+                  defaultValue={defaultValues.name}
                 />
               </Grid2>
               <Grid2 xs={12}>
@@ -101,6 +108,8 @@ const ActionForm = (props: Props) => {
                   label="Description"
                   name="description"
                   multiline
+                  required
+                  defaultValue={defaultValues.description}
                 />
               </Grid2>
               <Grid2 xs={12}>
@@ -111,6 +120,7 @@ const ActionForm = (props: Props) => {
                   label="Comment"
                   name="comment"
                   multiline
+                  defaultValue={defaultValues.comment}
                 />
               </Grid2>
               <Grid2 xs={12}>
@@ -124,6 +134,7 @@ const ActionForm = (props: Props) => {
                     shrink: true,
                   }}
                   required
+                  defaultValue={defaultValueDate(defaultValues.startDate)}
                 />
               </Grid2>
               <Grid2 xs={12}>
@@ -137,6 +148,7 @@ const ActionForm = (props: Props) => {
                     shrink: true,
                   }}
                   required
+                  defaultValue={defaultValueDate(defaultValues.dueDate)}
                 />
               </Grid2>
               <Grid2 xs={12}>
@@ -146,7 +158,7 @@ const ActionForm = (props: Props) => {
                   id="assignedTo"
                   label="Assigned To"
                   name="assignedTo"
-                  defaultValue=""
+                  defaultValue={defaultValues.assignedTo}
                   required
                 >
                   <MenuItem value="">
@@ -169,8 +181,8 @@ const ActionForm = (props: Props) => {
                   id="leader"
                   label="Leader"
                   name="leader"
-                  defaultValue=""
                   required
+                  defaultValue={defaultValues.leader}
                 >
                   <MenuItem value="">
                     <em>None</em>
@@ -188,7 +200,11 @@ const ActionForm = (props: Props) => {
               <Grid2 xs={12}>
                 <FormControl>
                   <FormLabel id="radio-priority">Priority</FormLabel>
-                  <RadioGroup aria-labelledby="radio-priority" name="priority">
+                  <RadioGroup
+                    aria-labelledby="radio-priority"
+                    name="priority"
+                    defaultValue={defaultValues.priority}
+                  >
                     {Object.values(ACTION_PRIORITY).map((status) => (
                       <FormControlLabel
                         key={status}
@@ -205,8 +221,8 @@ const ActionForm = (props: Props) => {
                   fullWidth
                   variant="contained"
                   color="secondary"
-                  onClick={handleClose}
-                  disabled={createAction.status === "loading"}
+                  onClick={toggle}
+                  disabled={status === "loading"}
                 >
                   Cancel
                 </Button>
@@ -217,9 +233,9 @@ const ActionForm = (props: Props) => {
                   variant="contained"
                   color="primary"
                   type="submit"
-                  disabled={createAction.status === "loading"}
+                  disabled={status === "loading"}
                 >
-                  Create
+                  Update
                 </Button>
               </Grid2>
             </Grid2>
@@ -230,4 +246,4 @@ const ActionForm = (props: Props) => {
   );
 };
 
-export default ActionForm;
+export default EditActionCell;

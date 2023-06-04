@@ -36,7 +36,7 @@ interface AuthContext {
  * - trpc's `createSSGHelpers` where we don't have req/res
  * @see https://create.t3.gg/en/usage/trpc#-servertrpccontextts
  */
-const createInnerTRPCContext = ({ auth, bus }: AuthContext) => {
+export const createInnerTRPCContext = ({ auth, bus }: AuthContext, prisma: PrismaClient) => {
   return {
     auth,
     prisma,
@@ -50,10 +50,12 @@ const createInnerTRPCContext = ({ auth, bus }: AuthContext) => {
  * @link https://trpc.io/docs/context
  */
 export const createTRPCContext = (opts: CreateNextContextOptions) => {
-  return createInnerTRPCContext({
-    auth: getAuth(opts.req),
-    bus: initializeBus(createHandlers(prisma))
-  });
+  return createInnerTRPCContext(
+    {
+      auth: getAuth(opts.req),
+      bus: initializeBus(createHandlers(prisma))
+    },
+    prisma,);
 };
 
 /**
@@ -65,6 +67,7 @@ export const createTRPCContext = (opts: CreateNextContextOptions) => {
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { createHandlers } from "../event/initialize";
+import { type PrismaClient } from '@prisma/client';
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,

@@ -4,6 +4,6 @@ import tsconfigPath from "vite-tsconfig-paths";
 export default defineConfig({
     plugins: [tsconfigPath()],
     test: {
-        exclude: [...configDefaults.exclude],
+        exclude: [...configDefaults.exclude, '**/example.spec.ts'],
     },
 });

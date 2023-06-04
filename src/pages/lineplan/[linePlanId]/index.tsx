@@ -24,13 +24,19 @@ import {
   FormControlLabel,
   Checkbox,
   Breadcrumbs,
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Typography,
 } from "@mui/material";
-import { displayDate } from "~/utils/date";
+import { displayDate, displayDateFull } from "~/utils/date";
 import { useRouter } from "next/router";
 import { ACTION_PLAN_STATUS } from "~/utils/schema/action/actionPlan";
 import ActionPlanForm from "~/components/action/create/ActionPlanForm";
 import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
 import { useOrganization } from "@clerk/nextjs";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import StatusCircle from "~/components/action/table/action/StatusCircle";
 
 const convertQueryToFilters = (): Omit<
   Parameters<typeof api.actionPlan.getByFilters.useQuery>[0],
@@ -39,11 +45,9 @@ const convertQueryToFilters = (): Omit<
   return {
     assignedTo: "",
     dueDate: null,
-    status: [
-      ACTION_PLAN_STATUS.COMPLETED,
-      ACTION_PLAN_STATUS.DELEYED,
-      ACTION_PLAN_STATUS.IN_PROGRESS,
-    ] as Array<keyof typeof ACTION_PLAN_STATUS>,
+    status: Object.keys(
+      ACTION_PLAN_STATUS
+    ) as (keyof typeof ACTION_PLAN_STATUS)[],
   };
 };
 
@@ -103,83 +107,86 @@ const ActionPlan: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Action Plan</title>
+        <title>Action Plans</title>
         <meta name="description" content="Manage Action Plans" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Box component="main">
-        <FormCard size="large">
-          <FormTitle>Filters</FormTitle>
-          <form>
-            <Grid2 container spacing={2}>
-              <Grid2 xs={12}>
-                <TextField
-                  select
-                  fullWidth
-                  id="assignedTo"
-                  label="Assigned To"
-                  name="assignedTo"
-                  value={filters.assignedTo}
-                  onChange={onChangeAssignedTo}
-                >
-                  <MenuItem value="">
-                    <em>None</em>
-                  </MenuItem>
-                  {membershipList?.map((member) => (
-                    <MenuItem
-                      key={member.id}
-                      value={member.publicUserData.identifier}
-                    >
-                      {member.publicUserData.identifier}
+        <Accordion sx={{ maxWidth: "40rem" }}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h5">Action Plans Filters</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <form>
+              <Grid2 container spacing={2}>
+                <Grid2 xs={12}>
+                  <TextField
+                    select
+                    fullWidth
+                    id="assignedTo"
+                    label="Assigned To"
+                    name="assignedTo"
+                    value={filters.assignedTo}
+                    onChange={onChangeAssignedTo}
+                  >
+                    <MenuItem value="">
+                      <em>None</em>
                     </MenuItem>
-                  ))}
-                </TextField>
-              </Grid2>
-              <Grid2 xs={12}>
-                <TextField
-                  type="datetime-local"
-                  fullWidth
-                  id="dueDate"
-                  label="Due Date"
-                  name="dueDate"
-                  value={filters.dueDate ?? ""}
-                  onChange={onChangeDueDate}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                />
-              </Grid2>
-              <Grid2 xs={12}>
-                <FormControl
-                  sx={{
-                    borderRadius: "4px",
-                    border: 0,
-                    padding: 0,
-                    display: "block",
-                  }}
-                  component={"fieldset"}
-                >
-                  <FormLabel component="legend">Status</FormLabel>
-                  <FormGroup sx={{ display: "block" }}>
-                    {Object.values(ACTION_PLAN_STATUS).map((status) => (
-                      <FormControlLabel
-                        key={status}
-                        name="status"
-                        id={String(status)}
-                        value={String(status)}
-                        label={status}
-                        onChange={onChangeStatus(status)}
-                        checked={filters.status.includes(status)}
-                        control={<Checkbox />}
-                      />
+                    {membershipList?.map((member) => (
+                      <MenuItem
+                        key={member.id}
+                        value={member.publicUserData.identifier}
+                      >
+                        {member.publicUserData.identifier}
+                      </MenuItem>
                     ))}
-                  </FormGroup>
-                </FormControl>
+                  </TextField>
+                </Grid2>
+                <Grid2 xs={12}>
+                  <TextField
+                    type="date"
+                    fullWidth
+                    id="dueDate"
+                    label="Due Date"
+                    name="dueDate"
+                    value={filters.dueDate?.toISOString().split("T")[0] ?? ""}
+                    onChange={onChangeDueDate}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                  />
+                </Grid2>
+                <Grid2 xs={12}>
+                  <FormControl
+                    sx={{
+                      borderRadius: "4px",
+                      border: 0,
+                      padding: 0,
+                      display: "block",
+                    }}
+                    component={"fieldset"}
+                  >
+                    <FormLabel component="legend">Status</FormLabel>
+                    <FormGroup sx={{ display: "block" }}>
+                      {Object.values(ACTION_PLAN_STATUS).map((status) => (
+                        <FormControlLabel
+                          key={status}
+                          name="status"
+                          id={String(status)}
+                          value={String(status)}
+                          label={status}
+                          onChange={onChangeStatus(status)}
+                          checked={filters.status.includes(status)}
+                          control={<Checkbox />}
+                        />
+                      ))}
+                    </FormGroup>
+                  </FormControl>
+                </Grid2>
               </Grid2>
-            </Grid2>
-          </form>
-        </FormCard>
-
+            </form>
+          </AccordionDetails>
+        </Accordion>
         <Box
           sx={{
             display: "flex",
@@ -210,23 +217,19 @@ const ActionPlan: NextPage = () => {
                   <TableCell>Name</TableCell>
                   <TableCell>Description</TableCell>
                   <TableCell>Assigned To</TableCell>
-                  <TableCell>Created By</TableCell>
-                  <TableCell align="right">Created At</TableCell>
                   <TableCell align="right">Due Date</TableCell>
+                  <TableCell align="right">Created At</TableCell>
+                  <TableCell align="right">Updated At</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {actionPlans.data.map((actionPlan) => (
-                  <TableRow
-                    key={actionPlan.id}
-                    sx={{
-                      backgroundColor:
-                        actionPlan.status === ACTION_PLAN_STATUS.COMPLETED
-                          ? "green"
-                          : "red",
-                    }}
-                  >
-                    <TableCell>{actionPlan.status}</TableCell>
+                  <TableRow key={actionPlan.id}>
+                    <TableCell sx={{ display: "flex" }}>
+                      <StatusCircle status={actionPlan.status}>
+                        {actionPlan.status}
+                      </StatusCircle>
+                    </TableCell>
                     <TableCell>
                       <Link
                         href={`/lineplan/${String(linePlanId)}/${
@@ -239,12 +242,14 @@ const ActionPlan: NextPage = () => {
                     <TableCell>{actionPlan.name}</TableCell>
                     <TableCell>{actionPlan.description}</TableCell>
                     <TableCell>{actionPlan.assignedTo}</TableCell>
-                    <TableCell>{actionPlan.createdBy}</TableCell>
-                    <TableCell align="right">
-                      {displayDate(actionPlan.createdAt)}
-                    </TableCell>
                     <TableCell align="right">
                       {displayDate(actionPlan.dueDate)}
+                    </TableCell>
+                    <TableCell align="right">
+                      {displayDateFull(actionPlan.createdAt)}
+                    </TableCell>
+                    <TableCell align="right">
+                      {displayDateFull(actionPlan.updatedAt)}
                     </TableCell>
                   </TableRow>
                 ))}

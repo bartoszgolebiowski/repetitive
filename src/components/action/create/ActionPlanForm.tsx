@@ -4,6 +4,7 @@ import Grid2 from "@mui/material/Unstable_Grid2";
 import React from "react";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
+import TextFieldAutoFocus from "~/components/TextFieldAutoFocus";
 import { api } from "~/utils/api";
 import { actionPlanCreateSchema } from "~/utils/schema/action/actionPlan";
 import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
@@ -63,12 +64,12 @@ const ActionPlanForm = (props: Props) => {
             <input type="hidden" name="linePlanId" value={linePlanId} />
             <Grid2 container spacing={2}>
               <Grid2 xs={12}>
-                <TextField
+                <TextFieldAutoFocus
                   fullWidth
-                  autoFocus
                   id="name"
                   label="Name"
                   name="name"
+                  required
                 />
               </Grid2>
               <Grid2 xs={12}>
@@ -79,6 +80,7 @@ const ActionPlanForm = (props: Props) => {
                   label="Description"
                   name="description"
                   multiline
+                  rows={4}
                 />
               </Grid2>
               <Grid2 xs={12}>
@@ -88,6 +90,7 @@ const ActionPlanForm = (props: Props) => {
                   id="assignedTo"
                   label="Assigned To"
                   name="assignedTo"
+                  required
                 >
                   <MenuItem value="">
                     <em>None</em>
@@ -104,7 +107,7 @@ const ActionPlanForm = (props: Props) => {
               </Grid2>
               <Grid2 xs={12}>
                 <TextField
-                  type="datetime-local"
+                  type="date"
                   fullWidth
                   id="dueDate"
                   label="Due Date"
@@ -112,6 +115,7 @@ const ActionPlanForm = (props: Props) => {
                   InputLabelProps={{
                     shrink: true,
                   }}
+                  required
                 />
               </Grid2>
               <Grid2 xs={6}>

@@ -8,7 +8,8 @@ export type ActionEventHandlers = {
     "action:created": (input: { actionPlanId: string }) => Promise<null>;
     "action:deleted": (input: { actionPlanId: string }) => Promise<null>;
     "action:updated": (input: { actionPlanId: string }) => Promise<null>;
-    "actionPlan:allActionsCompletedOrDeletedOrDelayed": (input: { linePlanId: string }) => Promise<null>;
+    "actionPlan:allActionsCompletedOrRejected": (input: { actionPlanId: string }) => Promise<null>;
+    "actionPlan:atLeastOneActionDelayed": (input: { actionPlanId: string }) => Promise<null>;
 }
 
 interface IActionRepository {
@@ -19,11 +20,34 @@ interface IActionPlanRepository {
     getAllByLinePlanId: (input: { linePlanId: string }) => Promise<{ status: string }[]>;
     updateStatus: (input: { actionPlanId: string, status: keyof typeof ACTION_PLAN_STATUS }) => Promise<{
         id: string;
+        linePlanId: string
     }>;
 }
 interface ILinePlanRepository {
     updateStatus: (input: { linePlanId: string, status: keyof typeof LINE_PLAN_STATUS }) => Promise<null>;
 }
+
+interface IActionPlanService {
+    updateStatusToCompleted: (input: { actionPlanId: string }) => Promise<{
+        id: string;
+        linePlanId: string
+    }>;
+    updateStatusToDelayed: (input: { actionPlanId: string }) => Promise<{
+        id: string;
+        linePlanId: string
+    }>;
+    updateStatusToInProgress: (input: { actionPlanId: string }) => Promise<{
+        id: string;
+        linePlanId: string
+    }>;
+}
+
+interface ILinePlanService {
+    updateStatusToCompleted: (input: { linePlanId: string }) => Promise<null>;
+    updateStatusToDelayed: (input: { linePlanId: string }) => Promise<null>;
+    updateStatusToInProgress: (input: { linePlanId: string }) => Promise<null>;
+}
+
 class ActionRepository implements IActionRepository {
     constructor(private prisma: PrismaClient) { }
     async getAllByActionPlanId(input: { actionPlanId: string }) {
@@ -42,7 +66,7 @@ class ActionRepository implements IActionRepository {
 class ActionPlanRepository implements IActionPlanRepository {
     constructor(private prisma: PrismaClient) { }
     async getAllByLinePlanId(input: { linePlanId: string }) {
-        const actionPlans = await this.prisma.actionPlan.findMany({
+        const actions = await this.prisma.actionPlan.findMany({
             where: {
                 linePlanId: input.linePlanId,
             },
@@ -50,7 +74,7 @@ class ActionPlanRepository implements IActionPlanRepository {
                 status: true,
             }
         })
-        return actionPlans;
+        return actions;
     }
     async updateStatus(input: { actionPlanId: string, status: keyof typeof ACTION_PLAN_STATUS }) {
         const actionPlan = await this.prisma.actionPlan.update({
@@ -65,10 +89,10 @@ class ActionPlanRepository implements IActionPlanRepository {
                     select: {
                         id: true,
                     }
-                }
+                },
             }
         })
-        return actionPlan;
+        return actionPlan
     }
 }
 
@@ -87,9 +111,58 @@ class LinePlanRepository implements ILinePlanRepository {
     }
 }
 
-const filterDeleted = (action: { status: string; }): boolean => action.status !== ACTION_STATUS.DELETED;
-const isDelayed = (action: { status: string; }): boolean => action.status === ACTION_STATUS.DELEYED;
+class ActionPlanService implements IActionPlanService {
+    constructor(private actionPlanRepository: IActionPlanRepository) { }
+    async updateStatusToCompleted(input: { actionPlanId: string }) {
+        return await this.actionPlanRepository.updateStatus({
+            actionPlanId: input.actionPlanId,
+            status: ACTION_PLAN_STATUS.COMPLETED,
+        })
+
+    }
+    async updateStatusToDelayed(input: { actionPlanId: string }) {
+        return await this.actionPlanRepository.updateStatus({
+            actionPlanId: input.actionPlanId,
+            status: ACTION_PLAN_STATUS.DELAYED,
+        })
+    }
+    async updateStatusToInProgress(input: { actionPlanId: string }) {
+        return await this.actionPlanRepository.updateStatus({
+            actionPlanId: input.actionPlanId,
+            status: ACTION_PLAN_STATUS.IN_PROGRESS,
+        })
+    }
+}
+
+class LinePlanService implements ILinePlanService {
+    constructor(private linePlanRepository: ILinePlanRepository) { }
+    async updateStatusToCompleted(input: { linePlanId: string }) {
+        await this.linePlanRepository.updateStatus({
+            linePlanId: input.linePlanId,
+            status: LINE_PLAN_STATUS.COMPLETED,
+        })
+        return null;
+    }
+    async updateStatusToDelayed(input: { linePlanId: string }) {
+        await this.linePlanRepository.updateStatus({
+            linePlanId: input.linePlanId,
+            status: LINE_PLAN_STATUS.DELAYED,
+        })
+        return null;
+    }
+    async updateStatusToInProgress(input: { linePlanId: string }) {
+        await this.linePlanRepository.updateStatus({
+            linePlanId: input.linePlanId,
+            status: LINE_PLAN_STATUS.IN_PROGRESS,
+        })
+        return null;
+    }
+}
+
+const isDelayed = (action: { status: string; }): boolean => action.status === ACTION_STATUS.DELAYED;
 const isCompleted = (action: { status: string; }): boolean => action.status === ACTION_STATUS.COMPLETED;
+const isRejected = (action: { status: string; }): boolean => action.status === ACTION_STATUS.REJECTED;
+const isCompletedOrRejected = (action: { status: string; }): boolean => isCompleted(action) || isRejected(action);
 
 export const createHandlersActionPrisma = (
     prisma: PrismaClient,
@@ -106,108 +179,79 @@ export const createHandlersActionRepositories = (
     actionPlanRepository: IActionPlanRepository,
     linePlanRepository: ILinePlanRepository,
 ): (bus: IBus) => ActionEventHandlers => {
-    return (bus) => ({
-        "actionPlan:allActionsCompletedOrDeletedOrDelayed": async (input) => {
-            const actionPlans = await actionPlanRepository.getAllByLinePlanId({
-                linePlanId: input.linePlanId,
-            })
+    return (bus) => {
+        const actionPlanService = new ActionPlanService(actionPlanRepository);
+        const linePlanService = new LinePlanService(linePlanRepository);
 
-            const isAllCompleted = actionPlans
-                .every(isCompleted)
+        const linePlanUpdate = async (linePlanId: string) => {
+            const actionPlans = await actionPlanRepository.getAllByLinePlanId({ linePlanId })
 
-            if (isAllCompleted) {
-                await linePlanRepository.updateStatus({
-                    linePlanId: input.linePlanId,
-                    status: LINE_PLAN_STATUS.OK,
-                })
-                return null
+            const isAtLeastOneDelay = actionPlans
+                .some(isDelayed)
+
+            if (isAtLeastOneDelay) {
+                await linePlanService.updateStatusToDelayed({ linePlanId })
+                return null;
             }
 
-            await linePlanRepository.updateStatus({
-                linePlanId: input.linePlanId,
-                status: LINE_PLAN_STATUS.NOK,
-            })
+            const isAllCompletedOrRejected = actionPlans
+                .every(isCompletedOrRejected)
+
+            if (isAllCompletedOrRejected) {
+                await linePlanService.updateStatusToCompleted({ linePlanId })
+                return null;
+            }
+
+            await linePlanService.updateStatusToInProgress({ linePlanId })
             return null;
-        },
-        "action:created": async (input) => {
-            await actionPlanRepository.updateStatus({
-                actionPlanId: input.actionPlanId,
-                status: ACTION_PLAN_STATUS.IN_PROGRESS,
-            })
-            return null
-        },
-        "action:deleted": async (input) => {
+        }
+
+        const actionPlanUpdateAndEventEmit = async (actionPlanId: string) => {
             const actions = await actionRepository.getAllByActionPlanId({
-                actionPlanId: input.actionPlanId,
+                actionPlanId
             })
 
-            const isAllCompleted = actions
-                .filter(filterDeleted)
-                .every(isCompleted)
+            const isAtLeastOneActionDelay = actions
+                .some(isDelayed)
 
-            if (isAllCompleted) {
-                const actionPlan = await actionPlanRepository.updateStatus({
-                    actionPlanId: input.actionPlanId,
-                    status: ACTION_PLAN_STATUS.COMPLETED,
-                })
-                bus.emit('actionPlan:allActionsCompletedOrDeletedOrDelayed', { linePlanId: actionPlan.id })
-            }
-
-            const isAllCompletedOrDelayed = actions
-                .filter(filterDeleted)
-                .every(action => isCompleted(action) || isDelayed(action))
-
-            if (isAllCompletedOrDelayed) {
-                const actionPlan = await actionPlanRepository.updateStatus({
-                    actionPlanId: input.actionPlanId,
-                    status: ACTION_PLAN_STATUS.DELEYED,
-                })
-                bus.emit('actionPlan:allActionsCompletedOrDeletedOrDelayed', { linePlanId: actionPlan.id })
+            if (isAtLeastOneActionDelay) {
+                const actionPlan = await actionPlanService.updateStatusToDelayed({ actionPlanId })
+                bus.emit('actionPlan:atLeastOneActionDelayed', { actionPlanId: actionPlan.id })
                 return null;
             }
 
-            await actionPlanRepository.updateStatus({
-                actionPlanId: input.actionPlanId,
-                status: ACTION_PLAN_STATUS.IN_PROGRESS,
-            })
+            const isAllActionsCompleted = actions
+                .every(isCompletedOrRejected)
+
+            if (isAllActionsCompleted) {
+                const actionPlan = await actionPlanService.updateStatusToCompleted({ actionPlanId })
+                bus.emit('actionPlan:allActionsCompletedOrRejected', { actionPlanId: actionPlan.id })
+                return null;
+            }
+
+            await actionPlanService.updateStatusToInProgress({ actionPlanId })
             return null;
-        },
-        "action:updated": async (input) => {
-            const actions = await actionRepository.getAllByActionPlanId({
-                actionPlanId: input.actionPlanId,
-            })
+        }
 
-            const isAllCompleted = actions
-                .filter(filterDeleted)
-                .every(isCompleted)
-
-            if (isAllCompleted) {
-                const actionPlan = await actionPlanRepository.updateStatus({
-                    actionPlanId: input.actionPlanId,
-                    status: ACTION_PLAN_STATUS.COMPLETED,
-                })
-                bus.emit('actionPlan:allActionsCompletedOrDeletedOrDelayed', { linePlanId: actionPlan.id })
-                return null;
-            }
-
-            const isAllCompletedOrDelayed = actions
-                .filter(filterDeleted)
-                .every(action => isCompleted(action) || isDelayed(action))
-
-            if (isAllCompletedOrDelayed) {
-                const actionPlan = await actionPlanRepository.updateStatus({
-                    actionPlanId: input.actionPlanId,
-                    status: ACTION_PLAN_STATUS.DELEYED,
-                })
-                bus.emit('actionPlan:allActionsCompletedOrDeletedOrDelayed', { linePlanId: actionPlan.id })
-                return null;
-            }
-
-            await actionPlanRepository.updateStatus({
-                actionPlanId: input.actionPlanId,
-                status: ACTION_PLAN_STATUS.IN_PROGRESS,
-            })
-            return null;
-        },
-    }) as const
+        return {
+            "actionPlan:atLeastOneActionDelayed": async (input) => {
+                const { linePlanId } = await actionPlanService.updateStatusToDelayed(input)
+                return linePlanService.updateStatusToDelayed({ linePlanId })
+            },
+            "actionPlan:allActionsCompletedOrRejected": async (input) => {
+                const { linePlanId } = await actionPlanService.updateStatusToCompleted(input)
+                return linePlanUpdate(linePlanId)
+            },
+            "action:created": async (input) => {
+                const { linePlanId } = await actionPlanService.updateStatusToInProgress(input)
+                return linePlanUpdate(linePlanId)
+            },
+            "action:deleted": async (input) => {
+                return actionPlanUpdateAndEventEmit(input.actionPlanId)
+            },
+            "action:updated": async (input) => {
+                return actionPlanUpdateAndEventEmit(input.actionPlanId)
+            },
+        }
+    }
 }

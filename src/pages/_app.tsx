@@ -1,8 +1,8 @@
 import { type AppType } from "next/app";
-import { Container, ThemeProvider } from "@mui/material";
+import { Box, ThemeProvider } from "@mui/material";
 import { CacheProvider } from "@emotion/react";
 
-import Navigation from "~/components/navigation/AppNavigation";
+import AppNavigation from "~/components/navigation/AppNavigation";
 import { api } from "~/utils/api";
 import { createEmotionCache } from "~/styles/createEmotionCache";
 import { theme } from "~/styles/theme";
@@ -17,11 +17,11 @@ const MyApp: AppType = ({ Component, pageProps }) => {
     <CacheProvider value={clientSideEmotionCache}>
       <ThemeProvider theme={theme}>
         <ClerkProvider {...pageProps}>
-          <Navigation>
-            <Container maxWidth="lg" sx={{ pt: "1rem" }}>
+          <AppNavigation>
+            <Box sx={{ p: 4 }}>
               <Component {...pageProps} />
-            </Container>
-          </Navigation>
+            </Box>
+          </AppNavigation>
         </ClerkProvider>
       </ThemeProvider>
     </CacheProvider>
