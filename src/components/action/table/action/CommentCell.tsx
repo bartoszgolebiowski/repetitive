@@ -3,17 +3,17 @@ import {
   Tooltip,
   IconButton,
   Modal,
-  TextField,
   Button,
   Box,
 } from "@mui/material";
 import React from "react";
 import CommentIcon from "@mui/icons-material/Comment";
-import { blue, grey } from "@mui/material/colors";
+import { blue } from "@mui/material/colors";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
 import TextFieldAutoFocus from "~/components/TextFieldAutoFocus";
+import { iconButtonSx } from "~/components/utils";
 
 type Props = {
   comment: string;
@@ -66,15 +66,7 @@ const CommentCell = (props: React.PropsWithChildren<Props>) => {
                 onClick={toggle}
                 color="primary"
                 disabled={status === "loading"}
-                sx={{
-                  marginLeft: 1,
-                  backgroundColor: grey[400],
-                  borderRadius: 2,
-                  "&:hover": {
-                    backgroundColor: grey[700],
-                    color: blue[200],
-                  },
-                }}
+                sx={iconButtonSx({ disabled: false, color: blue[500] })}
               >
                 <CommentIcon />
               </IconButton>

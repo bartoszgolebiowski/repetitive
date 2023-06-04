@@ -9,7 +9,7 @@ import {
   RadioGroup,
   Radio,
   Button,
-  IconButton,
+  IconButton as IconButton,
   Tooltip,
   TableCell,
 } from "@mui/material";
@@ -18,7 +18,6 @@ import React from "react";
 import { type z } from "zod";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
-import { api } from "~/utils/api";
 import { defaultValueDate } from "~/utils/date";
 import {
   ACTION_PRIORITY,
@@ -26,17 +25,19 @@ import {
 } from "~/utils/schema/action/action";
 import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
 import EditIcon from "@mui/icons-material/Edit";
-import { grey, blue } from "@mui/material/colors";
+import { blue } from "@mui/material/colors";
 import TextFieldAutoFocus from "~/components/TextFieldAutoFocus";
+import { iconButtonSx } from "~/components/utils";
 
 type Props = {
   defaultValues: z.infer<typeof actionEditItemSchema>;
   status: "error" | "success" | "loading" | "idle";
+  disabled: boolean;
   onSubmit: (data: z.infer<typeof actionEditItemSchema>) => void;
 };
 
 const EditActionCell = (props: Props) => {
-  const { defaultValues, onSubmit, status } = props;
+  const { defaultValues, onSubmit, status, disabled } = props;
   const ref = React.useRef<HTMLDivElement>(null);
   const [open, setOpen] = React.useState(false);
 
@@ -71,21 +72,12 @@ const EditActionCell = (props: Props) => {
   return (
     <>
       <TableCell>
-        <Tooltip title="Edit">
+        <Tooltip title={disabled ? "Only leader can edit" : "Edit"}>
           <IconButton
             aria-label="edit"
-            onClick={toggle}
-            color="primary"
+            onClick={disabled ? undefined : toggle}
             disabled={status === "loading"}
-            sx={{
-              marginLeft: 1,
-              backgroundColor: grey[400],
-              borderRadius: 2,
-              "&:hover": {
-                backgroundColor: grey[700],
-                color: blue[200],
-              },
-            }}
+            sx={iconButtonSx({ disabled, color: blue[500] })}
           >
             <EditIcon />
           </IconButton>

@@ -31,7 +31,7 @@ import { displayDate, displayDateFull } from "~/utils/date";
 import { useRouter } from "next/router";
 import { ACTION_PRIORITY, ACTION_STATUS } from "~/utils/schema/action/action";
 import ActionForm from "~/components/action/create/ActionForm";
-import { useOrganization } from "@clerk/nextjs";
+import { useOrganization, useUser } from "@clerk/nextjs";
 import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ActionCell, {
@@ -125,6 +125,7 @@ const Actions: NextPage = () => {
     onChangePriority,
     onChangeStartDate,
   } = useForm(actionPlanId as string);
+  const userEmailAdresses = useUser().user?.emailAddresses ?? [];
 
   const { membershipList } = useOrganization({
     membershipList: { limit: ORGANIZATION_MEMBERSHIP_LIMIT },
@@ -178,6 +179,11 @@ const Actions: NextPage = () => {
       id,
       comment,
     });
+
+  const isAllowedToEdit = (leader: string) =>
+    userEmailAdresses
+      .map(({ emailAddress }) => emailAddress.trim())
+      .includes(leader.trim());
 
   return (
     <>
@@ -387,6 +393,7 @@ const Actions: NextPage = () => {
                       onCompletedClick={markAsCompleted(action.id)}
                       onRejectedClick={markAsRejected(action.id)}
                       status={updateAction.status}
+                      disabled={isAllowedToEdit(action.leader)}
                     >
                       <StatusCircle status={action.status}>
                         {action.status}
@@ -418,6 +425,7 @@ const Actions: NextPage = () => {
                     </TableCell>
                     <EditActionCell
                       defaultValues={action}
+                      disabled={isAllowedToEdit(action.leader)}
                       status={updateAction.status}
                       onSubmit={updateAction.mutate}
                     />

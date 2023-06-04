@@ -1,11 +1,18 @@
-import { TableCell, Tooltip, IconButton, Box } from "@mui/material";
-import { grey, green, red } from "@mui/material/colors";
+import {
+  TableCell,
+  Tooltip,
+  IconButton as IconButton,
+  Box,
+} from "@mui/material";
+import { green, red } from "@mui/material/colors";
 import React from "react";
 import DoneIcon from "@mui/icons-material/Done";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { iconButtonSx } from "~/components/utils";
 
 type Props = {
   status: "error" | "success" | "loading" | "idle";
+  disabled: boolean;
   onCompletedClick: () => void;
   onRejectedClick: () => void;
 };
@@ -13,7 +20,8 @@ type Props = {
 export const SIZE_ACTION_CELL = "15rem";
 
 const ActionCell = (props: React.PropsWithChildren<Props>) => {
-  const { status, children, onCompletedClick, onRejectedClick } = props;
+  const { status, children, onCompletedClick, onRejectedClick, disabled } =
+    props;
 
   return (
     <TableCell
@@ -37,36 +45,26 @@ const ActionCell = (props: React.PropsWithChildren<Props>) => {
             flexDirection: "row-reverse",
           }}
         >
-          <Tooltip title="Rejectd">
+          <Tooltip
+            title={disabled ? "Only leader can change status" : "Rejectd"}
+          >
             <IconButton
               aria-label="delete"
-              onClick={onRejectedClick}
+              onClick={disabled ? undefined : onRejectedClick}
               disabled={status === "loading"}
-              sx={{
-                backgroundColor: grey[400],
-                color: red[500],
-                borderRadius: 2,
-                "&:hover": {
-                  backgroundColor: grey[700],
-                },
-              }}
+              sx={iconButtonSx({ disabled, color: red[500] })}
             >
               <DeleteIcon />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Completed">
+          <Tooltip
+            title={disabled ? "Only leader can change status" : "Completed"}
+          >
             <IconButton
               aria-label="completed"
-              onClick={onCompletedClick}
+              onClick={disabled ? undefined : onCompletedClick}
               disabled={status === "loading"}
-              sx={{
-                backgroundColor: grey[400],
-                color: green[500],
-                borderRadius: 2,
-                "&:hover": {
-                  backgroundColor: grey[700],
-                },
-              }}
+              sx={iconButtonSx({ disabled, color: green[500] })}
             >
               <DoneIcon />
             </IconButton>
