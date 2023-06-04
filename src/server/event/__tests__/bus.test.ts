@@ -29,6 +29,7 @@ describe('bus', () => {
                 'action:updated',
                 'actionPlan:allActionsCompletedOrRejected',
                 'actionPlan:atLeastOneActionDelayed',
+                'cron:check'
             ] as const
 
             const allEvents = [
@@ -68,6 +69,7 @@ describe('bus', () => {
             bus.emit('action:updated', { actionPlanId: 'actionPlanId' })
             bus.emit('actionPlan:atLeastOneActionDelayed', { actionPlanId: 'linePlanId' })
             bus.emit('actionPlan:allActionsCompletedOrRejected', { actionPlanId: 'linePlanId' })
+            bus.emit('cron:check', { expiryDate: new Date() })
         })
     })
 })

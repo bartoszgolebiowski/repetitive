@@ -467,4 +467,25 @@ describe('action event handler', () => {
             })
         })
     })
+
+    describe('cron:check', () => {
+        it('should cron:check event update all expired actions to DELAYED', async () => {
+            const expiredActions = [
+                { id: 'actionId11', actionPlanId: 'actionPlanId1' },
+                { id: 'actionId12', actionPlanId: 'actionPlanId1' },
+                { id: 'actionId42', actionPlanId: 'actionPlanId2' },
+            ]
+            actionRepository.getAllExpiredActions.mockResolvedValue(expiredActions)
+            actionRepository.getAllByActionPlanId.mockResolvedValue([])
+            const input = {
+                expiryDate: new Date('2020-01-01T00:00:00.000Z')
+            }
+            const result = await eventHandler["cron:check"](input)
+            expect(result).toBe(null)
+            expect(actionRepository.updateManyStatus).toBeCalledWith({
+                ids: expiredActions.map(action => action.id),
+                status: ACTION_STATUS.DELAYED
+            })
+        })
+    })
 })
