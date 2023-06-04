@@ -1,7 +1,7 @@
 import {
   TableCell,
   Tooltip,
-  IconButton,
+  IconButton as IconButton,
   Modal,
   Button,
   Box,

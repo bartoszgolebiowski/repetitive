@@ -1,6 +1,7 @@
 import React from "react";
 import { ACTION_STATUS } from "~/utils/schema/action/action";
 import CircleIcon from "@mui/icons-material/Circle";
+import { Box } from "@mui/material";
 
 type Props = {
   status: keyof typeof ACTION_STATUS;
@@ -9,7 +10,7 @@ type Props = {
 const StatusCircle = (props: React.PropsWithChildren<Props>) => {
   const { status, children } = props;
   return (
-    <>
+    <Box sx={{ display: "flex", justifyContent: "center", mb: 1 }}>
       <CircleIcon
         fontSize="small"
         sx={{
@@ -23,7 +24,7 @@ const StatusCircle = (props: React.PropsWithChildren<Props>) => {
         }}
       />
       {children}
-    </>
+    </Box>
   );
 };
 

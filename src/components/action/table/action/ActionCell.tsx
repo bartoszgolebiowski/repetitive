@@ -17,7 +17,7 @@ type Props = {
   onRejectedClick: () => void;
 };
 
-export const SIZE_ACTION_CELL = "15rem";
+export const SIZE_ACTION_CELL = "10rem";
 
 const ActionCell = (props: React.PropsWithChildren<Props>) => {
   const { status, children, onCompletedClick, onRejectedClick, disabled } =
@@ -32,8 +32,8 @@ const ActionCell = (props: React.PropsWithChildren<Props>) => {
       <Box
         sx={{
           display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
+          flexDirection: "column",
+          alignItems: "start",
         }}
       >
         {children}
