@@ -10,7 +10,7 @@ export type ActionEventHandlers = {
     "action:updated": (input: { actionPlanId: string }) => Promise<null>;
     "actionPlan:allActionsCompletedOrRejected": (input: { actionPlanId: string }) => Promise<null>;
     "actionPlan:atLeastOneActionDelayed": (input: { actionPlanId: string }) => Promise<null>;
-    "cron:check": (input: { expiryDate: Date }) => Promise<null>;
+    "action:markExpired": (input: { expiryDate: Date }) => Promise<null>;
 }
 
 interface IActionRepository {
@@ -286,7 +286,7 @@ export const createHandlersActionRepositories = (
         }
 
         return {
-            "cron:check": async (input) => {
+            "action:markExpired": async (input) => {
                 const actionPlanIds = await actionService.updateExpiredActionsStatusToDelayed(input)
                 await Promise.all(actionPlanIds.map(syncStatusActionPlan))
                 return null

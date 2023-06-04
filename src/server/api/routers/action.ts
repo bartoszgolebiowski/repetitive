@@ -59,7 +59,7 @@ export const actionRouter = createTRPCRouter({
                 });
 
                 ctx.bus.emit('action:created', { actionPlanId: action.actionPlanId });
-
+                ctx.bus.emit('action:markExpired', { expiryDate: new Date() });
                 return action;
             }
             catch (error) {
@@ -82,7 +82,7 @@ export const actionRouter = createTRPCRouter({
                 });
 
                 ctx.bus.emit('action:updated', { actionPlanId: action.actionPlanId });
-
+                ctx.bus.emit('action:markExpired', { expiryDate: new Date() });
                 return action;
             }
             catch (error) {

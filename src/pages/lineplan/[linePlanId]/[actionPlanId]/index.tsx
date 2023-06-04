@@ -425,7 +425,7 @@ const Actions: NextPage = () => {
                     </TableCell>
                     <EditActionCell
                       defaultValues={action}
-                      disabled={isAllowedToEdit(action.leader)}
+                      disabled={false}
                       status={updateAction.status}
                       onSubmit={updateAction.mutate}
                     />

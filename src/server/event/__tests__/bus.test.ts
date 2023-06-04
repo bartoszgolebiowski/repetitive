@@ -27,9 +27,9 @@ describe('bus', () => {
                 'action:created',
                 'action:deleted',
                 'action:updated',
+                'action:markExpired',
                 'actionPlan:allActionsCompletedOrRejected',
                 'actionPlan:atLeastOneActionDelayed',
-                'cron:check'
             ] as const
 
             const allEvents = [
@@ -69,7 +69,7 @@ describe('bus', () => {
             bus.emit('action:updated', { actionPlanId: 'actionPlanId' })
             bus.emit('actionPlan:atLeastOneActionDelayed', { actionPlanId: 'linePlanId' })
             bus.emit('actionPlan:allActionsCompletedOrRejected', { actionPlanId: 'linePlanId' })
-            bus.emit('cron:check', { expiryDate: new Date() })
+            bus.emit('action:markExpired', { expiryDate: new Date() })
         })
     })
 })
