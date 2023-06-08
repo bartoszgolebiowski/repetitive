@@ -75,8 +75,30 @@ model Action {
     priority    Priority
     status      Status
     leader      String
-    comment     String
 
     actionPlan   ActionPlan @relation(fields: [actionPlanId], references: [id], onDelete: Cascade)
     actionPlanId String
+    comments     Comment[]
+}
+
+model Comment {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    createdBy String
+    comment   String
+
+    action   Action @relation(fields: [actionId], references: [id], onDelete: Cascade)
+    actionId String
+}
+
+model Notification {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+
+    cause     String
+    title     String
+    message   String
+    read      Boolean  @default(false)
+    email     String
+    variables String[]
 }

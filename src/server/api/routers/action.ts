@@ -4,7 +4,7 @@ import {
 } from "~/server/api/trpc";
 import { handleErrorRouter } from "~/utils/httpErrors";
 import { actionEditItemSchema, actionFilterSchema, actionItemSchema } from "~/utils/schema/action/action";
-import { extractUserId } from "~/utils/user";
+import { extractUserEmailOrId } from "~/utils/user";
 
 export const actionRouter = createTRPCRouter({
     getByFilters: protectedProcedure
@@ -27,7 +27,7 @@ export const actionRouter = createTRPCRouter({
                     select: {
                         id: true,
                         status: true,
-                        comment: true,
+                        comments: true,
                         priority: true,
                         name: true,
                         description: true,
@@ -49,16 +49,24 @@ export const actionRouter = createTRPCRouter({
     create: protectedProcedure
         .input(actionItemSchema)
         .mutation(async ({ ctx, input }) => {
+            const { comment, ...rest } = input;
             try {
                 const action = await ctx.prisma.action.create({
                     data: {
-                        ...input,
-                        createdBy: extractUserId(ctx.auth),
-                        updatedBy: extractUserId(ctx.auth),
+                        comments: {
+                            create: {
+                                comment,
+                                createdBy: extractUserEmailOrId(ctx.auth),
+                            }
+                        },
+                        ...rest,
+                        createdBy: extractUserEmailOrId(ctx.auth),
+                        updatedBy: extractUserEmailOrId(ctx.auth),
                     },
                 });
 
                 ctx.bus.emit('action:created', { actionPlanId: action.actionPlanId });
+                // todo switch to cron 
                 ctx.bus.emit('action:markExpired', { expiryDate: new Date() });
                 return action;
             }
@@ -69,19 +77,28 @@ export const actionRouter = createTRPCRouter({
     update: protectedProcedure
         .input(actionEditItemSchema)
         .mutation(async ({ ctx, input }) => {
+            const { comment, ...rest } = input;
             try {
                 const action = await ctx.prisma.action.update({
                     where: {
                         id: input.id,
                     },
                     data: {
-                        ...input,
-                        createdBy: extractUserId(ctx.auth),
-                        updatedBy: extractUserId(ctx.auth),
+                        ...{
+                            comments: comment ? {
+                                create: {
+                                    comment,
+                                    createdBy: extractUserEmailOrId(ctx.auth),
+                                }
+                            } : {}
+                        },
+                        ...rest,
+                        updatedBy: extractUserEmailOrId(ctx.auth),
                     },
                 });
 
-                ctx.bus.emit('action:updated', { actionPlanId: action.actionPlanId });
+                ctx.bus.emit('action:updated', { id: input.id, actionPlanId: action.actionPlanId });
+                // todo switch to cron 
                 ctx.bus.emit('action:markExpired', { expiryDate: new Date() });
                 return action;
             }

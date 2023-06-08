@@ -26,6 +26,7 @@ import {
   AccordionDetails,
   AccordionSummary,
   Typography,
+  Hidden,
 } from "@mui/material";
 import { displayDate, displayDateFull } from "~/utils/date";
 import { useRouter } from "next/router";
@@ -34,14 +35,11 @@ import ActionForm from "~/components/action/create/ActionForm";
 import { useOrganization, useUser } from "@clerk/nextjs";
 import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ActionCell, {
-  SIZE_ACTION_CELL,
-} from "~/components/action/table/action/ActionCell";
-import CommentCell, {
-  SIZE_COMMENT_CELL,
-} from "~/components/action/table/action/CommentCell";
+import ActionCell from "~/components/action/table/action/ActionCell";
+import CommentCell from "~/components/action/table/action/CommentCell";
 import StatusCircle from "~/components/action/table/action/StatusCircle";
 import EditActionCell from "~/components/action/table/action/EditActionCell";
+import CommentList from "~/components/action/table/action/CommentList";
 
 const convertQueryToFilters = (): Omit<
   Parameters<typeof api.action.getByFilters.useQuery>[0]["filters"],
@@ -277,7 +275,7 @@ const Actions: NextPage = () => {
                 <Grid2 xs={12}>
                   <FormControl
                     sx={{
-                      borderRadius: "4px",
+                      borderRadius: 1,
                       border: 0,
                       padding: 0,
                       display: "block",
@@ -304,7 +302,7 @@ const Actions: NextPage = () => {
                 <Grid2 xs={12}>
                   <FormControl
                     sx={{
-                      borderRadius: "4px",
+                      borderRadius: 1,
                       border: 0,
                       padding: 0,
                       display: "block",
@@ -345,7 +343,8 @@ const Actions: NextPage = () => {
             linePlanId={linePlanId as string}
             refetch={actions.refetch}
           />
-          <Breadcrumbs sx={{ paddingInline: "1rem" }}>
+
+          <Breadcrumbs sx={{ paddingInline: 2 }}>
             <Breadcrumbs separator="-" aria-label="breadcrumb">
               <Link color="inherit" href="/lineplan">
                 Line Plan - {linePlan.data?.productionLine}
@@ -357,6 +356,62 @@ const Actions: NextPage = () => {
               </Link>
             </Breadcrumbs>
           </Breadcrumbs>
+          <Hidden smDown>
+            <Grid2 container spacing={2} sx={{ paddingInline: 4 }}>
+              <Grid2>
+                <FormControl
+                  sx={{
+                    borderRadius: 1,
+                    display: "block",
+                  }}
+                  component={"fieldset"}
+                >
+                  <FormLabel component="legend">Status</FormLabel>
+                  <FormGroup sx={{ display: "block" }}>
+                    {Object.values(ACTION_STATUS).map((status) => (
+                      <FormControlLabel
+                        key={status}
+                        name="status"
+                        id={String(status)}
+                        value={String(status)}
+                        label={status}
+                        onChange={onChangeStatus(status)}
+                        checked={filters.status.includes(status)}
+                        control={<Checkbox />}
+                      />
+                    ))}
+                  </FormGroup>
+                </FormControl>
+              </Grid2>
+              <Grid2>
+                <FormControl
+                  sx={{
+                    borderRadius: 1,
+                    border: 0,
+                    padding: 0,
+                    display: "block",
+                  }}
+                  component={"fieldset"}
+                >
+                  <FormLabel component="legend">Priority</FormLabel>
+                  <FormGroup sx={{ display: "block" }}>
+                    {Object.values(ACTION_PRIORITY).map((status) => (
+                      <FormControlLabel
+                        key={status}
+                        name="status"
+                        id={String(status)}
+                        value={String(status)}
+                        label={status}
+                        onChange={onChangePriority(status)}
+                        checked={filters.priority.includes(status)}
+                        control={<Checkbox />}
+                      />
+                    ))}
+                  </FormGroup>
+                </FormControl>
+              </Grid2>
+            </Grid2>
+          </Hidden>
         </Box>
         {actions.data && (
           <TableContainer
@@ -368,12 +423,8 @@ const Actions: NextPage = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ minWidth: SIZE_ACTION_CELL }}>
-                    Actions
-                  </TableCell>
-                  <TableCell sx={{ minWidth: SIZE_COMMENT_CELL }}>
-                    Comment
-                  </TableCell>
+                  <TableCell>Actions</TableCell>
+                  <TableCell>Comment</TableCell>
                   <TableCell>Priority</TableCell>
                   <TableCell>Name</TableCell>
                   <TableCell>Description</TableCell>
@@ -400,11 +451,11 @@ const Actions: NextPage = () => {
                       </StatusCircle>
                     </ActionCell>
                     <CommentCell
-                      comment={action.comment}
+                      comments={action.comments}
                       status={updateAction.status}
                       onSubmit={handleCommentChange(action.id)}
                     >
-                      {action.comment}
+                      <CommentList comments={action.comments} />
                     </CommentCell>
                     <TableCell>{action.priority}</TableCell>
                     <TableCell>{action.name}</TableCell>

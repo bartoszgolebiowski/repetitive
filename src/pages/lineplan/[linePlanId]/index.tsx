@@ -12,8 +12,6 @@ import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import React from "react";
-import FormCard from "~/components/FormCard";
-import FormTitle from "~/components/FormTitle";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import MenuItem from "@mui/material/MenuItem";
@@ -159,7 +157,7 @@ const ActionPlan: NextPage = () => {
                 <Grid2 xs={12}>
                   <FormControl
                     sx={{
-                      borderRadius: "4px",
+                      borderRadius: 1,
                       border: 0,
                       padding: 0,
                       display: "block",

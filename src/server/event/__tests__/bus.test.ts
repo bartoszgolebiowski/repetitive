@@ -1,4 +1,9 @@
 /* eslint-disable @typescript-eslint/unbound-method */
+
+/**
+ * @vitest-environment node
+ */
+
 import { mockDeep } from 'vitest-mock-extended';
 import { assertType, describe, it, expectTypeOf, vitest, expect } from 'vitest'
 import { type IBus, Bus } from '../bus'
@@ -13,7 +18,7 @@ describe('bus', () => {
                 mockHandler(input)
                 return Promise.resolve(null)
             })
-            const input = { actionPlanId: 'actionPlanId' }
+            const input = { actionPlanId: 'actionPlanId', id: 'id' }
             bus.emit('action:updated', input)
             expect(mockHandler).toBeCalledWith(input)
         })
@@ -25,11 +30,12 @@ describe('bus', () => {
         it('all register events', () => {
             const actionEvents = [
                 'action:created',
-                'action:deleted',
                 'action:updated',
                 'action:markExpired',
                 'actionPlan:allActionsCompletedOrRejected',
                 'actionPlan:atLeastOneActionDelayed',
+                'notification:actionUpdate',
+                'notification:actionsDelayed',
             ] as const
 
             const allEvents = [
@@ -41,10 +47,6 @@ describe('bus', () => {
 
         it('action tests', () => {
             bus.on('action:created', (input) => {
-                assertType<{ actionPlanId: string }>(input)
-                return Promise.resolve(null)
-            })
-            bus.on('action:deleted', (input) => {
                 assertType<{ actionPlanId: string }>(input)
                 return Promise.resolve(null)
             })
@@ -65,11 +67,12 @@ describe('bus', () => {
             })
 
             bus.emit('action:created', { actionPlanId: 'actionPlanId' })
-            bus.emit('action:deleted', { actionPlanId: 'actionPlanId' })
-            bus.emit('action:updated', { actionPlanId: 'actionPlanId' })
+            bus.emit('action:updated', { id: 'id', actionPlanId: 'actionPlanId' })
             bus.emit('actionPlan:atLeastOneActionDelayed', { actionPlanId: 'linePlanId' })
             bus.emit('actionPlan:allActionsCompletedOrRejected', { actionPlanId: 'linePlanId' })
             bus.emit('action:markExpired', { expiryDate: new Date() })
+            bus.emit('notification:actionUpdate', { id: 'id' })
+            bus.emit('notification:actionsDelayed', { ids: ['id'] })
         })
     })
 })

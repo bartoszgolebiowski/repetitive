@@ -4,7 +4,7 @@ import {
 } from "~/server/api/trpc";
 import { LINE_PLAN_STATUS, linePlanFilterSchema, linePlanItemCreateSchema, linePlanItemEditSchema } from "~/utils/schema/action/linePlan";
 import { handleErrorRouter } from "~/utils/httpErrors";
-import { extractUserId } from "~/utils/user";
+import { extractUserEmailOrId } from "~/utils/user";
 import { byIdSchema } from "~/utils/schema/general";
 import { TRPCError } from "@trpc/server";
 
@@ -44,7 +44,6 @@ export const linePlanRouter = createTRPCRouter({
     getById: protectedProcedure
         .input(byIdSchema)
         .query(async ({ ctx, input }) => {
-            console.log('cze')
             try {
                 const linePlan = await ctx.prisma.linePlan.findUnique({
                     where: {
@@ -70,8 +69,8 @@ export const linePlanRouter = createTRPCRouter({
                 const linePlan = await ctx.prisma.linePlan.create({
                     data: {
                         ...input,
-                        createdBy: extractUserId(ctx.auth),
-                        updatedBy: extractUserId(ctx.auth),
+                        createdBy: extractUserEmailOrId(ctx.auth),
+                        updatedBy: extractUserEmailOrId(ctx.auth),
                         status: LINE_PLAN_STATUS.COMPLETED,
                         comment: input.comment,
                     },
@@ -94,7 +93,7 @@ export const linePlanRouter = createTRPCRouter({
                     },
                     data: {
                         ...input,
-                        updatedBy: extractUserId(ctx.auth),
+                        updatedBy: extractUserEmailOrId(ctx.auth),
                     },
                 });
 

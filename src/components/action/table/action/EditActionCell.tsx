@@ -121,6 +121,7 @@ const EditActionCell = (props: Props) => {
                   name="comment"
                   multiline
                   defaultValue={defaultValues.comment}
+                  rows={4}
                 />
               </Grid2>
               <Grid2 xs={12}>

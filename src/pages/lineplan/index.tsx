@@ -172,7 +172,7 @@ const LinePlan: NextPage = () => {
                 <Grid2 xs={12}>
                   <FormControl
                     sx={{
-                      borderRadius: "4px",
+                      borderRadius: 1,
                       border: 0,
                       padding: 0,
                       display: "block",

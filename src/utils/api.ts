@@ -10,9 +10,11 @@ import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server";
 import superjson from "superjson";
 
 import { type AppRouter } from "~/server/api/root";
+const ONE_SECOND = 1000;
+const ONE_MINUTE = 60 * ONE_SECOND;
 
-const STALE_TIME = 0;
-const CACHE_TIME = 60 * 1000;
+const STALE_TIME = ONE_MINUTE;
+const CACHE_TIME = 60 * STALE_TIME;
 
 const getBaseUrl = () => {
   if (typeof window !== "undefined") return ""; // browser should use relative url
@@ -51,9 +53,9 @@ export const api = createTRPCNext<AppRouter>({
           queries: {
             refetchOnWindowFocus: true,
             refetchOnReconnect: true,
-            refetchInterval: CACHE_TIME,
             refetchOnMount: true,
             refetchIntervalInBackground: true,
+            refetchInterval: STALE_TIME,
             cacheTime: CACHE_TIME,
             staleTime: STALE_TIME,
           }

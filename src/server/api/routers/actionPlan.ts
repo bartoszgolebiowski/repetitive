@@ -5,7 +5,7 @@ import {
 import { handleErrorRouter } from "~/utils/httpErrors";
 import { ACTION_PLAN_STATUS, actionPlanCreateSchema, actionPlanEditSchema, actionPlanFilterSchema } from "~/utils/schema/action/actionPlan";
 import { byIdSchema } from "~/utils/schema/general";
-import { extractUserId } from "~/utils/user";
+import { extractUserEmailOrId } from "~/utils/user";
 
 export const actionPlanRouter = createTRPCRouter({
     getByFilters: protectedProcedure
@@ -63,8 +63,8 @@ export const actionPlanRouter = createTRPCRouter({
                 const linePlan = await ctx.prisma.actionPlan.create({
                     data: {
                         ...input,
-                        createdBy: extractUserId(ctx.auth),
-                        updatedBy: extractUserId(ctx.auth),
+                        createdBy: extractUserEmailOrId(ctx.auth),
+                        updatedBy: extractUserEmailOrId(ctx.auth),
                         status: ACTION_PLAN_STATUS.COMPLETED,
                     },
                 });
@@ -86,7 +86,7 @@ export const actionPlanRouter = createTRPCRouter({
                     },
                     data: {
                         ...input,
-                        updatedBy: extractUserId(ctx.auth),
+                        updatedBy: extractUserEmailOrId(ctx.auth),
                     },
                 });
 

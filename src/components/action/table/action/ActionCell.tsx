@@ -24,11 +24,7 @@ const ActionCell = (props: React.PropsWithChildren<Props>) => {
     props;
 
   return (
-    <TableCell
-      sx={{
-        minWidth: SIZE_ACTION_CELL,
-      }}
-    >
+    <TableCell>
       <Box
         sx={{
           display: "flex",

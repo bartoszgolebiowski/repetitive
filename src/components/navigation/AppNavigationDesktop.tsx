@@ -1,7 +1,6 @@
 import * as React from "react";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import MuiDrawer from "@mui/material/Drawer";
 import Toolbar from "@mui/material/Toolbar";
 import List from "@mui/material/List";
@@ -15,10 +14,8 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import HomeIcon from "@mui/icons-material/Home";
 import BusinessIcon from "@mui/icons-material/Business";
-import WorkplaceIcon from "@mui/icons-material/Workspaces";
 import EngineeringIcon from "@mui/icons-material/Engineering";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import MenuIcon from "@mui/icons-material/Menu";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 
 import Link from "next/link";
 
@@ -101,6 +98,11 @@ const drawerItems = [
     text: "Line plan",
     icon: <EngineeringIcon />,
     href: "linePlan",
+  },
+  {
+    text: "Notification",
+    icon: <NotificationsIcon />,
+    href: "notification",
   },
 ] as const;
 

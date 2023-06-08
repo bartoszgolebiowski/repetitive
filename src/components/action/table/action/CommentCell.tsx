@@ -5,6 +5,8 @@ import {
   Modal,
   Button,
   Box,
+  TextField,
+  Divider,
 } from "@mui/material";
 import React from "react";
 import CommentIcon from "@mui/icons-material/Comment";
@@ -14,9 +16,11 @@ import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
 import TextFieldAutoFocus from "~/components/TextFieldAutoFocus";
 import { iconButtonSx } from "~/components/utils";
+import { type Comment } from "@prisma/client";
+import { displayDateFull } from "~/utils/date";
 
 type Props = {
-  comment: string;
+  comments: Omit<Comment, "actionId">[];
   status: "error" | "success" | "loading" | "idle";
   onSubmit: (comment: string) => Promise<unknown>;
 };
@@ -24,7 +28,7 @@ type Props = {
 export const SIZE_COMMENT_CELL = "10rem";
 
 const CommentCell = (props: React.PropsWithChildren<Props>) => {
-  const { children, comment, status, onSubmit } = props;
+  const { children, comments, status, onSubmit } = props;
   const ref = React.useRef<HTMLDivElement>(null);
   const [open, setOpen] = React.useState(false);
   const toggle = () => setOpen((prev) => !prev);
@@ -37,13 +41,13 @@ const CommentCell = (props: React.PropsWithChildren<Props>) => {
     toggle();
   };
 
+  const label = (comment: (typeof comments)[number]) =>
+    `By: ${comment.createdBy}`;
+  const date = (comment: (typeof comments)[number]) =>
+    `Date: ${displayDateFull(comment.createdAt)}`;
   return (
     <>
-      <TableCell
-        sx={{
-          minWidth: SIZE_COMMENT_CELL,
-        }}
-      >
+      <TableCell>
         <Box
           sx={{
             display: "flex",
@@ -62,7 +66,7 @@ const CommentCell = (props: React.PropsWithChildren<Props>) => {
           >
             <Tooltip title="Comment">
               <IconButton
-                aria-label="comment"
+                aria-label="Add comment"
                 onClick={toggle}
                 color="primary"
                 disabled={status === "loading"}
@@ -75,11 +79,33 @@ const CommentCell = (props: React.PropsWithChildren<Props>) => {
         </Box>
       </TableCell>
       <Modal open={open} onClose={toggle} key={String(open)}>
-        <FormCard size="small" ref={ref}>
-          <FormTitle>Comment</FormTitle>
+        <FormCard size="medium" ref={ref}>
+          <FormTitle>Comments</FormTitle>
           {/* eslint-disable-next-line @typescript-eslint/no-misused-promises */}
           <form onSubmit={handleSubmit}>
             <Grid2 container spacing={2}>
+              <Grid2 xs={12}>
+                {comments.map((comment) => (
+                  <Box key={comment.id}>
+                    <Box component={"label"} htmlFor={`comment-${comment.id}`}>
+                      {label(comment)}
+                    </Box>
+                    <Box>{date(comment)}</Box>
+                    <TextField
+                      inputProps={{
+                        id: `comment-${comment.id}`,
+                        name: `comment-${comment.id}`,
+                      }}
+                      fullWidth
+                      disabled
+                      defaultValue={comment.comment}
+                      multiline
+                      rows={4}
+                    />
+                    <Divider sx={{ mb: 1 }} />
+                  </Box>
+                ))}
+              </Grid2>
               <Grid2 xs={12}>
                 <TextFieldAutoFocus
                   fullWidth
@@ -88,8 +114,8 @@ const CommentCell = (props: React.PropsWithChildren<Props>) => {
                   name="comment"
                   required
                   multiline
+                  disabled={status === "loading"}
                   rows={4}
-                  defaultValue={comment}
                 />
               </Grid2>
               <Grid2 xs={6}>
