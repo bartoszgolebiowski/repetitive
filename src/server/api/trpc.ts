@@ -20,7 +20,7 @@ import { type IBus, initializeBus } from './../event/bus';
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { getAuth } from "@clerk/nextjs/server";
 import type { SignedInAuthObject, SignedOutAuthObject } from "@clerk/nextjs/api";
-import qb from '../db';
+import qb, { type QB } from '../db';
 interface AuthContext {
   auth: SignedInAuthObject | SignedOutAuthObject;
   bus: IBus;
@@ -37,8 +37,8 @@ interface AuthContext {
 export const createInnerTRPCContext = ({ auth, bus }: AuthContext, qb: QB) => {
   return {
     auth,
+    bus,
     qb,
-    bus
   };
 };
 
@@ -66,7 +66,6 @@ export const createTRPCContext = (opts: CreateNextContextOptions) => {
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { createHandlers } from "../event/initialize";
-import { type QB } from '../db.types';
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,

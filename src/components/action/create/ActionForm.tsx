@@ -30,52 +30,72 @@ type Props = {
   refetch: () => Promise<unknown>;
 };
 
-const useForm = () => {
+const useForm = (actionPlanId: string | undefined) => {
   const { dueDate, startDate } = useDates();
   const [priority, setPriority] = React.useState<keyof typeof ACTION_PRIORITY>(
     ACTION_PRIORITY.LOW
   );
-  const [assignee, setAssignee] = React.useState("");
-  const [title, setTitle] = React.useState("");
+  const [assignedTo, setAssignee] = React.useState("");
+  const [name, setName] = React.useState("");
   const [description, setDescription] = React.useState("");
+  const [comment, setComment] = React.useState("");
+  const [leader, setLeader] = React.useState("");
 
+  const handleCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setComment(e.target.value);
+  };
   const handlePriorityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPriority(e.target.value as keyof typeof ACTION_PRIORITY);
   };
   const handleAssigneeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAssignee(e.target.value);
   };
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTitle(e.target.value);
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
   };
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDescription(e.target.value);
   };
 
+  const handleLeaderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLeader(e.target.value);
+  };
+
   return {
-    value: {
+    values: {
       priority,
-      assignee,
-      title,
+      assignedTo,
+      name,
       description,
-      dueDate,
-      startDate,
+      dueDate: dueDate.value,
+      startDate: startDate.value,
+      comment,
+      leader,
+      actionPlanId,
     },
     priority: {
       value: priority,
       onChange: handlePriorityChange,
     },
     assignee: {
-      value: assignee,
+      value: assignedTo,
       onChange: handleAssigneeChange,
     },
-    title: {
-      value: title,
-      onChange: handleTitleChange,
+    name: {
+      value: name,
+      onChange: handleNameChange,
     },
     description: {
       value: description,
       onChange: handleDescriptionChange,
+    },
+    comment: {
+      value: comment,
+      onChange: handleCommentChange,
+    },
+    leader: {
+      value: leader,
+      onChange: handleLeaderChange,
     },
     dueDate,
     startDate,
@@ -114,11 +134,29 @@ const useDates = () => {
   };
 };
 
+const isValid = (data: ReturnType<typeof useForm>["values"]) => {
+  const result = actionItemSchema.safeParse({
+    ...data,
+    status: ACTION_STATUS.IN_PROGRESS,
+  });
+  return result.success;
+};
+
 const ActionForm = (props: Props) => {
   const { actionPlanId, refetch } = props;
   const ref = React.useRef<HTMLDivElement>(null);
   const [open, setOpen] = React.useState(false);
-  const { startDate, dueDate } = useDates();
+  const {
+    startDate,
+    dueDate,
+    values,
+    comment,
+    name,
+    assignee,
+    leader,
+    description,
+    priority,
+  } = useForm(actionPlanId);
   const { membershipList } = useOrganization({
     membershipList: { limit: ORGANIZATION_MEMBERSHIP_LIMIT },
   });
@@ -132,18 +170,9 @@ const ActionForm = (props: Props) => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    const form = e.currentTarget;
-    const data = Object.fromEntries(new FormData(form)) as Record<
-      string,
-      unknown
-    >;
 
-    const dueDate = String(data.dueDate);
-    const startDate = String(data.startDate);
-    data.dueDate = new Date(dueDate);
-    data.startDate = new Date(startDate);
     const result = actionItemSchema.safeParse({
-      ...data,
+      ...values,
       status: ACTION_STATUS.IN_PROGRESS,
     });
 
@@ -176,6 +205,7 @@ const ActionForm = (props: Props) => {
                   label="Name"
                   name="name"
                   required
+                  {...name}
                 />
               </Grid2>
               <Grid2 xs={12}>
@@ -186,6 +216,7 @@ const ActionForm = (props: Props) => {
                   label="Description"
                   name="description"
                   multiline
+                  {...description}
                 />
               </Grid2>
               <Grid2 xs={12}>
@@ -196,6 +227,7 @@ const ActionForm = (props: Props) => {
                   label="Comment"
                   name="comment"
                   multiline
+                  {...comment}
                 />
               </Grid2>
               <Grid2 xs={12}>
@@ -213,6 +245,7 @@ const ActionForm = (props: Props) => {
                   name="assignedTo"
                   defaultValue=""
                   required
+                  {...assignee}
                 >
                   <MenuItem value="">
                     <em>None</em>
@@ -236,6 +269,7 @@ const ActionForm = (props: Props) => {
                   name="leader"
                   defaultValue=""
                   required
+                  {...leader}
                 >
                   <MenuItem value="">
                     <em>None</em>
@@ -253,7 +287,11 @@ const ActionForm = (props: Props) => {
               <Grid2 xs={12}>
                 <FormControl>
                   <FormLabel id="radio-priority">Priority</FormLabel>
-                  <RadioGroup aria-labelledby="radio-priority" name="priority">
+                  <RadioGroup
+                    aria-labelledby="radio-priority"
+                    name="priority"
+                    {...priority}
+                  >
                     {Object.values(ACTION_PRIORITY).map((status) => (
                       <FormControlLabel
                         key={status}
@@ -282,7 +320,9 @@ const ActionForm = (props: Props) => {
                   variant="contained"
                   color="primary"
                   type="submit"
-                  disabled={createAction.status === "loading"}
+                  disabled={
+                    createAction.status === "loading" || !isValid(values)
+                  }
                 >
                   Create
                 </Button>

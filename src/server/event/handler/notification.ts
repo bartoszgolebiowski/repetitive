@@ -9,11 +9,11 @@ export type NotificationEventHandlers = {
 
 const NOTIFICATION_MESSAGE = {
     [NOTIFICATION_CAUSE['ACTION_UPDATE']]: (id: string) => ({
-        cause: NOTIFICATION_CAUSE['ACTION_UPDATE'] as string,
+        cause: NOTIFICATION_CAUSE['ACTION_UPDATE'],
         variables: [id]
     }),
     [NOTIFICATION_CAUSE['ACTION_MARKED_AS_EXPIRED']]: (id: string) => ({
-        cause: NOTIFICATION_CAUSE['ACTION_MARKED_AS_EXPIRED'] as string,
+        cause: NOTIFICATION_CAUSE['ACTION_MARKED_AS_EXPIRED'],
         variables: [id]
     })
 } as const;

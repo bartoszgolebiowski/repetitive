@@ -10,18 +10,22 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import React from "react";
 import TableContainer from "@mui/material/TableContainer";
+import TablePagination from "@mui/material/TablePagination";
 import Paper from "@mui/material/Paper";
 
+import { NOTIFICATION_CAUSE_MESSAGE } from "~/utils/schema/action/notification";
 import { displayDateFull } from "~/utils/date";
-import { TablePagination } from "@mui/material";
 
 const START_PAGE = 0;
 const START_ROWS_PER_PAGE = 10;
 
-const replaceVariables = (value: string, variables: string[]) =>
+const replaceVariables = (
+  cause: keyof typeof NOTIFICATION_CAUSE_MESSAGE,
+  variables: string[]
+) =>
   variables.reduce(
     (acc, variable, index) => acc.replace(`{${index}}`, variable),
-    value
+    NOTIFICATION_CAUSE_MESSAGE[cause]
   );
 
 const usePagination = () => {
@@ -86,13 +90,13 @@ const Notifications: NextPage = () => {
                     <TableCell>{notification.cause}</TableCell>
                     <TableCell>
                       {replaceVariables(
-                        notification.title,
+                        notification.cause,
                         notification.variables
                       )}
                     </TableCell>
                     <TableCell>
                       {replaceVariables(
-                        notification.message,
+                        notification.cause,
                         notification.variables
                       )}
                     </TableCell>
@@ -105,7 +109,7 @@ const Notifications: NextPage = () => {
             </Table>
             <TablePagination
               component="div"
-              count={notifications.data.total}
+              count={Number(notifications.data.total)}
               page={page}
               onPageChange={handleChangePage}
               rowsPerPage={rowsPerPage}

@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import {
     createTRPCRouter,
     protectedProcedure,
@@ -12,29 +13,25 @@ export const actionPlanRouter = createTRPCRouter({
         .input(actionPlanFilterSchema)
         .query(async ({ ctx, input }) => {
             const { linePlanId, dueDate, assignedTo, status } = input;
-            const where = {
-                linePlanId: linePlanId,
-                ...{ dueDate: dueDate ? { lte: dueDate } : {} },
-                ...{ assignedTo: assignedTo ? { equals: assignedTo } : {} },
-                ...{ status: status ? { in: status } : {} },
-            }
 
             try {
-                const linePlans = await ctx.prisma.actionPlan.findMany({
-                    where,
-                    select: {
-                        id: true,
-                        status: true,
-                        name: true,
-                        description: true,
-                        assignedTo: true,
-                        dueDate: true,
-                        createdAt: true,
-                        updatedAt: true,
-                    }
-                });
+                let query = ctx.qb
+                    .selectFrom('ActionPlan')
+                    .selectAll()
+                    .where('ActionPlan.linePlanId', '=', linePlanId)
 
-                return linePlans;
+                if (status) {
+                    query = query.where('status', 'in', status)
+                }
+                if (dueDate) {
+                    query = query.where('dueDate', '<=', dueDate)
+                }
+                if (assignedTo) {
+                    query = query.where('assignedTo', '=', assignedTo)
+                }
+
+                const actionPlan = await query.execute()
+                return actionPlan;
             }
             catch (error) {
                 handleErrorRouter(error)
@@ -44,12 +41,18 @@ export const actionPlanRouter = createTRPCRouter({
         .input(byIdSchema)
         .query(async ({ ctx, input }) => {
             try {
-                const actionPlan = await ctx.prisma.actionPlan.findUnique({
-                    where: {
-                        id: input.id,
-                    },
-                });
+                const actionPlan = await ctx.qb
+                    .selectFrom("ActionPlan")
+                    .where("id", "=", input.id)
+                    .selectAll()
+                    .executeTakeFirst()
 
+                if (!actionPlan) {
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: 'Action plan not found',
+                    });
+                }
                 return actionPlan;
             }
             catch (error) {
@@ -60,17 +63,19 @@ export const actionPlanRouter = createTRPCRouter({
         .input(actionPlanCreateSchema)
         .mutation(async ({ ctx, input }) => {
             try {
-                const linePlan = await ctx.prisma.actionPlan.create({
-                    data: {
+                const linePlan = await ctx.qb.insertInto("ActionPlan")
+                    .values({
                         ...input,
-                        createdBy: extractUserEmailOrId(ctx.auth),
+                        updatedAt: new Date(),
+                        createdAt: new Date(),
                         updatedBy: extractUserEmailOrId(ctx.auth),
+                        createdBy: extractUserEmailOrId(ctx.auth),
                         status: ACTION_PLAN_STATUS.COMPLETED,
-                    },
-                });
+                    })
+                    .returningAll()
+                    .executeTakeFirst()
 
-                return linePlan;
-
+                return linePlan
             }
             catch (error) {
                 handleErrorRouter(error)
@@ -80,17 +85,18 @@ export const actionPlanRouter = createTRPCRouter({
         .input(actionPlanEditSchema)
         .mutation(async ({ ctx, input }) => {
             try {
-                const linePlan = await ctx.prisma.linePlan.update({
-                    where: {
-                        id: input.id,
-                    },
-                    data: {
+                const linePlan = await ctx.qb
+                    .updateTable("LinePlan")
+                    .where("id", '=', input.id)
+                    .set({
                         ...input,
                         updatedBy: extractUserEmailOrId(ctx.auth),
-                    },
-                });
+                        updatedAt: new Date(),
+                    })
+                    .returningAll()
+                    .executeTakeFirst()
 
-                return linePlan;
+                return linePlan
             }
             catch (error) {
                 handleErrorRouter(error)

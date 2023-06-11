@@ -1,4 +1,3 @@
-import type { PrismaClient } from "@prisma/client";
 import { ACTION_PLAN_STATUS } from '../../../utils/schema/action/actionPlan'
 import { ACTION_STATUS } from "~/utils/schema/action/action";
 import { type IBus } from "../bus";
@@ -55,91 +54,78 @@ interface ILinePlanService {
 class ActionRepository implements IActionRepository {
     constructor(private qb: QB) { }
     async getAllExpiredActions(now: Date) {
-        const actions = await this.prisma.action.findMany({
-            where: {
-                status: {
-                    in: ACTION_STATUS.IN_PROGRESS
-                },
-                dueDate: {
-                    lte: now
-                }
-            },
-            select: {
-                id: true,
-                actionPlanId: true,
-            }
-        })
-        return actions;
+
+
+        const actions = await this.qb
+            .selectFrom('Action')
+            .select(['id', 'actionPlanId'])
+            .where('status', '=', ACTION_STATUS.IN_PROGRESS)
+            .where('dueDate', '<', now)
+            .execute()
+
+        return actions
     }
     async getAllByActionPlanId(input: { actionPlanId: string }) {
-        const actions = await this.prisma.action.findMany({
-            where: {
-                actionPlanId: input.actionPlanId,
-            },
-            select: {
-                status: true,
-            }
-        })
+        const actions = await this.qb
+            .selectFrom('Action')
+            .select(['status'])
+            .where('actionPlanId', '=', input.actionPlanId)
+            .execute()
         return actions;
     }
     async updateManyStatus(input: { ids: string[], status: keyof typeof ACTION_STATUS }) {
-        const action = await this.prisma.action.updateMany({
-            where: {
-                id: {
-                    in: input.ids,
-                },
-            },
-            data: {
+        const action = await this.qb
+            .updateTable('Action')
+            .set({
                 status: input.status,
-            },
-        })
-        return action
+            })
+            .where('id', 'in', input.ids)
+            .execute()
+
+        return {
+            count: action.length
+        }
     }
 }
 class ActionPlanRepository implements IActionPlanRepository {
     constructor(private qb: QB) { }
     async getAllByLinePlanId(input: { linePlanId: string }) {
-        const actions = await this.prisma.actionPlan.findMany({
-            where: {
-                linePlanId: input.linePlanId,
-            },
-            select: {
-                status: true,
-            }
-        })
+        const actions = await this.qb
+            .selectFrom('ActionPlan')
+            .select('status')
+            .where('linePlanId', '=', input.linePlanId)
+            .execute()
+
         return actions;
     }
     async updateStatus(input: { actionPlanId: string, status: keyof typeof ACTION_PLAN_STATUS }) {
-        const actionPlan = await this.prisma.actionPlan.update({
-            where: {
-                id: input.actionPlanId,
-            },
-            data: {
+        const actionPlan = await this.qb
+            .updateTable('ActionPlan')
+            .set({
                 status: input.status,
-            },
-            include: {
-                linePlan: {
-                    select: {
-                        id: true,
-                    }
-                },
-            }
-        })
-        return actionPlan
+            })
+            .where('id', '=', input.actionPlanId)
+            .returning(['id', 'linePlanId'])
+            .executeTakeFirstOrThrow()
+
+        return {
+            id: input.actionPlanId,
+            linePlanId: actionPlan.linePlanId,
+        }
     }
 }
 
 class LinePlanRepository implements ILinePlanRepository {
     constructor(private qb: QB) { }
     async updateStatus(input: { linePlanId: string, status: keyof typeof LINE_PLAN_STATUS }) {
-        await this.prisma.linePlan.update({
-            where: {
-                id: input.linePlanId,
-            },
-            data: {
+        await this.qb
+            .updateTable('LinePlan')
+            .set({
                 status: input.status,
-            },
-        })
+            })
+            .where('id', '=', input.linePlanId)
+            .execute()
+
         return null;
     }
 }

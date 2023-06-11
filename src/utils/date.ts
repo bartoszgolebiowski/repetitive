@@ -7,12 +7,12 @@ const displayINTLFull = new Intl.DateTimeFormat(undefined, {
     minute: 'numeric'
 });
 
-export const displayDate = (date: Date) => {
-    return displayINTL.format(date);
+export const displayDate = (date: Date | string) => {
+    return displayINTL.format(new Date(date));
 }
 
-export const displayDateFull = (date: Date) => {
-    return displayINTLFull.format(date);
+export const displayDateFull = (date: Date | string) => {
+    return displayINTLFull.format(new Date(date));
 }
 
 export const defaultValueDate = (date: Date | undefined) => {

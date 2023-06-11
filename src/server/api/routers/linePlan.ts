@@ -13,28 +13,27 @@ export const linePlanRouter = createTRPCRouter({
         .input(linePlanFilterSchema)
         .query(async ({ ctx, input }) => {
             const { organizationId, dueDate, productionLine, assignedTo, status } = input;
-            const where = {
-                organizationId: organizationId,
-                ...{ dueDate: dueDate ? { lte: dueDate } : {} },
-                ...{ assignedTo: assignedTo ? { equals: assignedTo } : {} },
-                ...{ productionLine: productionLine ? { equals: productionLine } : {} },
-                ...{ status: status ? { in: status } : {} },
-            }
 
             try {
-                const linePlans = await ctx.prisma.linePlan.findMany({
-                    where,
-                    select: {
-                        id: true,
-                        status: true,
-                        productionLine: true,
-                        assignedTo: true,
-                        dueDate: true,
-                        createdAt: true,
-                        updatedAt: true,
-                    }
-                });
+                let query = ctx.qb
+                    .selectFrom('LinePlan')
+                    .selectAll()
+                    .where('organizationId', '=', organizationId)
 
+                if (status) {
+                    query = query.where('status', 'in', status)
+                }
+                if (dueDate) {
+                    query = query.where('dueDate', '<=', dueDate)
+                }
+                if (assignedTo) {
+                    query = query.where('assignedTo', '=', assignedTo)
+                }
+                if (productionLine) {
+                    query = query.where('productionLine', '=', productionLine)
+                }
+
+                const linePlans = await query.execute();
                 return linePlans;
             }
             catch (error) {
@@ -45,11 +44,12 @@ export const linePlanRouter = createTRPCRouter({
         .input(byIdSchema)
         .query(async ({ ctx, input }) => {
             try {
-                const linePlan = await ctx.prisma.linePlan.findUnique({
-                    where: {
-                        id: input.id,
-                    },
-                });
+                const linePlan = await ctx.qb
+                    .selectFrom("LinePlan")
+                    .selectAll()
+                    .where('id', '=', input.id)
+                    .executeTakeFirstOrThrow()
+
                 if (!linePlan) {
                     throw new TRPCError({
                         code: 'NOT_FOUND',
@@ -66,18 +66,20 @@ export const linePlanRouter = createTRPCRouter({
         .input(linePlanItemCreateSchema)
         .mutation(async ({ ctx, input }) => {
             try {
-                const linePlan = await ctx.prisma.linePlan.create({
-                    data: {
+                const linePlan = await ctx.qb
+                    .insertInto("LinePlan")
+                    .values({
                         ...input,
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
                         createdBy: extractUserEmailOrId(ctx.auth),
                         updatedBy: extractUserEmailOrId(ctx.auth),
                         status: LINE_PLAN_STATUS.COMPLETED,
-                        comment: input.comment,
-                    },
-                });
+                    })
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
 
                 return linePlan;
-
             }
             catch (error) {
                 handleErrorRouter(error)
@@ -87,15 +89,15 @@ export const linePlanRouter = createTRPCRouter({
         .input(linePlanItemEditSchema)
         .mutation(async ({ ctx, input }) => {
             try {
-                const linePlan = await ctx.prisma.linePlan.update({
-                    where: {
-                        id: input.id,
-                    },
-                    data: {
+                const linePlan = await ctx.qb
+                    .updateTable("LinePlan")
+                    .set({
                         ...input,
+                        updatedAt: new Date(),
                         updatedBy: extractUserEmailOrId(ctx.auth),
-                    },
-                });
+                    })
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
 
                 return linePlan;
             }

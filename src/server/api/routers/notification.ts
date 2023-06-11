@@ -11,34 +11,24 @@ export const notificationRouter = createTRPCRouter({
         .input(getMyNotificationSchema)
         .query(async ({ ctx, input }) => {
             try {
-                const where = {
-                    email: extractUserEmailOrId(ctx.auth),
-                }
+                const count = ctx.qb
+                    .selectFrom('Notification')
+                    .select(ctx.qb.fn.countAll().as('count'))
+                    .where('email', '=', extractUserEmailOrId(ctx.auth))
+                    .executeTakeFirstOrThrow()
 
-                const count = ctx.prisma.notification.count({
-                    where,
-                })
+                const notifications = ctx.qb
+                    .selectFrom('Notification')
+                    .selectAll()
+                    .where('email', '=', extractUserEmailOrId(ctx.auth))
+                    .orderBy('createdAt', 'desc')
+                    .limit(input.pageSize)
+                    .offset(input.page * input.pageSize)
+                    .execute()
 
-                const notification = ctx.prisma.notification.findMany({
-                    where,
-                    select: {
-                        id: true,
-                        createdAt: true,
-                        cause: true,
-                        title: true,
-                        message: true,
-                        read: true,
-                        variables: true,
-                    },
-                    take: input.pageSize,
-                    skip: input.page * input.pageSize,
-                    orderBy: {
-                        createdAt: "desc",
-                    }
-                })
-                const [total, data] = await Promise.all([count, notification])
+                const [total, data] = await Promise.all([count, notifications])
                 return {
-                    total,
+                    total: total.count,
                     data,
                 };
             }
@@ -50,17 +40,14 @@ export const notificationRouter = createTRPCRouter({
         .input(markAsReadSchema).mutation(async ({ ctx, input }) => {
             try {
                 const { id } = input;
-                const notification = await ctx.prisma.notification.update({
-                    where: {
-                        id,
-                    },
-                    data: {
+                const notification = await ctx.qb.updateTable('Notification')
+                    .where('id', '=', id)
+                    .set({
                         read: true,
-                    },
-                    select: {
-                        id: true,
-                    }
-                })
+                    })
+                    .returning('id')
+                    .executeTakeFirstOrThrow()
+
                 return notification;
             }
             catch (error) {

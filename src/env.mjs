@@ -5,11 +5,7 @@ import { z } from "zod";
  * built with invalid env vars.
  */
 const server = z.object({
-  PG_HOST: z.string(),
-  PG_DATABASE: z.string(),
-  PG_USER: z.string(),
-  PG_PASSWORD: z.string(),
-  PG_DATABASE_URL: z.string(),
+  DATABASE_URL: z.string(),
   NODE_ENV: z.enum(["development", "test", "production"]),
   CLERK_SECRET_KEY: z.string(),
 });
@@ -28,11 +24,7 @@ const client = z.object({
  * @type {{ [k in keyof z.input<typeof server>]: string | undefined }}
  */
 export const serverEnv = {
-  PG_HOST: process.env.PG_HOST,
-  PG_DATABASE: process.env.PG_DATABASE,
-  PG_USER: process.env.PG_USER,
-  PG_PASSWORD: process.env.PG_PASSWORD,
-  PG_DATABASE_URL: `postgres://${process.env.PG_USER}:${process.env.PG_PASSWORD}@${process.env.PG_HOST}/${process.env.PG_DATABASE}`,
+  DATABASE_URL: process.env.DATABASE_URL,
   CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
   NODE_ENV: process.env.NODE_ENV,
 };
@@ -55,11 +47,7 @@ export const clientEnv = {
  * @type {Record<keyof z.infer<typeof server> | keyof z.infer<typeof client>, string | undefined>}
  */
 const processEnv = {
-  PG_HOST: process.env.PG_HOST,
-  PG_DATABASE: process.env.PG_DATABASE,
-  PG_USER: process.env.PG_USER,
-  PG_PASSWORD: process.env.PG_PASSWORD,
-  PG_DATABASE_URL: serverEnv.PG_DATABASE_URL,
+  DATABASE_URL: serverEnv.DATABASE_URL,
   CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
   NODE_ENV: process.env.NODE_ENV,
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
