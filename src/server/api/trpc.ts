@@ -20,9 +20,7 @@ import { type IBus, initializeBus } from './../event/bus';
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { getAuth } from "@clerk/nextjs/server";
 import type { SignedInAuthObject, SignedOutAuthObject } from "@clerk/nextjs/api";
-
-import { prisma } from "../db";
-
+import qb from '../db';
 interface AuthContext {
   auth: SignedInAuthObject | SignedOutAuthObject;
   bus: IBus;
@@ -36,10 +34,10 @@ interface AuthContext {
  * - trpc's `createSSGHelpers` where we don't have req/res
  * @see https://create.t3.gg/en/usage/trpc#-servertrpccontextts
  */
-export const createInnerTRPCContext = ({ auth, bus }: AuthContext, prisma: PrismaClient) => {
+export const createInnerTRPCContext = ({ auth, bus }: AuthContext, qb: QB) => {
   return {
     auth,
-    prisma,
+    qb,
     bus
   };
 };
@@ -53,9 +51,10 @@ export const createTRPCContext = (opts: CreateNextContextOptions) => {
   return createInnerTRPCContext(
     {
       auth: getAuth(opts.req),
-      bus: initializeBus(createHandlers(prisma))
+      bus: initializeBus(createHandlers(qb))
     },
-    prisma,);
+    qb
+  );
 };
 
 /**
@@ -67,7 +66,7 @@ export const createTRPCContext = (opts: CreateNextContextOptions) => {
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { createHandlers } from "../event/initialize";
-import { type PrismaClient } from '@prisma/client';
+import { type QB } from '../db.types';
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,

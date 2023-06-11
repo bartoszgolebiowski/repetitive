@@ -11,6 +11,7 @@ import {
   Button,
 } from "@mui/material";
 import Grid2 from "@mui/material/Unstable_Grid2";
+import { DatePicker } from "@mui/x-date-pickers";
 import React from "react";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
@@ -29,11 +30,95 @@ type Props = {
   refetch: () => Promise<unknown>;
 };
 
+const useForm = () => {
+  const { dueDate, startDate } = useDates();
+  const [priority, setPriority] = React.useState<keyof typeof ACTION_PRIORITY>(
+    ACTION_PRIORITY.LOW
+  );
+  const [assignee, setAssignee] = React.useState("");
+  const [title, setTitle] = React.useState("");
+  const [description, setDescription] = React.useState("");
+
+  const handlePriorityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPriority(e.target.value as keyof typeof ACTION_PRIORITY);
+  };
+  const handleAssigneeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAssignee(e.target.value);
+  };
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTitle(e.target.value);
+  };
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDescription(e.target.value);
+  };
+
+  return {
+    value: {
+      priority,
+      assignee,
+      title,
+      description,
+      dueDate,
+      startDate,
+    },
+    priority: {
+      value: priority,
+      onChange: handlePriorityChange,
+    },
+    assignee: {
+      value: assignee,
+      onChange: handleAssigneeChange,
+    },
+    title: {
+      value: title,
+      onChange: handleTitleChange,
+    },
+    description: {
+      value: description,
+      onChange: handleDescriptionChange,
+    },
+    dueDate,
+    startDate,
+  };
+};
+
+const useDates = () => {
+  const [startDate, setStartDate] = React.useState<Date | null>(null);
+  const [dueDate, setDueDate] = React.useState<Date | null>(null);
+
+  const handleStartDateChange = (date: Date | null) => {
+    setStartDate(date);
+    if (date && dueDate) {
+      if (date.getTime() > dueDate.getTime()) {
+        setDueDate(null);
+      }
+    }
+  };
+  const handleDueDateChange = (date: Date | null) => {
+    setDueDate(date);
+  };
+
+  return {
+    startDate: {
+      value: startDate,
+      onChange: handleStartDateChange,
+      disablePast: true,
+    },
+    dueDate: {
+      value: dueDate,
+      onChange: handleDueDateChange,
+      disablePast: true,
+      minDate: startDate ?? undefined,
+      disabled: !startDate,
+    },
+  };
+};
+
 const ActionForm = (props: Props) => {
   const { actionPlanId, refetch } = props;
   const ref = React.useRef<HTMLDivElement>(null);
   const [open, setOpen] = React.useState(false);
-
+  const { startDate, dueDate } = useDates();
   const { membershipList } = useOrganization({
     membershipList: { limit: ORGANIZATION_MEMBERSHIP_LIMIT },
   });
@@ -114,30 +199,10 @@ const ActionForm = (props: Props) => {
                 />
               </Grid2>
               <Grid2 xs={12}>
-                <TextField
-                  type="date"
-                  fullWidth
-                  id="startDate"
-                  label="Start Date"
-                  name="startDate"
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  required
-                />
+                <DatePicker label="Start Date" {...startDate} />
               </Grid2>
               <Grid2 xs={12}>
-                <TextField
-                  type="date"
-                  fullWidth
-                  id="dueDate"
-                  label="Due Date"
-                  name="dueDate"
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  required
-                />
+                <DatePicker label="Due Date" {...dueDate} />
               </Grid2>
               <Grid2 xs={12}>
                 <TextField

@@ -1,14 +1,12 @@
-import { PrismaClient } from "@prisma/client";
+import { env } from '~/env.mjs';
+import { Kysely, } from "kysely";
+import { type DB } from "./db.types";
+import { NeonDialect } from 'kysely-neon';
 
-import { env } from "~/env.mjs";
+const qb = new Kysely<DB>({
+  dialect: new NeonDialect({
+    connectionString: env.PG_DATABASE_URL,
+  }),
+})
 
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
-
-export const prisma =
-  globalForPrisma.prisma ||
-  new PrismaClient({
-    log:
-      env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
-  });
-
-if (env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+export default qb

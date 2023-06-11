@@ -3,6 +3,7 @@ import { ACTION_PLAN_STATUS } from '../../../utils/schema/action/actionPlan'
 import { ACTION_STATUS } from "~/utils/schema/action/action";
 import { type IBus } from "../bus";
 import { LINE_PLAN_STATUS } from "~/utils/schema/action/linePlan";
+import { type QB } from "~/server/db";
 
 export type ActionEventHandlers = {
     "action:created": (input: { actionPlanId: string }) => Promise<null>;
@@ -52,7 +53,7 @@ interface ILinePlanService {
 }
 
 class ActionRepository implements IActionRepository {
-    constructor(private prisma: PrismaClient) { }
+    constructor(private qb: QB) { }
     async getAllExpiredActions(now: Date) {
         const actions = await this.prisma.action.findMany({
             where: {
@@ -96,7 +97,7 @@ class ActionRepository implements IActionRepository {
     }
 }
 class ActionPlanRepository implements IActionPlanRepository {
-    constructor(private prisma: PrismaClient) { }
+    constructor(private qb: QB) { }
     async getAllByLinePlanId(input: { linePlanId: string }) {
         const actions = await this.prisma.actionPlan.findMany({
             where: {
@@ -129,7 +130,7 @@ class ActionPlanRepository implements IActionPlanRepository {
 }
 
 class LinePlanRepository implements ILinePlanRepository {
-    constructor(private prisma: PrismaClient) { }
+    constructor(private qb: QB) { }
     async updateStatus(input: { linePlanId: string, status: keyof typeof LINE_PLAN_STATUS }) {
         await this.prisma.linePlan.update({
             where: {
@@ -167,7 +168,7 @@ class ActionPlanService implements IActionPlanService {
         const actions = await this.actionRepository.getAllByActionPlanId(input)
 
         const isAtLeastOneActionDelay = actions
-            .some(isDelayed) 
+            .some(isDelayed)
 
         if (isAtLeastOneActionDelay) {
             const actionPlan = await this.updateStatusToDelayed(input)
@@ -262,12 +263,12 @@ const isCompleted = (action: { status: string; }): boolean => action.status === 
 const isRejected = (action: { status: string; }): boolean => action.status === ACTION_STATUS.REJECTED;
 const isCompletedOrRejected = (action: { status: string; }): boolean => isCompleted(action) || isRejected(action);
 
-export const createHandlersActionPrisma = (
-    prisma: PrismaClient,
+export const createHandlersActionQB = (
+    qb: QB
 ): (bus: IBus) => ActionEventHandlers => {
-    const actionRepository = new ActionRepository(prisma);
-    const actionPlanRepository = new ActionPlanRepository(prisma);
-    const linePlanRepository = new LinePlanRepository(prisma);
+    const actionRepository = new ActionRepository(qb);
+    const actionPlanRepository = new ActionPlanRepository(qb);
+    const linePlanRepository = new LinePlanRepository(qb);
 
     return createHandlersAction(actionRepository, actionPlanRepository, linePlanRepository)
 }

@@ -1,6 +1,6 @@
 import { NOTIFICATION_CAUSE } from '~/utils/schema/action/notification';
-import type { PrismaClient } from "@prisma/client";
 import { type IBus } from "../bus";
+import { type QB } from '~/server/db';
 
 export type NotificationEventHandlers = {
     "notification:actionUpdate": (input: { id: string }) => Promise<null>;
@@ -9,18 +9,14 @@ export type NotificationEventHandlers = {
 
 const NOTIFICATION_MESSAGE = {
     [NOTIFICATION_CAUSE['ACTION_UPDATE']]: (id: string) => ({
-        cause: NOTIFICATION_CAUSE['ACTION_UPDATE'],
-        title: `Action {0} has been updated`,
-        message: `Action {0} has been updated`,
+        cause: NOTIFICATION_CAUSE['ACTION_UPDATE'] as string,
         variables: [id]
     }),
     [NOTIFICATION_CAUSE['ACTION_MARKED_AS_EXPIRED']]: (id: string) => ({
-        cause: NOTIFICATION_CAUSE['ACTION_MARKED_AS_EXPIRED'],
-        title: `Action {0} has been marked as expired`,
-        message: `Action {0} has been marked as expired`,
+        cause: NOTIFICATION_CAUSE['ACTION_MARKED_AS_EXPIRED'] as string,
         variables: [id]
     })
-} as const
+} as const;
 
 interface INotificationRepository {
     createMany: (input: { actions: { id: string, email: string }[], cause: keyof typeof NOTIFICATION_CAUSE }) => Promise<null>;
@@ -37,53 +33,45 @@ interface INotificationService {
 }
 
 class NotificationRepository implements INotificationRepository {
-    constructor(private prisma: PrismaClient) { }
+    constructor(private qb: QB) { }
     async createMany(input: { actions: { id: string, email: string }[], cause: keyof typeof NOTIFICATION_CAUSE }) {
         const { actions, cause } = input;
-        await this.prisma.notification.createMany({
-            data: actions.map(({ id, email }) => ({
+
+        await this.qb
+            .insertInto('Notification')
+            .values(actions.map(({ id, email }) => ({
                 email,
                 ...NOTIFICATION_MESSAGE[cause](id),
-                variables: [id]
-            }))
-        })
+            })))
+            .execute()
+
         return null;
 
     }
 }
 
 class ActionRepository implements IActionRepository {
-    constructor(private prisma: PrismaClient) { }
+    constructor(private qb: QB) { }
     async getById(input: { id: string }) {
         const { id } = input;
-        const actions = await this.prisma.action.findUnique({
-            where: {
-                id,
-            },
-            select: {
-                id: true,
-                assignedTo: true,
-                leader: true,
-            }
-        })
+        const action = await this.qb
+            .selectFrom('Action')
+            .select(['id', 'assignedTo', 'leader'])
+            .where('id', '=', id)
+            .executeTakeFirst()
 
-        return actions
+        return action ?? null
     }
 
     async geyByIds(input: { ids: string[] }) {
         const { ids } = input;
-        const actions = await this.prisma.action.findMany({
-            where: {
-                id: {
-                    in: ids,
-                }
-            },
-            select: {
-                id: true,
-                assignedTo: true,
-                leader: true,
-            }
-        })
+
+        const actions = await this.qb
+            .selectFrom('Action')
+            .select(['id', 'assignedTo', 'leader'])
+            .where('id', 'in', ids)
+            .execute()
+
         return actions;
     }
 }
@@ -146,11 +134,11 @@ class NotificationService implements INotificationService {
 
 const createIdAndEmail = (id: string, email: string) => ({ id, email })
 
-export const createHandlersNotificationPrisma = (
-    prisma: PrismaClient,
+export const createHandlersNotificationQB = (
+    qb: QB
 ): (bus: IBus) => NotificationEventHandlers => {
-    const notificationRepository = new NotificationRepository(prisma)
-    const actionRepository = new ActionRepository(prisma)
+    const notificationRepository = new NotificationRepository(qb)
+    const actionRepository = new ActionRepository(qb)
 
     return createHandlersNotification(
         notificationRepository,
