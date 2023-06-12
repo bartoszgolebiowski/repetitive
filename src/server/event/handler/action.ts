@@ -1,8 +1,8 @@
-import { ACTION_PLAN_STATUS } from '../../../utils/schema/action/actionPlan'
+import { ACTION_PLAN_STATUS } from '~/utils/schema/action/actionPlan'
 import { ACTION_STATUS } from "~/utils/schema/action/action";
-import { type IBus } from "../bus";
 import { LINE_PLAN_STATUS } from "~/utils/schema/action/linePlan";
-import { type QB } from "~/server/db";
+import { type QB } from '~/server/db';
+import { type IBus } from "../bus";
 
 export type ActionEventHandlers = {
     "action:created": (input: { actionPlanId: string }) => Promise<null>;
@@ -54,8 +54,6 @@ interface ILinePlanService {
 class ActionRepository implements IActionRepository {
     constructor(private qb: QB) { }
     async getAllExpiredActions(now: Date) {
-
-
         const actions = await this.qb
             .selectFrom('Action')
             .select(['id', 'actionPlanId'])
@@ -133,6 +131,8 @@ class ActionService implements IActionService {
     constructor(private actionRepository: IActionRepository, private bus: IBus) { }
     async updateExpiredActionsStatusToDelayed(input: { expiryDate: Date }) {
         const expiredActions = await this.actionRepository.getAllExpiredActions(input.expiryDate);
+        if (!expiredActions.length) return []
+
         await this.updateManyStatusesToDelayed({ ids: expiredActions.map(action => action.id) })
         this.bus.emit('notification:actionsDelayed', { ids: expiredActions.map(({ id }) => id) })
         return [...new Set(expiredActions.map(action => action.actionPlanId))]

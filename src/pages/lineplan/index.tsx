@@ -33,6 +33,7 @@ import { useOrganization } from "@clerk/nextjs";
 import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import StatusCircle from "~/components/action/table/action/StatusCircle";
+import { DatePicker } from "@mui/x-date-pickers";
 
 const convertQueryToFilters = (): Omit<
   Parameters<typeof api.linePlan.getByFilters.useQuery>[0],
@@ -48,6 +49,7 @@ const convertQueryToFilters = (): Omit<
 
 const useForm = () => {
   const [filters, setFilters] = React.useState(() => convertQueryToFilters());
+  const { dueDate } = useDates();
 
   const onChangeProductionLine = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters((prev) => ({ ...prev, productionLine: e.target.value }));
@@ -55,10 +57,6 @@ const useForm = () => {
 
   const onChangeAssignedTo = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters((prev) => ({ ...prev, assignedTo: e.target.value }));
-  };
-
-  const onChangeDueDate = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters((prev) => ({ ...prev, dueDate: e.target.valueAsDate }));
   };
 
   const onChangeStatus = (status: keyof typeof LINE_PLAN_STATUS) => () => {
@@ -75,11 +73,29 @@ const useForm = () => {
   };
 
   return {
-    filters,
+    filters: {
+      ...filters,
+      dueDate: dueDate.value,
+    },
     onChangeProductionLine,
     onChangeAssignedTo,
-    onChangeDueDate,
     onChangeStatus,
+    dueDate,
+  };
+};
+
+const useDates = () => {
+  const [dueDate, setDueDate] = React.useState<Date | null>(null);
+
+  const handleDueDateChange = (date: Date | null) => {
+    setDueDate(date);
+  };
+
+  return {
+    dueDate: {
+      value: dueDate,
+      onChange: handleDueDateChange,
+    },
   };
 };
 
@@ -88,7 +104,7 @@ const LinePlan: NextPage = () => {
     filters,
     onChangeProductionLine,
     onChangeAssignedTo,
-    onChangeDueDate,
+    dueDate,
     onChangeStatus,
   } = useForm();
 
@@ -155,19 +171,15 @@ const LinePlan: NextPage = () => {
                     ))}
                   </TextField>
                 </Grid2>
-                <Grid2 xs={12}>
-                  <TextField
-                    type="date"
-                    fullWidth
-                    id="dueDate"
-                    label="Due Date"
-                    name="dueDate"
-                    value={filters.dueDate?.toISOString().split("T")[0] ?? ""}
-                    onChange={onChangeDueDate}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                  />
+                <Grid2
+                  xs={12}
+                  sx={{
+                    "& > div": {
+                      width: "100%",
+                    },
+                  }}
+                >
+                  <DatePicker label="Due Date" {...dueDate} />
                 </Grid2>
                 <Grid2 xs={12}>
                   <FormControl

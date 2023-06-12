@@ -193,7 +193,7 @@ const ActionForm = (props: Props) => {
       </Button>
       <Modal open={open} onClose={handleClose}>
         <FormCard size="large" ref={ref} sx={{ orverflowY: "scroll" }}>
-          <FormTitle>Create Action Plan</FormTitle>
+          <FormTitle>Create Action</FormTitle>
           <form onSubmit={handleSubmit}>
             <input type="hidden" name="actionPlanId" value={actionPlanId} />
             <Grid2 container spacing={2}>
@@ -216,6 +216,7 @@ const ActionForm = (props: Props) => {
                   label="Description"
                   name="description"
                   multiline
+                  required
                   {...description}
                 />
               </Grid2>
@@ -230,11 +231,25 @@ const ActionForm = (props: Props) => {
                   {...comment}
                 />
               </Grid2>
-              <Grid2 xs={12}>
-                <DatePicker label="Start Date" {...startDate} />
+              <Grid2
+                xs={12}
+                sx={{
+                  "& > div": {
+                    width: "100%",
+                  },
+                }}
+              >
+                <DatePicker label="Start Date *" {...startDate} />
               </Grid2>
-              <Grid2 xs={12}>
-                <DatePicker label="Due Date" {...dueDate} />
+              <Grid2
+                xs={12}
+                sx={{
+                  "& > div": {
+                    width: "100%",
+                  },
+                }}
+              >
+                <DatePicker label="Due Date *" {...dueDate} />
               </Grid2>
               <Grid2 xs={12}>
                 <TextField

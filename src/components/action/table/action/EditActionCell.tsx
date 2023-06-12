@@ -18,7 +18,6 @@ import React from "react";
 import { type z } from "zod";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
-import { defaultValueDate } from "~/utils/date";
 import {
   ACTION_PRIORITY,
   actionEditItemSchema,
@@ -28,6 +27,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import { blue } from "@mui/material/colors";
 import TextFieldAutoFocus from "~/components/TextFieldAutoFocus";
 import { iconButtonSx } from "~/components/utils";
+import { DatePicker } from "@mui/x-date-pickers";
 
 type Props = {
   defaultValues: z.infer<typeof actionEditItemSchema>;
@@ -36,11 +36,141 @@ type Props = {
   onSubmit: (data: z.infer<typeof actionEditItemSchema>) => void;
 };
 
+const useForm = (defaultValues: z.infer<typeof actionEditItemSchema>) => {
+  const { dueDate, startDate } = useDates(defaultValues);
+  const [priority, setPriority] = React.useState<keyof typeof ACTION_PRIORITY>(
+    defaultValues.priority ?? ACTION_PRIORITY.LOW
+  );
+  const [assignedTo, setAssignee] = React.useState(
+    defaultValues.assignedTo ?? ""
+  );
+  const [name, setName] = React.useState(defaultValues.name ?? "");
+  const [description, setDescription] = React.useState(
+    defaultValues.description ?? ""
+  );
+  const [comment, setComment] = React.useState(defaultValues.comment ?? "");
+  const [leader, setLeader] = React.useState(defaultValues.leader ?? "");
+
+  const handleCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setComment(e.target.value);
+  };
+  const handlePriorityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPriority(e.target.value as keyof typeof ACTION_PRIORITY);
+  };
+  const handleAssigneeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAssignee(e.target.value);
+  };
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+  };
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDescription(e.target.value);
+  };
+
+  const handleLeaderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLeader(e.target.value);
+  };
+
+  return {
+    values: {
+      id: defaultValues.id,
+      priority,
+      assignedTo,
+      name,
+      description,
+      dueDate: dueDate.value,
+      startDate: startDate.value,
+      comment,
+      leader,
+    },
+    priority: {
+      value: priority,
+      onChange: handlePriorityChange,
+    },
+    assignee: {
+      value: assignedTo,
+      onChange: handleAssigneeChange,
+    },
+    name: {
+      value: name,
+      onChange: handleNameChange,
+    },
+    description: {
+      value: description,
+      onChange: handleDescriptionChange,
+    },
+    comment: {
+      value: comment,
+      onChange: handleCommentChange,
+    },
+    leader: {
+      value: leader,
+      onChange: handleLeaderChange,
+    },
+    dueDate,
+    startDate,
+  };
+};
+
+const useDates = (defaultValues: z.infer<typeof actionEditItemSchema>) => {
+  const [startDate, setStartDate] = React.useState<Date | null>(
+    defaultValues.dueDate ?? null
+  );
+  const [dueDate, setDueDate] = React.useState<Date | null>(
+    defaultValues.startDate ?? null
+  );
+
+  const handleStartDateChange = (date: Date | null) => {
+    setStartDate(date);
+    if (date && dueDate) {
+      if (date.getTime() > dueDate.getTime()) {
+        setDueDate(null);
+      }
+    }
+  };
+  const handleDueDateChange = (date: Date | null) => {
+    setDueDate(date);
+  };
+
+  return {
+    startDate: {
+      value: startDate,
+      onChange: handleStartDateChange,
+      disablePast: true,
+      disabled: defaultValues.status === "DELAYED",
+    },
+    dueDate: {
+      value: dueDate,
+      onChange: handleDueDateChange,
+      disablePast: true,
+      minDate: startDate ?? undefined,
+      disabled: !startDate || defaultValues.status === "DELAYED",
+    },
+  };
+};
+
+const isValid = (data: ReturnType<typeof useForm>["values"]) => {
+  const result = actionEditItemSchema.safeParse({
+    ...data,
+  });
+  return result.success;
+};
+
 const EditActionCell = (props: Props) => {
   const { defaultValues, onSubmit, status, disabled } = props;
   const ref = React.useRef<HTMLDivElement>(null);
   const [open, setOpen] = React.useState(false);
-
+  const {
+    values,
+    priority,
+    assignee,
+    name,
+    description,
+    dueDate,
+    startDate,
+    comment,
+    leader,
+  } = useForm(defaultValues);
   const { membershipList } = useOrganization({
     membershipList: { limit: ORGANIZATION_MEMBERSHIP_LIMIT },
   });
@@ -48,17 +178,8 @@ const EditActionCell = (props: Props) => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    const form = e.currentTarget;
-    const data = Object.fromEntries(new FormData(form)) as Record<
-      string,
-      unknown
-    >;
 
-    const dueDate = String(data.dueDate);
-    const startDate = String(data.startDate);
-    data.dueDate = new Date(dueDate);
-    data.startDate = new Date(startDate);
-    const result = actionEditItemSchema.safeParse(data);
+    const result = actionEditItemSchema.safeParse(values);
 
     if (result.success) {
       onSubmit(result.data);
@@ -85,9 +206,8 @@ const EditActionCell = (props: Props) => {
       </TableCell>
       <Modal open={open} onClose={toggle}>
         <FormCard size="large" ref={ref} sx={{ orverflowY: "scroll" }}>
-          <FormTitle>Update Action Plan</FormTitle>
+          <FormTitle>Update Action</FormTitle>
           <form onSubmit={handleSubmit}>
-            <input type="hidden" name="id" defaultValue={defaultValues.id} />
             <Grid2 container spacing={2}>
               <Grid2 xs={12}>
                 <TextFieldAutoFocus
@@ -97,19 +217,18 @@ const EditActionCell = (props: Props) => {
                   label="Name"
                   name="name"
                   required
-                  defaultValue={defaultValues.name}
+                  {...name}
                 />
               </Grid2>
               <Grid2 xs={12}>
                 <TextField
                   fullWidth
-                  autoFocus
                   id="description"
                   label="Description"
                   name="description"
                   multiline
                   required
-                  defaultValue={defaultValues.description}
+                  {...description}
                 />
               </Grid2>
               <Grid2 xs={12}>
@@ -120,37 +239,29 @@ const EditActionCell = (props: Props) => {
                   label="Comment"
                   name="comment"
                   multiline
-                  defaultValue={defaultValues.comment}
                   rows={4}
+                  {...comment}
                 />
               </Grid2>
-              <Grid2 xs={12}>
-                <TextField
-                  type="date"
-                  fullWidth
-                  id="startDate"
-                  label="Start Date"
-                  name="startDate"
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  required
-                  defaultValue={defaultValueDate(defaultValues.startDate)}
-                />
+              <Grid2
+                xs={12}
+                sx={{
+                  "& > div": {
+                    width: "100%",
+                  },
+                }}
+              >
+                <DatePicker label="Start Date *" {...startDate} />
               </Grid2>
-              <Grid2 xs={12}>
-                <TextField
-                  type="date"
-                  fullWidth
-                  id="dueDate"
-                  label="Due Date"
-                  name="dueDate"
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  required
-                  defaultValue={defaultValueDate(defaultValues.dueDate)}
-                />
+              <Grid2
+                xs={12}
+                sx={{
+                  "& > div": {
+                    width: "100%",
+                  },
+                }}
+              >
+                <DatePicker label="Due Date *" {...dueDate}/>
               </Grid2>
               <Grid2 xs={12}>
                 <TextField
@@ -159,8 +270,8 @@ const EditActionCell = (props: Props) => {
                   id="assignedTo"
                   label="Assigned To"
                   name="assignedTo"
-                  defaultValue={defaultValues.assignedTo}
                   required
+                  {...assignee}
                 >
                   <MenuItem value="">
                     <em>None</em>
@@ -183,7 +294,7 @@ const EditActionCell = (props: Props) => {
                   label="Leader"
                   name="leader"
                   required
-                  defaultValue={defaultValues.leader}
+                  {...leader}
                 >
                   <MenuItem value="">
                     <em>None</em>
@@ -204,7 +315,7 @@ const EditActionCell = (props: Props) => {
                   <RadioGroup
                     aria-labelledby="radio-priority"
                     name="priority"
-                    defaultValue={defaultValues.priority}
+                    {...priority}
                   >
                     {Object.values(ACTION_PRIORITY).map((status) => (
                       <FormControlLabel
@@ -234,7 +345,7 @@ const EditActionCell = (props: Props) => {
                   variant="contained"
                   color="primary"
                   type="submit"
-                  disabled={status === "loading"}
+                  disabled={status === "loading" || !isValid(values)}
                 >
                   Update
                 </Button>

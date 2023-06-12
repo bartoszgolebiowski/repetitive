@@ -296,7 +296,7 @@ describe('action event handler', () => {
             }
 
             const result = await eventHandler["actionPlan:allActionsCompletedOrRejected"](input)
-            
+
             expect(result).toBe(null)
             expect(actionPlanRepository.updateStatus).toBeCalledWith({
                 actionPlanId: 'actionPlanId',
@@ -391,6 +391,21 @@ describe('action event handler', () => {
     })
 
     describe('action:markExpired', () => {
+        it('should action:markExpired do not update status, when getAllExpiredActions returns an empty array', async () => {
+            actionRepository.getAllExpiredActions.mockResolvedValue([])
+
+            const input = {
+                expiryDate: new Date('2020-01-01T00:00:00.000Z')
+            }
+            const result = await eventHandler["action:markExpired"](input)
+            expect(result).toBe(null)
+            
+            expect(actionRepository.getAllExpiredActions).toBeCalled()
+            expect(actionRepository.updateManyStatus).not.toBeCalled()
+            expect(actionPlanRepository.updateStatus).not.toBeCalled()
+            expect(bus.emit).not.toBeCalled()
+        })
+
         it('should action:markExpired event update all expired actions to DELAYED', async () => {
             const expiredActions = [
                 { id: 'actionId11', actionPlanId: 'actionPlanId1', status: ACTION_STATUS.DELAYED },

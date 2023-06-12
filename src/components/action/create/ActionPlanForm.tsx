@@ -1,6 +1,7 @@
 import { useOrganization } from "@clerk/nextjs";
 import { Modal, TextField, MenuItem, Button } from "@mui/material";
 import Grid2 from "@mui/material/Unstable_Grid2";
+import { DatePicker } from "@mui/x-date-pickers";
 import React from "react";
 import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
@@ -14,10 +15,75 @@ type Props = {
   refetch: () => Promise<unknown>;
 };
 
+const useForm = (linePlanId?: string) => {
+  const { dueDate } = useDates();
+  const [assignedTo, setAssignee] = React.useState("");
+  const [name, setName] = React.useState("");
+  const [description, setDescription] = React.useState("");
+
+  const handleAssigneeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAssignee(e.target.value);
+  };
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+  };
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDescription(e.target.value);
+  };
+
+  return {
+    values: {
+      assignedTo,
+      name,
+      description,
+      dueDate: dueDate.value,
+      linePlanId,
+    },
+    assignee: {
+      value: assignedTo,
+      onChange: handleAssigneeChange,
+    },
+    name: {
+      value: name,
+      onChange: handleNameChange,
+    },
+    description: {
+      value: description,
+      onChange: handleDescriptionChange,
+    },
+    dueDate,
+  };
+};
+
+const useDates = () => {
+  const [dueDate, setDueDate] = React.useState<Date | null>(null);
+
+  const handleDueDateChange = (date: Date | null) => {
+    setDueDate(date);
+  };
+
+  return {
+    dueDate: {
+      value: dueDate,
+      onChange: handleDueDateChange,
+      disablePast: true,
+      minDate: new Date(),
+    },
+  };
+};
+
+const isValid = (data: ReturnType<typeof useForm>["values"]) => {
+  const result = actionPlanCreateSchema.safeParse({
+    ...data,
+  });
+  return result.success;
+};
+
 const ActionPlanForm = (props: Props) => {
   const { linePlanId, refetch } = props;
   const ref = React.useRef<HTMLDivElement>(null);
   const [open, setOpen] = React.useState(false);
+  const { values, assignee, name, description, dueDate } = useForm(linePlanId);
 
   const { membershipList } = useOrganization({
     membershipList: { limit: ORGANIZATION_MEMBERSHIP_LIMIT },
@@ -32,20 +98,12 @@ const ActionPlanForm = (props: Props) => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    const form = e.currentTarget;
-    const data = Object.fromEntries(new FormData(form)) as Record<
-      string,
-      unknown
-    >;
 
-    const dueDate = String(data.dueDate);
-    data.dueDate = new Date(dueDate);
-    const result = actionPlanCreateSchema.safeParse(data);
+    const result = actionPlanCreateSchema.safeParse(values);
 
     if (result.success) {
       createLinePlan.mutate(result.data);
     }
-    //todo: handle error
     handleClose();
   };
 
@@ -66,21 +124,24 @@ const ActionPlanForm = (props: Props) => {
               <Grid2 xs={12}>
                 <TextFieldAutoFocus
                   fullWidth
+                  autoFocus
                   id="name"
                   label="Name"
                   name="name"
                   required
+                  {...name}
                 />
               </Grid2>
               <Grid2 xs={12}>
                 <TextField
                   fullWidth
-                  autoFocus
                   id="description"
                   label="Description"
                   name="description"
                   multiline
                   rows={4}
+                  required
+                  {...description}
                 />
               </Grid2>
               <Grid2 xs={12}>
@@ -91,6 +152,7 @@ const ActionPlanForm = (props: Props) => {
                   label="Assigned To"
                   name="assignedTo"
                   required
+                  {...assignee}
                 >
                   <MenuItem value="">
                     <em>None</em>
@@ -105,18 +167,15 @@ const ActionPlanForm = (props: Props) => {
                   ))}
                 </TextField>
               </Grid2>
-              <Grid2 xs={12}>
-                <TextField
-                  type="date"
-                  fullWidth
-                  id="dueDate"
-                  label="Due Date"
-                  name="dueDate"
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  required
-                />
+              <Grid2
+                xs={12}
+                sx={{
+                  "& > div": {
+                    width: "100%",
+                  },
+                }}
+              >
+                <DatePicker label="Due Date *" {...dueDate} />
               </Grid2>
               <Grid2 xs={6}>
                 <Button
@@ -135,7 +194,9 @@ const ActionPlanForm = (props: Props) => {
                   variant="contained"
                   color="primary"
                   type="submit"
-                  disabled={createLinePlan.status === "loading"}
+                  disabled={
+                    createLinePlan.status === "loading" || !isValid(values)
+                  }
                 >
                   Create
                 </Button>

@@ -12,8 +12,9 @@ datasource db {
 
 generator kysely {
     provider     = "prisma-kysely"
-    output       = "../src/server"
-    fileName     = "db.types.ts"
+    output       = "../db"
+    fileName     = "types.ts"
+    enumFileName = "enums.ts"
 }
 
 enum Status {

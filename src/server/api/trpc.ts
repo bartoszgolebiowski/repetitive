@@ -20,7 +20,7 @@ import { type IBus, initializeBus } from './../event/bus';
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { getAuth } from "@clerk/nextjs/server";
 import type { SignedInAuthObject, SignedOutAuthObject } from "@clerk/nextjs/api";
-import qb, { type QB } from '../db';
+import qb, { type QB } from '~/server/db';
 interface AuthContext {
   auth: SignedInAuthObject | SignedOutAuthObject;
   bus: IBus;

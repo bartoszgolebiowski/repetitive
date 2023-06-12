@@ -1,6 +1,6 @@
 import { NOTIFICATION_CAUSE } from '~/utils/schema/action/notification';
-import { type IBus } from "../bus";
 import { type QB } from '~/server/db';
+import { type IBus } from "../bus";
 
 export type NotificationEventHandlers = {
     "notification:actionUpdate": (input: { id: string }) => Promise<null>;
@@ -37,13 +37,17 @@ class NotificationRepository implements INotificationRepository {
     async createMany(input: { actions: { id: string, email: string }[], cause: keyof typeof NOTIFICATION_CAUSE }) {
         const { actions, cause } = input;
 
-        await this.qb
-            .insertInto('Notification')
-            .values(actions.map(({ id, email }) => ({
-                email,
-                ...NOTIFICATION_MESSAGE[cause](id),
-            })))
-            .execute()
+        try {
+            await this.qb
+                .insertInto('Notification')
+                .values(actions.map(({ id, email }) => ({
+                    email,
+                    ...NOTIFICATION_MESSAGE[cause](id),
+                })))
+                .execute()
+        } catch (e) {
+            console.log(e)
+        }
 
         return null;
 
@@ -113,6 +117,7 @@ class NotificationService implements INotificationService {
             actions: actionsUniqueEmails,
             cause: NOTIFICATION_CAUSE.ACTION_MARKED_AS_EXPIRED
         })
+
         return null
     }
 
