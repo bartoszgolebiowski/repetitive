@@ -12,7 +12,7 @@ export const stringCSVOptional = () => z.string().default("");
 export const validUserCSV = (validUsers: string[]) => z.string().refine((u) => validUsers.includes(u))
 export const dateCSVRequired = () => z.string().regex(dateRegex)
 
-export const dueDateStartDateValidationFactory = (schema: z.ZodObject<{
+export const attachDueDateStartDateRefine = (schema: z.ZodObject<{
     dueDate: z.ZodString;
     startDate: z.ZodString;
 }>) =>
@@ -105,18 +105,17 @@ const getCSVHeaderErrors = (csvContent: string, schema: z.ZodTypeAny) => {
     if (!headerLine) return {
         header: `Header is empty.  
 Expected headers: ${expectedHeaders.join(JOINER)}`
-    } as const
+    } as Record<string, string>
     const csvHeaders = headerLine.split(SPLITTER).map((header) => header.trim());
     const missingHeaders = expectedHeaders.map(header => header.trim()).filter((header) => !csvHeaders.includes(header.trim()));
-    if (!missingHeaders.length) return {} as const
+    if (!missingHeaders.length) return {} as Record<string, string>
     return {
         header: `Corrupted headers. Missing headers: ${missingHeaders.join(JOINER)}. Expected headers: ${expectedHeaders.join(JOINER)}`
-    } as const
+    } as Record<string, string>
 }
 
 const getCSVBodyErrors = (csvContent: string, schema: z.ZodTypeAny) => {
-    const headers = zodKeys(schema).map(header => header.trim());
-    const rows = getRowsFromCSVRaw(csvContent, headers);
+    const rows = getRowsFromCSVRaw(csvContent, schema);
     const errors = rows.reduce((errors, row, index) => {
         const parsed = schema.safeParse(row);
         if (!parsed.success) {
@@ -125,8 +124,8 @@ const getCSVBodyErrors = (csvContent: string, schema: z.ZodTypeAny) => {
             errors[index] = rowErrorsString;
         }
         return errors;
-    }, {} as Record<number, string>);
-    return errors;
+    }, {} as Record<string, string>);
+    return errors as Record<string, string>
 }
 
 const getCSVErrors = <T extends z.ZodTypeAny>(csvContent: string, schema: T) => {
@@ -143,8 +142,9 @@ const getHeadersFromCSV = (csvContent: string) => {
     return headerLine.split(SPLITTER).map((header) => header.trim());
 }
 
-const getRowsFromCSVRaw = (csvString: string, headers: string[]) => {
-    const lines = csvString.split(END_OF_LINE);
+const getRowsFromCSVRaw = <T extends z.ZodType>(csvContent: string, schema: T) => {
+    const headers = zodKeys(schema).map(header => header.trim());
+    const lines = csvContent.split(END_OF_LINE);
     const rawRows = lines.slice(1).map((line) => {
         const cells = line.split(SPLITTER);
         return headers.reduce((row, header, index) => {
@@ -160,9 +160,8 @@ const getRowsFromCSVRaw = (csvString: string, headers: string[]) => {
 };
 
 const getRowsFromCSV = <T extends z.ZodType>(csvContent: string, schema: T) => {
-    const headers = zodKeys(schema).map(header => header.trim());
     const parse = schemaFactory(schema);
-    return getRowsFromCSVRaw(csvContent, headers).map(parse).filter(Boolean);
+    return getRowsFromCSVRaw(csvContent, schema).map(parse).filter(Boolean);
 };
 
 const getCSVContent = (csv: File) => {
@@ -178,7 +177,8 @@ const getCSVContent = (csv: File) => {
 
 export const getRowsAndHeaderFromCSVContent = <T extends z.ZodType>(csvContent: string, schema: T) => ({
     header: getHeadersFromCSV(csvContent),
-    rows: getRowsFromCSV(csvContent, schema),
+    allRows: getRowsFromCSVRaw(csvContent, schema),
+    validRows: getRowsFromCSV(csvContent, schema),
     errors: getCSVErrors(csvContent, schema)
 })
 

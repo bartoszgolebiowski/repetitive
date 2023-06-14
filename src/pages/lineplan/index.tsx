@@ -34,6 +34,9 @@ import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import StatusCircle from "~/components/action/table/action/StatusCircle";
 import { DatePicker } from "@mui/x-date-pickers";
+import Import from "~/components/action/import/Import";
+import { z } from "zod";
+import { stringCSVRequired, dateCSVRequired } from "~/components/action/import/utils";
 
 const convertQueryToFilters = (): Omit<
   Parameters<typeof api.linePlan.getByFilters.useQuery>[0],
@@ -223,6 +226,15 @@ const LinePlan: NextPage = () => {
           <LinePlanForm
             organizationId={organization?.id ?? ""}
             refetch={linePlans.refetch}
+          />
+          <Import
+            onImport={() => {}}
+            refetch={() => {}}
+            schema={z.object({
+              productionLine: stringCSVRequired(),
+              assignedTo: stringCSVRequired(),
+              dueDate: dateCSVRequired(),
+            })}
           />
         </Box>
         {linePlans.data && (

@@ -5,8 +5,8 @@ import {
   numberCSVOptional,
   stringCSVRequired,
   stringCSVOptional,
-  validUserCSV,
-  dueDateStartDateValidationFactory,
+  validUserCSV as validUserCSVRequired,
+  attachDueDateStartDateRefine,
   dateCSVRequired,
 } from "../utils";
 import { z } from "zod";
@@ -28,8 +28,8 @@ describe("utils", () => {
       name: stringCSVRequired(),
       age: numberCSVRequired(),
       description: stringCSVOptional(),
-      leader: validUserCSV(users),
-      assignedTo: validUserCSV(users),
+      leader: validUserCSVRequired(users),
+      assignedTo: validUserCSVRequired(users),
     });
 
   const schema4 = z.object({
@@ -38,7 +38,7 @@ describe("utils", () => {
     description: stringCSVOptional(),
   });
 
-  const schema5 = dueDateStartDateValidationFactory(
+  const schema5 = attachDueDateStartDateRefine(
     z.object({
       name: stringCSVRequired(),
       startDate: dateCSVRequired(),
@@ -52,7 +52,7 @@ describe("utils", () => {
   Doe,30`;
     const result = getRowsAndHeaderFromCSVContent(csv, schema1);
     expect(result.header).toEqual(["name", "age"]);
-    expect(result.rows).toStrictEqual([
+    expect(result.validRows).toStrictEqual([
       { name: "John", age: 20 },
       { name: "Doe", age: 30 },
     ]);
@@ -65,7 +65,7 @@ describe("utils", () => {
   Doe,30`;
     const result = getRowsAndHeaderFromCSVContent(csv, schema1);
     expect(result.header).toEqual(["name"]);
-    expect(result.rows).toStrictEqual([
+    expect(result.validRows).toStrictEqual([
       { name: "John", age: 20 },
       { name: "Doe", age: 30 },
     ]);
@@ -82,7 +82,7 @@ Doe,30
 ,,`;
     const result = getRowsAndHeaderFromCSVContent(csv, schema1);
     expect(result.header).toEqual(["name", "age"]);
-    expect(result.rows).toStrictEqual([
+    expect(result.validRows).toStrictEqual([
       { name: "John", age: 20 },
       { name: "Doe", age: 30 },
     ]);
@@ -98,7 +98,7 @@ Doe,30
   Doe,wewr`;
     const result = getRowsAndHeaderFromCSVContent(csv, schema1);
     expect(result.header).toEqual(["name", "age"]);
-    expect(result.rows).toStrictEqual([
+    expect(result.validRows).toStrictEqual([
       { name: "John", age: 20 },
       { name: "Doe", age: 30 },
     ]);
@@ -114,7 +114,7 @@ Doe,30
   Doe,wewr,TEST`;
     const result = getRowsAndHeaderFromCSVContent(csv, schema1);
     expect(result.header).toEqual(["name", "age"]);
-    expect(result.rows).toStrictEqual([
+    expect(result.validRows).toStrictEqual([
       { name: "John", age: 20 },
       { name: "Doe", age: 30 },
     ]);
@@ -130,7 +130,7 @@ Doe,30
   Bill,30,`;
     const result = getRowsAndHeaderFromCSVContent(csv, schema2);
     expect(result.header).toEqual(["name", "age", "description"]);
-    expect(result.rows).toStrictEqual([
+    expect(result.validRows).toStrictEqual([
       { name: "John", age: 20, description: "Test" },
       { name: "Doe", age: 30, description: "" },
       { name: "Bill", age: 30, description: "" },
@@ -145,7 +145,7 @@ Doe,30
   Bill,30,`;
     const result = getRowsAndHeaderFromCSVContent(csv, schema4);
     expect(result.header).toEqual(["name", "age", "description"]);
-    expect(result.rows).toStrictEqual([
+    expect(result.validRows).toStrictEqual([
       { name: "John", age: 20, description: "Test" },
       { name: "Doe", age: null, description: "Test2" },
       { name: "Bill", age: 30, description: "" },
@@ -169,7 +169,7 @@ Doe,30
       "leader",
       "assignedTo",
     ]);
-    expect(result.rows).toStrictEqual([
+    expect(result.validRows).toStrictEqual([
       {
         name: "John",
         age: 20,
@@ -211,7 +211,7 @@ Doe,30
       "leader",
       "assignedTo",
     ]);
-    expect(result.rows).toStrictEqual([
+    expect(result.validRows).toStrictEqual([
       {
         name: "John",
         age: 20,
@@ -239,7 +239,7 @@ Doe,30
     Bill,2020-01-01,2020-01-02`;
     const result = getRowsAndHeaderFromCSVContent(csv, schema5);
     expect(result.header).toEqual(["name", "startDate", "dueDate"]);
-    expect(result.rows).toStrictEqual([
+    expect(result.validRows).toStrictEqual([
       {
         name: "John",
         startDate: "2020-01-01",
@@ -269,7 +269,7 @@ Doe,30
     Bill,2020-01-03,2020-01-02`;
     const result = getRowsAndHeaderFromCSVContent(csv, schema5);
     expect(result.header).toEqual(["name", "startDate", "dueDate"]);
-    expect(result.rows).toStrictEqual([
+    expect(result.validRows).toStrictEqual([
       {
         name: "John",
         startDate: "2020-01-02",
