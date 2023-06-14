@@ -359,7 +359,15 @@ const Actions: NextPage = () => {
             refetch={actions.refetch}
           />
 
-          <Breadcrumbs sx={{ paddingInline: 2 }}>
+          <Breadcrumbs
+            sx={{
+              paddingInline: 2,
+              opacity:
+                linePlan.data?.productionLine && actionPlan.data?.name
+                  ? 1
+                  : 0.7,
+            }}
+          >
             <Breadcrumbs separator="-" aria-label="breadcrumb">
               <Link color="inherit" href="/lineplan">
                 Line Plan - {linePlan.data?.productionLine}
@@ -459,7 +467,7 @@ const Actions: NextPage = () => {
                       onCompletedClick={markAsCompleted(action.id)}
                       onRejectedClick={markAsRejected(action.id)}
                       status={updateAction.status}
-                      disabled={isAllowedToEdit(action.leader)}
+                      disabled={!isAllowedToEdit(action.leader)}
                     >
                       <StatusCircle status={action.status}>
                         {action.status}

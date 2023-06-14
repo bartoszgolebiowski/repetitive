@@ -16,6 +16,7 @@ const server = z.object({
  */
 const client = z.object({
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string(),
+  NEXT_PUBLIC_AXIOM_INGEST_ENDPOINT: z.string(),
 });
 
 /**
@@ -38,6 +39,8 @@ export const serverEnv = {
 export const clientEnv = {
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+  NEXT_PUBLIC_AXIOM_INGEST_ENDPOINT:
+    process.env.NEXT_PUBLIC_AXIOM_INGEST_ENDPOINT,
 };
 
 /**
@@ -52,6 +55,8 @@ const processEnv = {
   NODE_ENV: process.env.NODE_ENV,
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+  NEXT_PUBLIC_AXIOM_INGEST_ENDPOINT:
+    process.env.NEXT_PUBLIC_AXIOM_INGEST_ENDPOINT,
 };
 
 // Don't touch the part below

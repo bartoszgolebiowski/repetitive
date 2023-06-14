@@ -136,7 +136,7 @@ export const actionRouter = createTRPCRouter({
                     return updatedAction
                 })
 
-                ctx.bus.emit('action:updated', { id: action.id, actionPlanId: action.actionPlanId });
+                ctx.bus.emit('action:updated', { id: input.id, actionPlanId: action.actionPlanId });
                 // todo switch to cron 
                 ctx.bus.emit('action:markExpired', { expiryDate: new Date() });
                 return action;

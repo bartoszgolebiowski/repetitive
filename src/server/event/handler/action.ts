@@ -3,6 +3,7 @@ import { ACTION_STATUS } from "~/utils/schema/action/action";
 import { LINE_PLAN_STATUS } from "~/utils/schema/action/linePlan";
 import { type QB } from '~/server/db';
 import { type IBus } from "../bus";
+import { log } from "next-axiom"
 
 export type ActionEventHandlers = {
     "action:created": (input: { actionPlanId: string }) => Promise<null>;
@@ -54,76 +55,125 @@ interface ILinePlanService {
 class ActionRepository implements IActionRepository {
     constructor(private qb: QB) { }
     async getAllExpiredActions(now: Date) {
-        const actions = await this.qb
-            .selectFrom('Action')
-            .select(['id', 'actionPlanId'])
-            .where('status', '=', ACTION_STATUS.IN_PROGRESS)
-            .where('dueDate', '<', now)
-            .execute()
+        try {
+            const actions = await this.qb
+                .selectFrom('Action')
+                .select(['id', 'actionPlanId'])
+                .where('status', '=', ACTION_STATUS.IN_PROGRESS)
+                .where('dueDate', '<', now)
+                .execute()
 
-        return actions
+            return actions
+        } catch (error) {
+            log.error('Error getting expired actions', {
+                error,
+                now
+            })
+        }
+        return []
     }
     async getAllByActionPlanId(input: { actionPlanId: string }) {
-        const actions = await this.qb
-            .selectFrom('Action')
-            .select(['status'])
-            .where('actionPlanId', '=', input.actionPlanId)
-            .execute()
-        return actions;
+        try {
+            const actions = await this.qb
+                .selectFrom('Action')
+                .select(['status'])
+                .where('actionPlanId', '=', input.actionPlanId)
+                .execute()
+
+            return actions
+        } catch (error) {
+            log.error('Error getting actions by action plan id', {
+                error,
+                input
+            })
+        }
+        return [];
     }
     async updateManyStatus(input: { ids: string[], status: keyof typeof ACTION_STATUS }) {
-        const action = await this.qb
-            .updateTable('Action')
-            .set({
-                status: input.status,
-            })
-            .where('id', 'in', input.ids)
-            .execute()
+        try {
+            const action = await this.qb
+                .updateTable('Action')
+                .set({
+                    status: input.status,
+                })
+                .where('id', 'in', input.ids)
+                .execute()
 
+            return {
+                count: action.length
+            }
+        } catch (error) {
+            log.error('Error updating many actions', {
+                error,
+                input
+            })
+        }
         return {
-            count: action.length
+            count: 0
         }
     }
 }
 class ActionPlanRepository implements IActionPlanRepository {
     constructor(private qb: QB) { }
     async getAllByLinePlanId(input: { linePlanId: string }) {
-        const actions = await this.qb
-            .selectFrom('ActionPlan')
-            .select('status')
-            .where('linePlanId', '=', input.linePlanId)
-            .execute()
+        try {
+            const actions = await this.qb
+                .selectFrom('ActionPlan')
+                .select('status')
+                .where('linePlanId', '=', input.linePlanId)
+                .execute()
 
-        return actions;
+            return actions;
+        } catch (error) {
+            log.error('Error getting actions by line plan id', {
+                error,
+                input
+            })
+        }
+        return [];
     }
     async updateStatus(input: { actionPlanId: string, status: keyof typeof ACTION_PLAN_STATUS }) {
-        const actionPlan = await this.qb
-            .updateTable('ActionPlan')
-            .set({
-                status: input.status,
-            })
-            .where('id', '=', input.actionPlanId)
-            .returning(['id', 'linePlanId'])
-            .executeTakeFirstOrThrow()
+        try {
+            const actionPlan = await this.qb
+                .updateTable('ActionPlan')
+                .set({
+                    status: input.status,
+                })
+                .where('id', '=', input.actionPlanId)
+                .returning(['id', 'linePlanId'])
+                .executeTakeFirstOrThrow()
 
-        return {
-            id: input.actionPlanId,
-            linePlanId: actionPlan.linePlanId,
+            return {
+                id: input.actionPlanId,
+                linePlanId: actionPlan.linePlanId,
+            }
+        } catch (error) {
+            log.error('Error updating action plan status', {
+                error,
+                input
+            })
         }
+        throw new Error('Error updating action plan status')
     }
 }
 
 class LinePlanRepository implements ILinePlanRepository {
     constructor(private qb: QB) { }
     async updateStatus(input: { linePlanId: string, status: keyof typeof LINE_PLAN_STATUS }) {
-        await this.qb
-            .updateTable('LinePlan')
-            .set({
-                status: input.status,
+        try {
+            await this.qb
+                .updateTable('LinePlan')
+                .set({
+                    status: input.status,
+                })
+                .where('id', '=', input.linePlanId)
+                .execute()
+        } catch (error) {
+            log.error('Error updating line plan status', {
+                error,
+                input
             })
-            .where('id', '=', input.linePlanId)
-            .execute()
-
+        }
         return null;
     }
 }
@@ -132,7 +182,6 @@ class ActionService implements IActionService {
     async updateExpiredActionsStatusToDelayed(input: { expiryDate: Date }) {
         const expiredActions = await this.actionRepository.getAllExpiredActions(input.expiryDate);
         if (!expiredActions.length) return []
-
         await this.updateManyStatusesToDelayed({ ids: expiredActions.map(action => action.id) })
         this.bus.emit('notification:actionsDelayed', { ids: expiredActions.map(({ id }) => id) })
         return [...new Set(expiredActions.map(action => action.actionPlanId))]
@@ -150,24 +199,29 @@ class ActionPlanService implements IActionPlanService {
         private actionRepository: IActionRepository,
         private bus: IBus
     ) { }
-    async syncStatusActionPlan(input: { actionPlanId: string }) {
+    async syncStatusActionPlan(input: { actionPlanId: string }, skipEmit = false) {
         const actions = await this.actionRepository.getAllByActionPlanId(input)
+        const atLeastOneAction = actions.length > 0
 
         const isAtLeastOneActionDelay = actions
-            .some(isDelayed)
+            .some(isDelayed) && atLeastOneAction
 
         if (isAtLeastOneActionDelay) {
             const actionPlan = await this.updateStatusToDelayed(input)
-            this.bus.emit('actionPlan:atLeastOneActionDelayed', input)
+            if (!skipEmit) {
+                this.bus.emit('actionPlan:atLeastOneActionDelayed', input)
+            }
             return { linePlanId: actionPlan.linePlanId };
         }
 
-        const isAllActionsCompleted = actions
-            .every(isCompletedOrRejected) && actions.length > 0
+        const isAllActionsCompletedOrRejected = actions
+            .every(isCompletedOrRejected) && atLeastOneAction
 
-        if (isAllActionsCompleted) {
+        if (isAllActionsCompletedOrRejected) {
             const actionPlan = await this.updateStatusToCompleted(input)
-            this.bus.emit('actionPlan:allActionsCompletedOrRejected', input)
+            if (!skipEmit) {
+                this.bus.emit('actionPlan:allActionsCompletedOrRejected', input)
+            }
             return { linePlanId: actionPlan.linePlanId };
         }
 
@@ -201,9 +255,10 @@ class LinePlanService implements ILinePlanService {
     ) { }
     async syncStatusLinePlan(input: { linePlanId: string }) {
         const actionPlans = await this.actionPlanRepository.getAllByLinePlanId(input)
+        const atLeastOneActionPlan = actionPlans.length > 0
 
         const isAtLeastOneDelay = actionPlans
-            .some(isDelayed)
+            .some(isDelayed) && atLeastOneActionPlan
 
         if (isAtLeastOneDelay) {
             await this.updateStatusToDelayed(input)
@@ -211,7 +266,7 @@ class LinePlanService implements ILinePlanService {
         }
 
         const isAllCompletedOrRejected = actionPlans
-            .every(isCompletedOrRejected)
+            .every(isCompletedOrRejected) && atLeastOneActionPlan
 
         if (isAllCompletedOrRejected) {
             await this.updateStatusToCompleted(input)
@@ -271,25 +326,38 @@ export const createHandlersAction = (
 
         return {
             "action:markExpired": async (input) => {
+                log.info('action:markExpired:start', { input })
                 const actionPlanIds = await actionService.updateExpiredActionsStatusToDelayed(input)
                 await Promise.all(actionPlanIds.map((actionPlanId) => actionPlanService.syncStatusActionPlan({ actionPlanId })))
+                log.info('action:markExpired:end', { input })
                 return null
             },
             "actionPlan:atLeastOneActionDelayed": async (input) => {
+                log.info('actionPlan:atLeastOneActionDelayed:start', { input })
                 const { linePlanId } = await actionPlanService.updateStatusToDelayed(input)
-                return linePlanService.updateStatusToDelayed({ linePlanId })
+                await linePlanService.updateStatusToDelayed({ linePlanId })
+                log.info('actionPlan:atLeastOneActionDelayed:end', { input })
+                return null
             },
             "actionPlan:allActionsCompletedOrRejected": async (input) => {
-                const { linePlanId } = await actionPlanService.syncStatusActionPlan(input);
-                return linePlanService.syncStatusLinePlan({ linePlanId })
+                log.info('actionPlan:allActionsCompletedOrRejected:start', { input })
+                const { linePlanId } = await actionPlanService.syncStatusActionPlan(input, true);
+                await linePlanService.syncStatusLinePlan({ linePlanId })
+                log.info('actionPlan:allActionsCompletedOrRejected:end', { input })
+                return null
             },
             "action:created": async (input) => {
+                log.info('action:created:start', { input })
                 const { linePlanId } = await actionPlanService.updateStatusToInProgress(input)
-                return linePlanService.syncStatusLinePlan({ linePlanId })
+                await linePlanService.syncStatusLinePlan({ linePlanId })
+                log.info('action:created:end', { input })
+                return null
             },
             "action:updated": async ({ actionPlanId, id }) => {
+                log.info('action:updated:start', { input: { actionPlanId, id } })
                 bus.emit('notification:actionUpdate', { id })
                 await actionPlanService.syncStatusActionPlan({ actionPlanId });
+                log.info('action:updated:end', { input: { actionPlanId, id } })
                 return null
             }
         }

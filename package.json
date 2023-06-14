@@ -29,9 +29,11 @@
     "date-fns": "^2.30.0",
     "kysely": "^0.25.0",
     "next": "^13.4.4",
+    "next-axiom": "^0.17.0",
     "pg": "^8.11.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-dropzone": "^14.2.3",
     "superjson": "1.9.1",
     "zod": "^3.20.6"
   },

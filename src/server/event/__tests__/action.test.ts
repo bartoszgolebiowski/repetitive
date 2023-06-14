@@ -388,6 +388,65 @@ describe('action event handler', () => {
                 status: LINE_PLAN_STATUS.DELAYED
             })
         })
+
+        it("should not emit 'actionPlan:atLeastOneActionDelayed', when at least one action is delayed, bug with infinit loop", async () => {
+            actionRepository.getAllByActionPlanId.mockResolvedValue([
+                { status: ACTION_STATUS.IN_PROGRESS },
+                { status: ACTION_STATUS.COMPLETED },
+                { status: ACTION_STATUS.DELAYED },
+                { status: ACTION_STATUS.IN_PROGRESS },
+            ])
+            actionPlanRepository.updateStatus.mockResolvedValue({
+                id: 'actionPlanId',
+                linePlanId: 'linePlanId'
+            })
+            const input = {
+                actionPlanId: 'actionPlanId',
+            }
+            const result = await eventHandler["actionPlan:atLeastOneActionDelayed"](input)
+            expect(result).toBe(null)
+            expect(bus.emit).not.toBeCalledWith('actionPlan:atLeastOneActionDelayed', input)
+            expect(actionPlanRepository.updateStatus).toBeCalledWith({
+                actionPlanId: 'actionPlanId',
+                status: ACTION_PLAN_STATUS.DELAYED
+            })
+            expect(linePlanRepository.updateStatus).toBeCalledWith({
+                linePlanId: 'linePlanId',
+                status: LINE_PLAN_STATUS.DELAYED
+            })
+        })
+
+        it("should not emit 'actionPlan:allActionsCompletedOrRejected', when all actions are completed or rejected, bug with infinit loop", async () => {
+            const actions = [{ status: ACTION_STATUS.COMPLETED }]
+            const actionPlans = [
+                { status: ACTION_PLAN_STATUS.COMPLETED },
+                { status: ACTION_PLAN_STATUS.COMPLETED },
+                { status: ACTION_PLAN_STATUS.IN_PROGRESS },
+                { status: ACTION_PLAN_STATUS.REJECTED },
+            ]
+            actionRepository.getAllByActionPlanId.mockResolvedValue(actions)
+            actionPlanRepository.getAllByLinePlanId.mockResolvedValue(actionPlans)
+            actionPlanRepository.updateStatus.mockResolvedValue({
+                id: 'actionPlanId',
+                linePlanId: 'linePlanId'
+            })
+            const input = {
+                actionPlanId: 'actionPlanId',
+            }
+
+            const result = await eventHandler["actionPlan:allActionsCompletedOrRejected"](input)
+
+            expect(result).toBe(null)
+            expect(bus.emit).not.toBeCalledWith('actionPlan:allActionsCompletedOrRejected', input)
+            expect(actionPlanRepository.updateStatus).toBeCalledWith({
+                actionPlanId: 'actionPlanId',
+                status: ACTION_PLAN_STATUS.COMPLETED
+            })
+            expect(linePlanRepository.updateStatus).toBeCalledWith({
+                linePlanId: 'linePlanId',
+                status: LINE_PLAN_STATUS.IN_PROGRESS
+            })
+        })
     })
 
     describe('action:markExpired', () => {
@@ -399,7 +458,7 @@ describe('action event handler', () => {
             }
             const result = await eventHandler["action:markExpired"](input)
             expect(result).toBe(null)
-            
+
             expect(actionRepository.getAllExpiredActions).toBeCalled()
             expect(actionRepository.updateManyStatus).not.toBeCalled()
             expect(actionPlanRepository.updateStatus).not.toBeCalled()
