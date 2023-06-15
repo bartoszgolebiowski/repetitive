@@ -57,7 +57,7 @@ const DropzoneImport = <T extends z.ZodType>(props: Props<T>) => {
         },
       }}
     >
-      <input {...getInputProps()} />
+      <input {...getInputProps()} data-testid="upload-input" />
       <p>Drop CSV file here</p>
       <div>
         <UploadFileIcon sx={{ fontSize: "4rem" }} />

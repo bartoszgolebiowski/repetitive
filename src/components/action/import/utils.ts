@@ -186,3 +186,62 @@ export const getRowsAndHeaderFromCSVFile = async <T extends z.ZodType>(csv: File
     const csvContent = await getCSVContent(csv);
     return getRowsAndHeaderFromCSVContent(csvContent, schema)
 }
+
+const isValidRow = (validRows: unknown[], row: unknown) => {
+    return validRows.some(
+        (validRow) =>
+            JSON.stringify(validRow) ===
+            JSON.stringify(row)
+    )
+}
+
+const isValidCell = (
+    errors: Record<string, string>,
+    field: string,
+    currentRow: number
+) => {
+    return !Object.entries(errors).some(
+        ([rowNumber, error]) =>
+            Number(rowNumber) === currentRow && error.includes(field)
+    );
+}
+export const sxRow = (validRows: unknown[], row: unknown) => {
+    return {
+        backgroundColor: isValidRow(validRows, row) ? "green" : "initial",
+    };
+};
+
+export const rowId = (
+    validRows: unknown[],
+    row: unknown,
+    currentRow: number
+) => {
+    return `row-${currentRow}-${isValidRow(
+        validRows,
+        row
+    ) ? "valid" : "invalid"}`
+}
+
+export const sxCell = (
+    errors: Record<string, string>,
+    field: string,
+    currentRow: number
+) => {
+    return {
+        backgroundColor: isValidCell(errors, field, currentRow)
+            ? "initial"
+            : "green",
+    };
+};
+
+export const cellId = (
+    errors: Record<string, string>,
+    field: string,
+    currentRow: number
+) => {
+    return `cell-${field}-${isValidCell(
+        errors,
+        field,
+        currentRow
+    ) ? "valid" : "invalid"}`
+}
