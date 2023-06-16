@@ -2,7 +2,7 @@ import {
     createTRPCRouter,
     protectedProcedure,
 } from "~/server/api/trpc";
-import { LINE_PLAN_STATUS, linePlanFilterSchema, linePlanItemCreateSchema, linePlanItemEditSchema } from "~/utils/schema/action/linePlan";
+import { LINE_PLAN_STATUS, linePlanFilterSchema, linePlanImportSchema, linePlanItemCreateSchema, linePlanItemEditSchema } from "~/utils/schema/action/linePlan";
 import { handleErrorRouter } from "~/utils/httpErrors";
 import { extractUserEmailOrId } from "~/utils/user";
 import { byIdSchema } from "~/utils/schema/general";
@@ -105,4 +105,26 @@ export const linePlanRouter = createTRPCRouter({
                 handleErrorRouter(error)
             }
         }),
+    import: protectedProcedure
+        .input(linePlanImportSchema)
+        .mutation(async ({ ctx, input }) => {
+            try {
+                const linePlans = await ctx.qb
+                    .insertInto("LinePlan")
+                    .values(input.map((item) => ({
+                        ...item,
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                        createdBy: extractUserEmailOrId(ctx.auth),
+                        updatedBy: extractUserEmailOrId(ctx.auth),
+                        status: LINE_PLAN_STATUS.COMPLETED,
+                    })))
+                    .execute()
+
+                return linePlans;
+            }
+            catch (error) {
+                handleErrorRouter(error)
+            }
+        })
 });

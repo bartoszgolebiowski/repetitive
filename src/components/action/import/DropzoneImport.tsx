@@ -7,6 +7,10 @@ import type { z } from "zod";
 import { getRowsAndHeaderFromCSVFile } from "./utils";
 import { log } from "next-axiom";
 
+export type OnInputInput<T extends z.ZodType> = Parameters<
+  React.ComponentProps<typeof DropzoneImport<T>>["onLoad"]
+>[0];
+
 type Props<T extends z.ZodType> = {
   schema: T;
   onLoad: (

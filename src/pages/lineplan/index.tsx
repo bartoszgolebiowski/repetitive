@@ -16,7 +16,10 @@ import React from "react";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import MenuItem from "@mui/material/MenuItem";
-import { LINE_PLAN_STATUS } from "~/utils/schema/action/linePlan";
+import {
+  LINE_PLAN_STATUS,
+  linePlanCSVItemSchemaFactory,
+} from "~/utils/schema/action/linePlan";
 import {
   FormControl,
   FormLabel,
@@ -35,8 +38,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import StatusCircle from "~/components/action/table/action/StatusCircle";
 import { DatePicker } from "@mui/x-date-pickers";
 import Import from "~/components/action/import/Import";
-import { z } from "zod";
-import { stringCSVRequired, dateCSVRequired } from "~/components/action/import/utils";
+import { type OnInputInput } from "~/components/action/import/DropzoneImport";
 
 const convertQueryToFilters = (): Omit<
   Parameters<typeof api.linePlan.getByFilters.useQuery>[0],
@@ -124,6 +126,30 @@ const LinePlan: NextPage = () => {
       enabled: !!organization?.id,
     }
   );
+
+  const emails =
+    membershipList?.map((member) => member.publicUserData.identifier) ?? [];
+  const atLeastOneEmail = emails.length > 0;
+  const schema = linePlanCSVItemSchemaFactory(emails);
+
+  const importCSV = api.linePlan.import.useMutation({
+    onSuccess: async () => {
+      await linePlans.refetch();
+    },
+  });
+
+  const handleImport = (csv: OnInputInput<typeof schema>) => {
+    const formatDate = (dateString: string) =>
+      new Date(`${dateString}T00:00:00.000Z`);
+
+    const validRows = csv.validRows.map((row) => ({
+      ...row,
+      dueDate: formatDate(row.dueDate),
+      organizationId: organization?.id ?? "",
+    }));
+
+    return importCSV.mutateAsync(validRows);
+  };
 
   return (
     <>
@@ -221,21 +247,17 @@ const LinePlan: NextPage = () => {
             flexDirection: "row",
             alignItems: "center",
             marginBlock: "2rem",
+            gap: 1,
           }}
         >
-          <LinePlanForm
-            organizationId={organization?.id ?? ""}
-            refetch={linePlans.refetch}
-          />
-          <Import
-            onImport={() => {}}
-            refetch={() => {}}
-            schema={z.object({
-              productionLine: stringCSVRequired(),
-              assignedTo: stringCSVRequired(),
-              dueDate: dateCSVRequired(),
-            })}
-          />
+          <LinePlanForm organizationId={organization?.id ?? ""} />
+          {!atLeastOneEmail ? (
+            <Import
+              onImport={handleImport}
+              schema={schema}
+              status={importCSV.status}
+            />
+          ) : null}
         </Box>
         {linePlans.data && (
           <TableContainer component={Paper}>

@@ -45,6 +45,7 @@ const CommentCell = (props: React.PropsWithChildren<Props>) => {
     `By: ${comment.createdBy}`;
   const date = (comment: (typeof comments)[number]) =>
     `Date: ${displayDateFull(comment.createdAt)}`;
+
   return (
     <>
       <TableCell>

@@ -3,7 +3,7 @@ import {
     protectedProcedure,
 } from "~/server/api/trpc";
 import { handleErrorRouter } from "~/utils/httpErrors";
-import { actionEditItemSchema, actionFilterSchema, actionItemSchema } from "~/utils/schema/action/action";
+import { actionItemEditSchema, actionFilterSchema, actionItemCreateSchema, actionImportSchema, ACTION_STATUS } from "~/utils/schema/action/action";
 import { extractUserEmailOrId } from "~/utils/user";
 
 export const actionRouter = createTRPCRouter({
@@ -53,7 +53,7 @@ export const actionRouter = createTRPCRouter({
             }
         }),
     create: protectedProcedure
-        .input(actionItemSchema)
+        .input(actionItemCreateSchema)
         .mutation(async ({ ctx, input }) => {
             const { comment, ...rest } = input;
             try {
@@ -66,6 +66,7 @@ export const actionRouter = createTRPCRouter({
                             createdAt: new Date(),
                             createdBy: extractUserEmailOrId(ctx.auth),
                             updatedBy: extractUserEmailOrId(ctx.auth),
+                            status: ACTION_STATUS.IN_PROGRESS
                         })
                         .returningAll()
                         .executeTakeFirstOrThrow();
@@ -96,7 +97,7 @@ export const actionRouter = createTRPCRouter({
             }
         }),
     update: protectedProcedure
-        .input(actionEditItemSchema)
+        .input(actionItemEditSchema)
         .mutation(async ({ ctx, input }) => {
             const { comment, ...rest } = input;
 
@@ -145,4 +146,27 @@ export const actionRouter = createTRPCRouter({
                 handleErrorRouter(error)
             }
         }),
+    import: protectedProcedure
+        .input(actionImportSchema)
+        .mutation(async ({ ctx, input }) => {
+            try {
+                const actions = await ctx.qb
+                    .insertInto("Action")
+                    .values(input.map((item) => ({
+                        ...item,
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                        createdBy: extractUserEmailOrId(ctx.auth),
+                        updatedBy: extractUserEmailOrId(ctx.auth),
+                        status: ACTION_STATUS.IN_PROGRESS,
+                    })))
+                    .returning('id')
+                    .execute()
+
+                return actions;
+            }
+            catch (error) {
+                handleErrorRouter(error)
+            }
+        })
 });

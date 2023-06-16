@@ -29,13 +29,18 @@ import {
 } from "@mui/material";
 import { displayDate, displayDateFull } from "~/utils/date";
 import { useRouter } from "next/router";
-import { ACTION_PLAN_STATUS } from "~/utils/schema/action/actionPlan";
+import {
+  ACTION_PLAN_STATUS,
+  actionPlanCSVItemSchemaFactory,
+} from "~/utils/schema/action/actionPlan";
 import ActionPlanForm from "~/components/action/create/ActionPlanForm";
 import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
 import { useOrganization } from "@clerk/nextjs";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import StatusCircle from "~/components/action/table/action/StatusCircle";
 import { DatePicker } from "@mui/x-date-pickers";
+import { type OnInputInput } from "~/components/action/import/DropzoneImport";
+import Import from "~/components/action/import/Import";
 
 const convertQueryToFilters = (): Omit<
   Parameters<typeof api.actionPlan.getByFilters.useQuery>[0],
@@ -120,6 +125,34 @@ const ActionPlan: NextPage = () => {
       enabled: !!linePlanId,
     }
   );
+
+  const utils = api.useContext();
+  const emails =
+    membershipList?.map((member) => member.publicUserData.identifier) ?? [];
+  const atLeastOneEmail = emails.length > 0;
+  const schema = actionPlanCSVItemSchemaFactory(emails);
+
+  const importCSV = api.actionPlan.import.useMutation({
+    onSuccess: async () => {
+      await Promise.all([
+        utils.actionPlan.getByFilters.invalidate(),
+        utils.linePlan.getByFilters.invalidate(),
+      ]);
+    },
+  });
+
+  const handleImport = (csv: OnInputInput<typeof schema>) => {
+    const formatDate = (dateString: string) =>
+      new Date(`${dateString}T00:00:00.000Z`);
+
+    const validRows = csv.validRows.map((row) => ({
+      ...row,
+      dueDate: formatDate(row.dueDate),
+      linePlanId: linePlanId as string,
+    }));
+
+    return importCSV.mutateAsync(validRows);
+  };
 
   return (
     <>
@@ -206,12 +239,17 @@ const ActionPlan: NextPage = () => {
             flexDirection: "row",
             alignItems: "center",
             marginBlock: "2rem",
+            gap: 1,
           }}
         >
-          <ActionPlanForm
-            linePlanId={linePlanId as string}
-            refetch={actionPlans.refetch}
-          />
+          <ActionPlanForm linePlanId={linePlanId as string} />
+          {atLeastOneEmail ? (
+            <Import
+              onImport={handleImport}
+              schema={schema}
+              status={importCSV.status}
+            />
+          ) : null}
           <Breadcrumbs sx={{ paddingInline: "1rem" }}>
             <Breadcrumbs separator="-" aria-label="breadcrumb">
               <Link color="inherit" href="/lineplan">

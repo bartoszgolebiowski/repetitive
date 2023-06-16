@@ -11,7 +11,6 @@ import { DatePicker } from "@mui/x-date-pickers";
 
 type Props = {
   organizationId?: string;
-  refetch: () => Promise<unknown>;
 };
 
 const useForm = (organizationId?: string) => {
@@ -73,17 +72,17 @@ const isValid = (data: ReturnType<typeof useForm>["values"]) => {
 };
 
 const LinePlanForm = (props: Props) => {
-  const { organizationId, refetch } = props;
+  const { organizationId } = props;
   const ref = React.useRef<HTMLDivElement>(null);
   const [open, setOpen] = React.useState(false);
+  const utils = api.useContext();
   const { values, assignee, productionLine, dueDate } = useForm(organizationId);
   const { membershipList } = useOrganization({
     membershipList: { limit: ORGANIZATION_MEMBERSHIP_LIMIT },
   });
-
   const createLinePlan = api.linePlan.create.useMutation({
     onSuccess: async () => {
-      await refetch();
+      await utils.linePlan.getByFilters.invalidate();
     },
   });
 

@@ -30,7 +30,11 @@ import {
 } from "@mui/material";
 import { displayDate, displayDateFull } from "~/utils/date";
 import { useRouter } from "next/router";
-import { ACTION_PRIORITY, ACTION_STATUS } from "~/utils/schema/action/action";
+import {
+  ACTION_PRIORITY,
+  ACTION_STATUS,
+  actionCSVItemSchemaFactory,
+} from "~/utils/schema/action/action";
 import ActionForm from "~/components/action/create/ActionForm";
 import { useOrganization, useUser } from "@clerk/nextjs";
 import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
@@ -41,6 +45,8 @@ import StatusCircle from "~/components/action/table/action/StatusCircle";
 import EditActionCell from "~/components/action/table/action/EditActionCell";
 import CommentList from "~/components/action/table/action/CommentList";
 import { DatePicker } from "@mui/x-date-pickers";
+import { type OnInputInput } from "~/components/action/import/DropzoneImport";
+import Import from "~/components/action/import/Import";
 
 const convertQueryToFilters = (): Omit<
   Parameters<typeof api.action.getByFilters.useQuery>[0]["filters"],
@@ -117,7 +123,7 @@ const useDates = () => {
   const handleStartDateChange = (date: Date | null) => {
     setStartDate(date);
   };
-  
+
   const handleDueDateChange = (date: Date | null) => {
     setDueDate(date);
   };
@@ -205,6 +211,37 @@ const Actions: NextPage = () => {
     userEmailAdresses
       .map(({ emailAddress }) => emailAddress.trim())
       .includes(leader.trim());
+
+  const utils = api.useContext();
+  const emails =
+    membershipList?.map((member) => member.publicUserData.identifier) ?? [];
+  const atLeastOneEmail = emails.length > 0;
+  const schema = actionCSVItemSchemaFactory(emails);
+
+  const importCSV = api.action.import.useMutation({
+    onSuccess: async () => {
+      await Promise.all([
+        utils.actionPlan.getByFilters.invalidate(),
+        utils.linePlan.getByFilters.invalidate(),
+        utils.action.getByFilters.invalidate(),
+      ]);
+    },
+  });
+
+  const handleImport = (csv: OnInputInput<typeof schema>) => {
+    const formatDate = (dateString: string) =>
+      new Date(`${dateString}T00:00:00.000Z`);
+
+    const validRows = csv.validRows.map((row) => ({
+      ...row,
+      dueDate: formatDate(row.dueDate),
+      startDate: formatDate(row.startDate),
+      actionPlanId: actionPlanId as string,
+      priority: row.priority as keyof typeof ACTION_PRIORITY,
+    }));
+
+    return importCSV.mutateAsync(validRows);
+  };
 
   return (
     <>
@@ -351,14 +388,20 @@ const Actions: NextPage = () => {
             flexDirection: "row",
             alignItems: "center",
             marginBlock: "2rem",
+            gap: 1,
           }}
         >
           <ActionForm
             actionPlanId={actionPlanId as string}
             linePlanId={linePlanId as string}
-            refetch={actions.refetch}
           />
-
+          {atLeastOneEmail ? (
+            <Import
+              onImport={handleImport}
+              schema={schema}
+              status={importCSV.status}
+            />
+          ) : null}
           <Breadcrumbs
             sx={{
               paddingInline: 2,

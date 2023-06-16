@@ -53,7 +53,6 @@ export type LinePlan = {
   assignedTo: string;
   dueDate: Timestamp;
   status: Status;
-  comment: string;
 };
 export type Notification = {
   id: Generated<string>;

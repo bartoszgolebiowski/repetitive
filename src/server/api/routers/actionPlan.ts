@@ -4,7 +4,7 @@ import {
     protectedProcedure,
 } from "~/server/api/trpc";
 import { handleErrorRouter } from "~/utils/httpErrors";
-import { ACTION_PLAN_STATUS, actionPlanCreateSchema, actionPlanEditSchema, actionPlanFilterSchema } from "~/utils/schema/action/actionPlan";
+import { ACTION_PLAN_STATUS, actionPlanCreateSchema, actionPlanEditSchema, actionPlanFilterSchema, actionPlanImportSchema } from "~/utils/schema/action/actionPlan";
 import { byIdSchema } from "~/utils/schema/general";
 import { extractUserEmailOrId } from "~/utils/user";
 
@@ -102,4 +102,26 @@ export const actionPlanRouter = createTRPCRouter({
                 handleErrorRouter(error)
             }
         }),
+    import: protectedProcedure
+        .input(actionPlanImportSchema)
+        .mutation(async ({ ctx, input }) => {
+            try {
+                const actionPlans = await ctx.qb
+                    .insertInto("ActionPlan")
+                    .values(input.map((item) => ({
+                        ...item,
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                        createdBy: extractUserEmailOrId(ctx.auth),
+                        updatedBy: extractUserEmailOrId(ctx.auth),
+                        status: ACTION_PLAN_STATUS.COMPLETED,
+                    })))
+                    .execute()
+
+                return actionPlans;
+            }
+            catch (error) {
+                handleErrorRouter(error)
+            }
+        })
 });

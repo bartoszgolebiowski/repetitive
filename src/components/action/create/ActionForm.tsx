@@ -19,7 +19,7 @@ import TextFieldAutoFocus from "~/components/TextFieldAutoFocus";
 import { api } from "~/utils/api";
 import {
   ACTION_PRIORITY,
-  actionItemSchema,
+  actionItemCreateSchema,
 } from "~/utils/schema/action/action";
 import { ACTION_STATUS } from "~/utils/schema/action/action";
 import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
@@ -27,7 +27,6 @@ import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
 type Props = {
   linePlanId?: string;
   actionPlanId?: string;
-  refetch: () => Promise<unknown>;
 };
 
 const useForm = (actionPlanId: string | undefined) => {
@@ -135,7 +134,7 @@ const useDates = () => {
 };
 
 const isValid = (data: ReturnType<typeof useForm>["values"]) => {
-  const result = actionItemSchema.safeParse({
+  const result = actionItemCreateSchema.safeParse({
     ...data,
     status: ACTION_STATUS.IN_PROGRESS,
   });
@@ -143,7 +142,7 @@ const isValid = (data: ReturnType<typeof useForm>["values"]) => {
 };
 
 const ActionForm = (props: Props) => {
-  const { actionPlanId, refetch } = props;
+  const { actionPlanId } = props;
   const ref = React.useRef<HTMLDivElement>(null);
   const [open, setOpen] = React.useState(false);
   const {
@@ -160,10 +159,14 @@ const ActionForm = (props: Props) => {
   const { membershipList } = useOrganization({
     membershipList: { limit: ORGANIZATION_MEMBERSHIP_LIMIT },
   });
-
+  const utils = api.useContext();
   const createAction = api.action.create.useMutation({
     onSuccess: async () => {
-      await refetch();
+      await Promise.all([
+        utils.actionPlan.getByFilters.invalidate(),
+        utils.linePlan.getByFilters.invalidate(),
+        utils.action.getByFilters.invalidate(),
+      ]);
     },
   });
 
@@ -171,9 +174,8 @@ const ActionForm = (props: Props) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const result = actionItemSchema.safeParse({
+    const result = actionItemCreateSchema.safeParse({
       ...values,
-      status: ACTION_STATUS.IN_PROGRESS,
     });
 
     if (result.success) {

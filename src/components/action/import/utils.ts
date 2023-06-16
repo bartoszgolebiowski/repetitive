@@ -9,7 +9,8 @@ export const numberCSVRequired = () => numericString(z.number())
 export const numberCSVOptional = () => numericString(z.number().nullable());
 export const stringCSVRequired = () => z.string().nonempty();
 export const stringCSVOptional = () => z.string().default("");
-export const validUserCSV = (validUsers: string[]) => z.string().refine((u) => validUsers.includes(u))
+export const validUserCSVRequired = (validUsers: string[]) => z.string().refine((u) => validUsers.includes(u))
+export const validEnumRequired = (validUsers: string[]) => z.string().refine((u) => validUsers.includes(u))
 export const dateCSVRequired = () => z.string().regex(dateRegex)
 
 export const attachDueDateStartDateRefine = (schema: z.ZodObject<{

@@ -20,7 +20,7 @@ import FormCard from "~/components/FormCard";
 import FormTitle from "~/components/FormTitle";
 import {
   ACTION_PRIORITY,
-  actionEditItemSchema,
+  actionItemEditSchema,
 } from "~/utils/schema/action/action";
 import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
 import EditIcon from "@mui/icons-material/Edit";
@@ -30,13 +30,13 @@ import { iconButtonSx } from "~/components/utils";
 import { DatePicker } from "@mui/x-date-pickers";
 
 type Props = {
-  defaultValues: z.infer<typeof actionEditItemSchema>;
+  defaultValues: z.infer<typeof actionItemEditSchema>;
   status: "error" | "success" | "loading" | "idle";
   disabled: boolean;
-  onSubmit: (data: z.infer<typeof actionEditItemSchema>) => void;
+  onSubmit: (data: z.infer<typeof actionItemEditSchema>) => void;
 };
 
-const useForm = (defaultValues: z.infer<typeof actionEditItemSchema>) => {
+const useForm = (defaultValues: z.infer<typeof actionItemEditSchema>) => {
   const { dueDate, startDate } = useDates(defaultValues);
   const [priority, setPriority] = React.useState<keyof typeof ACTION_PRIORITY>(
     defaultValues.priority ?? ACTION_PRIORITY.LOW
@@ -112,7 +112,7 @@ const useForm = (defaultValues: z.infer<typeof actionEditItemSchema>) => {
   };
 };
 
-const useDates = (defaultValues: z.infer<typeof actionEditItemSchema>) => {
+const useDates = (defaultValues: z.infer<typeof actionItemEditSchema>) => {
   const [startDate, setStartDate] = React.useState<Date | null>(
     defaultValues.dueDate ?? null
   );
@@ -150,7 +150,7 @@ const useDates = (defaultValues: z.infer<typeof actionEditItemSchema>) => {
 };
 
 const isValid = (data: ReturnType<typeof useForm>["values"]) => {
-  const result = actionEditItemSchema.safeParse({
+  const result = actionItemEditSchema.safeParse({
     ...data,
   });
   return result.success;
@@ -179,7 +179,7 @@ const EditActionCell = (props: Props) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const result = actionEditItemSchema.safeParse(values);
+    const result = actionItemEditSchema.safeParse(values);
 
     if (result.success) {
       onSubmit(result.data);

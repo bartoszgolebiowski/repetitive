@@ -12,7 +12,6 @@ import { ORGANIZATION_MEMBERSHIP_LIMIT } from "~/utils/user";
 
 type Props = {
   linePlanId?: string;
-  refetch: () => Promise<unknown>;
 };
 
 const useForm = (linePlanId?: string) => {
@@ -80,18 +79,21 @@ const isValid = (data: ReturnType<typeof useForm>["values"]) => {
 };
 
 const ActionPlanForm = (props: Props) => {
-  const { linePlanId, refetch } = props;
+  const { linePlanId } = props;
   const ref = React.useRef<HTMLDivElement>(null);
   const [open, setOpen] = React.useState(false);
   const { values, assignee, name, description, dueDate } = useForm(linePlanId);
-
+  const utils = api.useContext();
   const { membershipList } = useOrganization({
     membershipList: { limit: ORGANIZATION_MEMBERSHIP_LIMIT },
   });
 
   const createLinePlan = api.actionPlan.create.useMutation({
     onSuccess: async () => {
-      await refetch();
+      await Promise.all([
+        utils.actionPlan.getByFilters.invalidate(),
+        utils.linePlan.getByFilters.invalidate(),
+      ]);
     },
   });
 

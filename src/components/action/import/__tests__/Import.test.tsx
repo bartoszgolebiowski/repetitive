@@ -10,7 +10,6 @@ const schema = z.object({
 });
 
 const onImport = vi.fn();
-const refetch = vi.fn();
 
 describe("Import", () => {
   afterEach(() => {
@@ -21,7 +20,6 @@ describe("Import", () => {
     render(
       <Import
         onImport={onImport}
-        refetch={refetch}
         schema={schema}
         status="idle"
       />
@@ -33,7 +31,6 @@ describe("Import", () => {
     render(
       <Import
         onImport={onImport}
-        refetch={refetch}
         schema={schema}
         status="idle"
       />
@@ -50,7 +47,6 @@ describe("Import", () => {
     render(
       <Import
         onImport={onImport}
-        refetch={refetch}
         schema={schema}
         status="idle"
       />
@@ -68,7 +64,6 @@ describe("Import", () => {
     const { getByTestId } = render(
       <Import
         onImport={onImport}
-        refetch={refetch}
         schema={schema}
         status="idle"
       />
@@ -92,10 +87,9 @@ describe("Import", () => {
   });
 
   it("should display error message when csv file is not valid", async () => {
-   render(
+    render(
       <Import
         onImport={onImport}
-        refetch={refetch}
         schema={schema}
         status="idle"
       />

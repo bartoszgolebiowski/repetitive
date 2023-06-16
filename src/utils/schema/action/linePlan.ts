@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { byIdSchema, organizationSchema } from "../general";
+import { stringCSVRequired, dateCSVRequired, validUserCSVRequired } from "~/components/action/import/utils";
 
 export const LINE_PLAN_STATUS = {
     IN_PROGRESS: 'IN_PROGRESS',
@@ -33,3 +34,18 @@ export const linePlanFilterSchema = organizationSchema.merge(z.object({
         LINE_PLAN_STATUS.REJECTED,
     ])),
 }))
+
+export const linePlanCSVItemSchemaFactory = (users: string[]) => z.object({
+    productionLine: stringCSVRequired(),
+    assignedTo: validUserCSVRequired(users),
+    dueDate: dateCSVRequired(),
+})
+
+export const linePlanImportSchema = z.array(
+    z.object({
+        organizationId: z.string(),
+        productionLine: z.string(),
+        assignedTo: z.string(),
+        dueDate: z.date(),
+    })
+)
