@@ -231,7 +231,7 @@ export const sxCell = (
     return {
         backgroundColor: isValidCell(errors, field, currentRow)
             ? "initial"
-            : "green",
+            : "red",
     };
 };
 

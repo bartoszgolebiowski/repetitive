@@ -56,7 +56,10 @@ const Import = <T extends z.ZodTypeAny>(props: Props<T>) => {
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
 
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    setCSV(null);
+  };
   const handleOpen = () => setOpen(true);
   const handleLoad = setCSV;
 
@@ -84,12 +87,7 @@ const Import = <T extends z.ZodTypeAny>(props: Props<T>) => {
         Import
       </Button>
       <Modal open={open} onClose={handleClose}>
-        <FormCard
-          key={String(open)}
-          size="large"
-          ref={ref}
-          sx={{ orverflowY: "scroll" }}
-        >
+        <FormCard size="xLarge" ref={ref} sx={{ orverflowY: "scroll" }}>
           {/*eslint-disable-next-line @typescript-eslint/no-misused-promises */}
           <form onSubmit={handleSubmit}>
             <FormTitle>Import</FormTitle>
@@ -148,28 +146,29 @@ const Import = <T extends z.ZodTypeAny>(props: Props<T>) => {
                   </Grid2>
                 </>
               ) : null}
-            </Grid2>
-            <Grid2 xs={6}>
-              <Button
-                fullWidth
-                variant="contained"
-                color="secondary"
-                onClick={handleClose}
-                disabled={status === "loading"}
-              >
-                Close
-              </Button>
-            </Grid2>
-            <Grid2 xs={6}>
-              <Button
-                fullWidth
-                variant="contained"
-                color="primary"
-                type="submit"
-                disabled={status === "loading" || noRowsValid}
-              >
-                Submit
-              </Button>
+
+              <Grid2 xs={6}>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  color="secondary"
+                  onClick={handleClose}
+                  disabled={status === "loading"}
+                >
+                  Close
+                </Button>
+              </Grid2>
+              <Grid2 xs={6}>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  type="submit"
+                  disabled={status === "loading" || noRowsValid}
+                >
+                  Submit
+                </Button>
+              </Grid2>
             </Grid2>
           </form>
         </FormCard>

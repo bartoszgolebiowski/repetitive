@@ -2,13 +2,14 @@ import Card from "@mui/material/Card";
 import React, { forwardRef } from "react";
 
 type Props = React.ComponentProps<typeof Card> & {
-  size?: "small" | "medium" | "large";
+  size?: keyof typeof MAX_WIDTHS;
 };
 
 const MAX_WIDTHS = {
   small: "20rem",
   medium: "30rem",
   large: "40rem",
+  xLarge: "60rem",
 } as const;
 
 const FormCard = forwardRef(

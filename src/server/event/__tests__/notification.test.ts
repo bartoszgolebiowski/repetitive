@@ -11,7 +11,7 @@ import { createHandlersNotification } from '../handler/notification';
 import { type IBus } from '../bus';
 import { NOTIFICATION_CAUSE } from '~/utils/schema/action/notification';
 
-describe('nitifaction event handler', () => {
+describe('notifaction event handler', () => {
     const bus: IBus = mockDeep<IBus>()
     const notificationRepository = mockDeep<Parameters<typeof createHandlersNotification>[0]>()
     const actionRepository = mockDeep<Parameters<typeof createHandlersNotification>[1]>()

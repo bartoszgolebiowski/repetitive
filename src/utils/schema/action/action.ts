@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { byIdSchema } from "../general";
-import { dateCSVRequired, stringCSVOptional, stringCSVRequired, validEnumRequired, validUserCSVRequired } from "~/components/action/import/utils";
+import { attachDueDateStartDateRefine, dateCSVRequired, stringCSVOptional, stringCSVRequired, validEnumRequired, validUserCSVRequired } from "~/components/action/import/utils";
 
 export const ACTION_STATUS = {
     IN_PROGRESS: 'IN_PROGRESS',
@@ -73,20 +73,20 @@ export const actionFilterSchema = z.object({
     }),
 })
 
-export const actionCSVItemSchemaFactory = (users: string[]) => z.object({
-    name: stringCSVRequired(),
-    description: stringCSVRequired(),
-    assignedTo: validUserCSVRequired(users),
-    leader: validUserCSVRequired(users),
-    startDate: dateCSVRequired(),
-    dueDate: dateCSVRequired(),
-    priority: validEnumRequired([
-        ACTION_PRIORITY.LOW,
-        ACTION_PRIORITY.MEDIUM,
-        ACTION_PRIORITY.HIGH,
-    ]),
-    comment: stringCSVOptional()
-})
+export const actionCSVItemSchemaFactory = (users: string[]) => attachDueDateStartDateRefine(
+    z.object({
+        name: stringCSVRequired(),
+        description: stringCSVRequired(),
+        assignedTo: validUserCSVRequired(users),
+        leader: validUserCSVRequired(users),
+        startDate: dateCSVRequired(),
+        dueDate: dateCSVRequired(),
+        priority: validEnumRequired([
+            ACTION_PRIORITY.LOW,
+            ACTION_PRIORITY.MEDIUM,
+            ACTION_PRIORITY.HIGH,
+        ]),
+    }))
 
 export const actionImportSchema = z.array(
     z.object({
@@ -102,6 +102,5 @@ export const actionImportSchema = z.array(
             ACTION_PRIORITY.MEDIUM,
             ACTION_PRIORITY.HIGH,
         ]),
-        comment: z.string().optional().default(''),
     })
 )

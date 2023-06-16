@@ -251,7 +251,7 @@ const LinePlan: NextPage = () => {
           }}
         >
           <LinePlanForm organizationId={organization?.id ?? ""} />
-          {!atLeastOneEmail ? (
+          {atLeastOneEmail ? (
             <Import
               onImport={handleImport}
               schema={schema}
