@@ -237,9 +237,9 @@ const Actions: NextPage = () => {
       dueDate: formatDate(row.dueDate),
       startDate: formatDate(row.startDate),
       actionPlanId: actionPlanId as string,
-      priority: row.priority as keyof typeof ACTION_PRIORITY,
     }));
 
+    //@ts-expect-error everything is fine, zod is validating the data
     return importCSV.mutateAsync(validRows);
   };
 

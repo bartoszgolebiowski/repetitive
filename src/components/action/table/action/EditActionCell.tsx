@@ -114,10 +114,10 @@ const useForm = (defaultValues: z.infer<typeof actionItemEditSchema>) => {
 
 const useDates = (defaultValues: z.infer<typeof actionItemEditSchema>) => {
   const [startDate, setStartDate] = React.useState<Date | null>(
-    defaultValues.dueDate ?? null
+    defaultValues.startDate ?? null
   );
   const [dueDate, setDueDate] = React.useState<Date | null>(
-    defaultValues.startDate ?? null
+    defaultValues.dueDate ?? null
   );
 
   const handleStartDateChange = (date: Date | null) => {

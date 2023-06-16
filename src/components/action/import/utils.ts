@@ -13,10 +13,7 @@ export const validUserCSVRequired = (validUsers: string[]) => z.string().refine(
 export const validEnumRequired = (validUsers: string[]) => z.string().refine((u) => validUsers.includes(u))
 export const dateCSVRequired = () => z.string().regex(dateRegex)
 
-export const attachDueDateStartDateRefine = (schema: z.ZodObject<{
-    dueDate: z.ZodString;
-    startDate: z.ZodString;
-}>) =>
+export const attachDueDateStartDateRefine = <T extends z.ZodObject<{ dueDate: z.ZodString; startDate: z.ZodString }>>(schema: T) =>
     schema.refine(
         (data) => isDueDateEqualOrAfterStartDate(data.dueDate, data.startDate), {
         message: "Due date must be after start date",

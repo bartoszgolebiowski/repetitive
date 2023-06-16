@@ -90,13 +90,13 @@ const Notifications: NextPage = () => {
                     <TableCell>{notification.cause}</TableCell>
                     <TableCell>
                       {replaceVariables(
-                        notification.cause,
+                        notification.cause as keyof typeof NOTIFICATION_CAUSE_MESSAGE,
                         notification.variables
                       )}
                     </TableCell>
                     <TableCell>
                       {replaceVariables(
-                        notification.cause,
+                        notification.cause as keyof typeof NOTIFICATION_CAUSE_MESSAGE,
                         notification.variables
                       )}
                     </TableCell>

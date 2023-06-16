@@ -105,7 +105,6 @@ export const actionRouter = createTRPCRouter({
                 const action = await ctx.qb.transaction().execute(async (trx) => {
                     const actionDB = await trx
                         .updateTable("Action")
-                        .where('id', '=', input.id)
                         .set({
                             ...rest,
                             updatedAt: new Date(),
@@ -113,6 +112,7 @@ export const actionRouter = createTRPCRouter({
                             createdBy: extractUserEmailOrId(ctx.auth),
                             updatedBy: extractUserEmailOrId(ctx.auth),
                         })
+                        .where('id', '=', input.id)
                         .returning('id')
                         .executeTakeFirstOrThrow();
 
@@ -129,9 +129,8 @@ export const actionRouter = createTRPCRouter({
 
                     const updatedAction = await trx
                         .selectFrom("Action")
-                        .innerJoin('Comment', 'Comment.actionId', 'Action.id')
-                        .where('actionId', '=', actionDB.id)
-                        .selectAll()
+                        .where('id', '=', actionDB.id)
+                        .select('actionPlanId')
                         .executeTakeFirstOrThrow();
 
                     return updatedAction
@@ -143,6 +142,7 @@ export const actionRouter = createTRPCRouter({
                 return action;
             }
             catch (error) {
+                console.log(error)
                 handleErrorRouter(error)
             }
         }),
