@@ -39,13 +39,10 @@ model LinePlan {
 
     organizationId String
     productionLine String
-
-    assignedTo String
-    dueDate    DateTime
-    status     Status
-    comment    String
-
-    actionPlans ActionPlan[]
+    assignedTo     String
+    dueDate        DateTime
+    status         Status
+    actionPlans    ActionPlan[]
 }
 
 model ActionPlan {
