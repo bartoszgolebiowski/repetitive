@@ -89,7 +89,7 @@ export const actionRouter = createTRPCRouter({
 
                 ctx.bus.emit('action:created', { actionPlanId: input.actionPlanId });
                 // todo switch to cron 
-                ctx.bus.emit('action:markExpired', { expiryDate: new Date() });
+                ctx.bus.emit('action:syncStatuses', { expiryDate: new Date() });
                 return createdAction;
             }
             catch (error) {
@@ -139,7 +139,7 @@ export const actionRouter = createTRPCRouter({
 
                 ctx.bus.emit('action:updated', { id: input.id, actionPlanId: action.actionPlanId });
                 // todo switch to cron 
-                ctx.bus.emit('action:markExpired', { expiryDate: new Date() });
+                ctx.bus.emit('action:syncStatuses', { expiryDate: new Date() });
                 return action;
             }
             catch (error) {
@@ -162,7 +162,7 @@ export const actionRouter = createTRPCRouter({
                     })))
                     .returning('id')
                     .execute()
-
+                ctx.bus.emit('action:syncStatuses', { expiryDate: new Date() })
                 return actions;
             }
             catch (error) {

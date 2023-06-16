@@ -4,7 +4,8 @@ import { type IBus } from "../bus";
 import { log } from 'next-axiom'
 
 export type NotificationEventHandlers = {
-    "notification:actionUpdate": (input: { id: string }) => Promise<null>;
+    "notification:actionCreated": (input: { id: string }) => Promise<null>;
+    "notification:actionUpdated": (input: { id: string }) => Promise<null>;
     "notification:actionsDelayed": (input: { ids: string[] }) => Promise<null>;
 }
 
@@ -16,7 +17,11 @@ const NOTIFICATION_MESSAGE = {
     [NOTIFICATION_CAUSE['ACTION_MARKED_AS_EXPIRED']]: (id: string) => ({
         cause: NOTIFICATION_CAUSE['ACTION_MARKED_AS_EXPIRED'],
         variables: [id]
-    })
+    }),
+    [NOTIFICATION_CAUSE['ACTION_CREATED']]: (id: string) => ({
+        cause: NOTIFICATION_CAUSE['ACTION_CREATED'],
+        variables: [id]
+    }),
 } as const;
 
 interface INotificationRepository {
@@ -30,6 +35,7 @@ interface IActionRepository {
 
 interface INotificationService {
     actionUpdated: (input: { id: string }) => Promise<null>;
+    actionCreated: (input: { id: string }) => Promise<null>;
     actionsDelayed: (input: { ids: string[] }) => Promise<null>;
 }
 
@@ -100,6 +106,26 @@ class NotificationService implements INotificationService {
         private notificationRepository: INotificationRepository,
         private actionRepository: IActionRepository,
     ) { }
+    async actionCreated(input: { id: string }) {
+        const { id } = input;
+
+        const action = await this.actionRepository.getById({ id })
+
+        if (!action) {
+            return null;
+        }
+
+        const idAndEmail = this.sameEmails(action) ?
+            [createIdAndEmail(action.id, action.assignedTo)] :
+            [createIdAndEmail(action.id, action.assignedTo), createIdAndEmail(action.id, action.leader)];
+
+        await this.notificationRepository.createMany({
+            actions: idAndEmail,
+            cause: NOTIFICATION_CAUSE.ACTION_CREATED
+        })
+
+        return null
+    }
     async actionUpdated(input: { id: string }) {
         const { id } = input;
 
@@ -176,12 +202,22 @@ export const createHandlersNotification = (
     const notificationService = new NotificationService(notificationRepository, actionRepository);
     return () => {
         return {
-            "notification:actionUpdate": async (input) => {
+            "notification:actionUpdated": async (input) => {
                 log.info('notification:actionUpdate:start', {
                     input
                 })
                 await notificationService.actionUpdated(input)
                 log.info('notification:actionUpdate:end', {
+                    input
+                })
+                return null
+            },
+            "notification:actionCreated": async (input) => {
+                log.info('notification:actionCreate:start', {
+                    input
+                })
+                await notificationService.actionCreated(input)
+                log.info('notification:actionCreate:end', {
                     input
                 })
                 return null

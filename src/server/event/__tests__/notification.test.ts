@@ -11,7 +11,7 @@ import { createHandlersNotification } from '../handler/notification';
 import { type IBus } from '../bus';
 import { NOTIFICATION_CAUSE } from '~/utils/schema/action/notification';
 
-describe('action event handler', () => {
+describe('nitifaction event handler', () => {
     const bus: IBus = mockDeep<IBus>()
     const notificationRepository = mockDeep<Parameters<typeof createHandlersNotification>[0]>()
     const actionRepository = mockDeep<Parameters<typeof createHandlersNotification>[1]>()
@@ -25,7 +25,7 @@ describe('action event handler', () => {
         actionRepository,
     )(bus)
 
-    describe('notification:actionUpdate', () => {
+    describe('notification:actionUpdated', () => {
         it('should create two notifications when leader and assigned to are different', async () => {
             actionRepository.getById.mockResolvedValueOnce({
                 id: 'actionId',
@@ -33,7 +33,7 @@ describe('action event handler', () => {
                 assignedTo: 'assignedToId',
             })
 
-            const result = await eventHandler['notification:actionUpdate']({ id: 'actionId' })
+            const result = await eventHandler['notification:actionUpdated']({ id: 'actionId' })
 
             expect(result).toBeNull()
 
@@ -52,7 +52,7 @@ describe('action event handler', () => {
                 assignedTo: 'leaderId',
             })
 
-            const result = await eventHandler['notification:actionUpdate']({ id: 'actionId' })
+            const result = await eventHandler['notification:actionUpdated']({ id: 'actionId' })
 
             expect(result).toBeNull()
 
@@ -60,6 +60,45 @@ describe('action event handler', () => {
                 actions: [
                     { id: 'actionId', email: 'leaderId' },
                 ], cause: NOTIFICATION_CAUSE.ACTION_UPDATE
+            })
+        })
+    })
+
+    describe('notification:actionCreated', () => {
+        it('should create two notifications when leader and assigned to are different', async () => {
+            actionRepository.getById.mockResolvedValueOnce({
+                id: 'actionId',
+                leader: 'leaderId',
+                assignedTo: 'assignedToId',
+            })
+
+            const result = await eventHandler['notification:actionCreated']({ id: 'actionId' })
+
+            expect(result).toBeNull()
+
+            expect(notificationRepository.createMany).toHaveBeenCalledWith({
+                actions: [
+                    { id: 'actionId', email: 'assignedToId' },
+                    { id: 'actionId', email: 'leaderId' },
+                ], cause: NOTIFICATION_CAUSE.ACTION_CREATED
+            })
+        })
+
+        it('should create one notification when leader and assigned to are equal', async () => {
+            actionRepository.getById.mockResolvedValueOnce({
+                id: 'actionId',
+                leader: 'leaderId',
+                assignedTo: 'leaderId',
+            })
+
+            const result = await eventHandler['notification:actionCreated']({ id: 'actionId' })
+
+            expect(result).toBeNull()
+
+            expect(notificationRepository.createMany).toHaveBeenCalledWith({
+                actions: [
+                    { id: 'actionId', email: 'leaderId' },
+                ], cause: NOTIFICATION_CAUSE.ACTION_CREATED
             })
         })
     })

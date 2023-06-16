@@ -29,17 +29,21 @@ describe('bus', () => {
 
         it('all register events', () => {
             const actionEvents = [
+                'action:imported',
                 'action:created',
                 'action:updated',
-                'action:markExpired',
-                'actionPlan:allActionsCompletedOrRejected',
-                'actionPlan:atLeastOneActionDelayed',
-                'notification:actionUpdate',
-                'notification:actionsDelayed',
+                'action:syncStatuses',
+                'actionPlan:syncStatuses',
             ] as const
 
+            const notificationEvents = [
+                "notification:actionCreated",
+                "notification:actionUpdated",
+                "notification:actionsDelayed",
+            ] as const
             const allEvents = [
                 ...actionEvents,
+                ...notificationEvents
             ] as const
 
             expectTypeOf(bus.on).parameter(0).toEqualTypeOf<typeof allEvents[number]>()
@@ -47,31 +51,28 @@ describe('bus', () => {
 
         it('action tests', () => {
             bus.on('action:created', (input) => {
-                assertType<{ actionPlanId: string }>(input)
+                assertType<{ actionPlanId: string, id: string }>(input)
                 return Promise.resolve(null)
             })
 
             bus.on('action:updated', (input) => {
+                assertType<{ actionPlanId: string, id: string }>(input)
+                return Promise.resolve(null)
+            })
+
+            bus.on('actionPlan:syncStatuses', (input) => {
                 assertType<{ actionPlanId: string }>(input)
                 return Promise.resolve(null)
             })
 
-            bus.on('actionPlan:allActionsCompletedOrRejected', (input) => {
-                assertType<{ actionPlanId: string }>(input)
-                return Promise.resolve(null)
-            })
-
-            bus.on('actionPlan:atLeastOneActionDelayed', (input) => {
-                assertType<{ actionPlanId: string }>(input)
-                return Promise.resolve(null)
-            })
-
-            bus.emit('action:created', { actionPlanId: 'actionPlanId' })
+            bus.emit('action:created', { actionPlanId: 'actionPlanId', id: 'id' })
             bus.emit('action:updated', { id: 'id', actionPlanId: 'actionPlanId' })
-            bus.emit('actionPlan:atLeastOneActionDelayed', { actionPlanId: 'linePlanId' })
-            bus.emit('actionPlan:allActionsCompletedOrRejected', { actionPlanId: 'linePlanId' })
-            bus.emit('action:markExpired', { expiryDate: new Date() })
-            bus.emit('notification:actionUpdate', { id: 'id' })
+            bus.emit('action:imported', { expiryDate: new Date(), ids: ['1', '2'] })
+            bus.emit('action:syncStatuses', { expiryDate: new Date() })
+            bus.emit('actionPlan:syncStatuses', { actionPlanId: 'linePlanId' })
+
+            bus.emit('notification:actionUpdated', { id: 'id' })
+            bus.emit('notification:actionCreated', { id: 'id' })
             bus.emit('notification:actionsDelayed', { ids: ['id'] })
         })
     })
